@@ -68,6 +68,76 @@ export const GetUsers = /* GraphQL */ `
   }
 `
 
+export const GetTickets = /* GraphQL */ `
+  query GetTickets(
+    $where: TicketWhereInput!
+    $orderBy: [TicketOrderByInput!]!
+    $take: Int
+    $skip: Int!
+  ) {
+    tickets(where: $where, orderBy: $orderBy, take: $take, skip: $skip) {
+      id
+      solved
+      object {
+        id
+        object
+      }
+      description
+      user {
+        id
+        email
+        firstname
+        lastname
+      }
+      createdAt
+      updatedAt
+    }
+    ticketsCount(where: $where)
+  }
+`
+
+export const GetTicketsCounts = /* GraphQL */ `
+  query GetTicketsCounts {
+    pending: ticketsCount(where: { solved: { equals: false } })
+    solved: ticketsCount(where: { solved: { equals: true } })
+  }
+`
+
+export const GetTicket = /* GraphQL */ `
+  query GetTicket($where: TicketWhereUniqueInput!) {
+    ticket(where: $where) {
+      id
+      solved
+      description
+      object {
+        id
+        object
+      }
+      user {
+        id
+        email
+        firstname
+        lastname
+        phoneNumber
+      }
+      createdAt
+      updatedAt
+    }
+  }
+`
+
+export const UpdateTicket = /* GraphQL */ `
+  mutation UpdateTicket(
+    $where: TicketWhereUniqueInput!
+    $data: TicketUpdateInput!
+  ) {
+    updateTicket(where: $where, data: $data) {
+      id
+      solved
+    }
+  }
+`
+
 export const GetUser = /* GraphQL */ `
   query GetUser($where: UserWhereUniqueInput!) {
     user(where: $where) {

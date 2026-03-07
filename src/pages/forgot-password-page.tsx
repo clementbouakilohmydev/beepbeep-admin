@@ -79,11 +79,7 @@ export function ForgotPasswordPage() {
         </div>
       </div>
       <div className="relative hidden bg-foreground lg:flex lg:items-center lg:justify-center">
-        <img
-          src="/src/assets/logo.png"
-          alt="BeepBeepCity"
-          className="max-w-[60%]"
-        />
+        <img src="/logo.png" alt="BeepBeepCity" className="max-w-[60%]" />
       </div>
     </div>
   )

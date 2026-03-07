@@ -1,3 +1,5 @@
 export { graphqlClient, onAuthExpired } from "./api"
+export { sendEmail } from "./email"
+export { formatDate, getUserDisplay } from "./format"
 export { queryClient } from "./query-client"
 export { cn } from "./utils"

@@ -4220,6 +4220,36 @@ export type GetUsersQueryVariables = Exact<{
 
 export type GetUsersQuery = { __typename?: 'Query', usersCount?: number | null, users?: Array<{ __typename?: 'User', id: string, email?: string | null, firstname?: string | null, lastname?: string | null, type?: string | null, isAdmin?: boolean | null, enabled?: boolean | null, phoneNumber?: string | null, createdAt?: any | null }> | null };
 
+export type GetTicketsQueryVariables = Exact<{
+  where: TicketWhereInput;
+  orderBy: Array<TicketOrderByInput> | TicketOrderByInput;
+  take?: InputMaybe<Scalars['Int']['input']>;
+  skip: Scalars['Int']['input'];
+}>;
+
+
+export type GetTicketsQuery = { __typename?: 'Query', ticketsCount?: number | null, tickets?: Array<{ __typename?: 'Ticket', id: string, solved?: boolean | null, description?: string | null, createdAt?: any | null, updatedAt?: any | null, object?: { __typename?: 'TicketObject', id: string, object?: string | null } | null, user?: { __typename?: 'User', id: string, email?: string | null, firstname?: string | null, lastname?: string | null } | null }> | null };
+
+export type GetTicketsCountsQueryVariables = Exact<{ [key: string]: never; }>;
+
+
+export type GetTicketsCountsQuery = { __typename?: 'Query', pending?: number | null, solved?: number | null };
+
+export type GetTicketQueryVariables = Exact<{
+  where: TicketWhereUniqueInput;
+}>;
+
+
+export type GetTicketQuery = { __typename?: 'Query', ticket?: { __typename?: 'Ticket', id: string, solved?: boolean | null, description?: string | null, createdAt?: any | null, updatedAt?: any | null, object?: { __typename?: 'TicketObject', id: string, object?: string | null } | null, user?: { __typename?: 'User', id: string, email?: string | null, firstname?: string | null, lastname?: string | null, phoneNumber?: string | null } | null } | null };
+
+export type UpdateTicketMutationVariables = Exact<{
+  where: TicketWhereUniqueInput;
+  data: TicketUpdateInput;
+}>;
+
+
+export type UpdateTicketMutation = { __typename?: 'Mutation', updateTicket?: { __typename?: 'Ticket', id: string, solved?: boolean | null } | null };
+
 export type GetUserQueryVariables = Exact<{
   where: UserWhereUniqueInput;
 }>;
@@ -4383,6 +4413,147 @@ useGetUsersQuery.getKey = (variables: GetUsersQueryVariables) => ['GetUsers', va
 
 
 useGetUsersQuery.fetcher = (variables: GetUsersQueryVariables, options?: RequestInit['headers']) => graphqlClient<GetUsersQuery, GetUsersQueryVariables>(GetUsersDocument, variables, options);
+
+export const GetTicketsDocument = `
+    query GetTickets($where: TicketWhereInput!, $orderBy: [TicketOrderByInput!]!, $take: Int, $skip: Int!) {
+  tickets(where: $where, orderBy: $orderBy, take: $take, skip: $skip) {
+    id
+    solved
+    object {
+      id
+      object
+    }
+    description
+    user {
+      id
+      email
+      firstname
+      lastname
+    }
+    createdAt
+    updatedAt
+  }
+  ticketsCount(where: $where)
+}
+    `;
+
+export const useGetTicketsQuery = <
+      TData = GetTicketsQuery,
+      TError = unknown
+    >(
+      variables: GetTicketsQueryVariables,
+      options?: Omit<UseQueryOptions<GetTicketsQuery, TError, TData>, 'queryKey'> & { queryKey?: UseQueryOptions<GetTicketsQuery, TError, TData>['queryKey'] }
+    ) => {
+    
+    return useQuery<GetTicketsQuery, TError, TData>(
+      {
+    queryKey: ['GetTickets', variables],
+    queryFn: graphqlClient<GetTicketsQuery, GetTicketsQueryVariables>(GetTicketsDocument, variables),
+    ...options
+  }
+    )};
+
+useGetTicketsQuery.getKey = (variables: GetTicketsQueryVariables) => ['GetTickets', variables];
+
+
+useGetTicketsQuery.fetcher = (variables: GetTicketsQueryVariables, options?: RequestInit['headers']) => graphqlClient<GetTicketsQuery, GetTicketsQueryVariables>(GetTicketsDocument, variables, options);
+
+export const GetTicketsCountsDocument = `
+    query GetTicketsCounts {
+  pending: ticketsCount(where: {solved: {equals: false}})
+  solved: ticketsCount(where: {solved: {equals: true}})
+}
+    `;
+
+export const useGetTicketsCountsQuery = <
+      TData = GetTicketsCountsQuery,
+      TError = unknown
+    >(
+      variables?: GetTicketsCountsQueryVariables,
+      options?: Omit<UseQueryOptions<GetTicketsCountsQuery, TError, TData>, 'queryKey'> & { queryKey?: UseQueryOptions<GetTicketsCountsQuery, TError, TData>['queryKey'] }
+    ) => {
+    
+    return useQuery<GetTicketsCountsQuery, TError, TData>(
+      {
+    queryKey: variables === undefined ? ['GetTicketsCounts'] : ['GetTicketsCounts', variables],
+    queryFn: graphqlClient<GetTicketsCountsQuery, GetTicketsCountsQueryVariables>(GetTicketsCountsDocument, variables),
+    ...options
+  }
+    )};
+
+useGetTicketsCountsQuery.getKey = (variables?: GetTicketsCountsQueryVariables) => variables === undefined ? ['GetTicketsCounts'] : ['GetTicketsCounts', variables];
+
+
+useGetTicketsCountsQuery.fetcher = (variables?: GetTicketsCountsQueryVariables, options?: RequestInit['headers']) => graphqlClient<GetTicketsCountsQuery, GetTicketsCountsQueryVariables>(GetTicketsCountsDocument, variables, options);
+
+export const GetTicketDocument = `
+    query GetTicket($where: TicketWhereUniqueInput!) {
+  ticket(where: $where) {
+    id
+    solved
+    description
+    object {
+      id
+      object
+    }
+    user {
+      id
+      email
+      firstname
+      lastname
+      phoneNumber
+    }
+    createdAt
+    updatedAt
+  }
+}
+    `;
+
+export const useGetTicketQuery = <
+      TData = GetTicketQuery,
+      TError = unknown
+    >(
+      variables: GetTicketQueryVariables,
+      options?: Omit<UseQueryOptions<GetTicketQuery, TError, TData>, 'queryKey'> & { queryKey?: UseQueryOptions<GetTicketQuery, TError, TData>['queryKey'] }
+    ) => {
+    
+    return useQuery<GetTicketQuery, TError, TData>(
+      {
+    queryKey: ['GetTicket', variables],
+    queryFn: graphqlClient<GetTicketQuery, GetTicketQueryVariables>(GetTicketDocument, variables),
+    ...options
+  }
+    )};
+
+useGetTicketQuery.getKey = (variables: GetTicketQueryVariables) => ['GetTicket', variables];
+
+
+useGetTicketQuery.fetcher = (variables: GetTicketQueryVariables, options?: RequestInit['headers']) => graphqlClient<GetTicketQuery, GetTicketQueryVariables>(GetTicketDocument, variables, options);
+
+export const UpdateTicketDocument = `
+    mutation UpdateTicket($where: TicketWhereUniqueInput!, $data: TicketUpdateInput!) {
+  updateTicket(where: $where, data: $data) {
+    id
+    solved
+  }
+}
+    `;
+
+export const useUpdateTicketMutation = <
+      TError = unknown,
+      TContext = unknown
+    >(options?: UseMutationOptions<UpdateTicketMutation, TError, UpdateTicketMutationVariables, TContext>) => {
+    
+    return useMutation<UpdateTicketMutation, TError, UpdateTicketMutationVariables, TContext>(
+      {
+    mutationKey: ['UpdateTicket'],
+    mutationFn: (variables?: UpdateTicketMutationVariables) => graphqlClient<UpdateTicketMutation, UpdateTicketMutationVariables>(UpdateTicketDocument, variables)(),
+    ...options
+  }
+    )};
+
+
+useUpdateTicketMutation.fetcher = (variables: UpdateTicketMutationVariables, options?: RequestInit['headers']) => graphqlClient<UpdateTicketMutation, UpdateTicketMutationVariables>(UpdateTicketDocument, variables, options);
 
 export const GetUserDocument = `
     query GetUser($where: UserWhereUniqueInput!) {
