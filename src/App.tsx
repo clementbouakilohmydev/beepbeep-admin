@@ -12,6 +12,9 @@ import {
   DashboardPage,
   TicketsPage,
   TicketDetailPage,
+  UsersPage,
+  UserDetailPage,
+  DocumentsPage,
 } from "@/pages"
 
 export function App() {
@@ -27,6 +30,9 @@ export function App() {
                 <Route path="/" element={<DashboardPage />} />
                 <Route path="/tickets" element={<TicketsPage />} />
                 <Route path="/tickets/:id" element={<TicketDetailPage />} />
+                <Route path="/users" element={<UsersPage />} />
+                <Route path="/users/:id" element={<UserDetailPage />} />
+                <Route path="/documents" element={<DocumentsPage />} />
               </Route>
             </Route>
             <Route path="*" element={<Navigate to="/" replace />} />

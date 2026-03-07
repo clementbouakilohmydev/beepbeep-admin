@@ -1,5 +1,8 @@
 export { DashboardPage } from "./dashboard-page"
+export { DocumentsPage } from "./documents-page"
 export { ForgotPasswordPage } from "./forgot-password-page"
 export { LoginPage } from "./login-page"
 export { TicketDetailPage } from "./ticket-detail-page"
 export { TicketsPage } from "./tickets-page"
+export { UserDetailPage } from "./user-detail-page"
+export { UsersPage } from "./users-page"

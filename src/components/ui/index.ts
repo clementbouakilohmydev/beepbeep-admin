@@ -24,6 +24,7 @@ export {
   PaginationNext,
   PaginationPrevious,
 } from "./pagination"
+export { Popover, PopoverContent, PopoverTrigger } from "./popover"
 export { Toaster } from "./sonner"
 export { TooltipProvider } from "./tooltip"
 export { Spinner } from "./spinner"

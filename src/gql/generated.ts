@@ -4218,7 +4218,7 @@ export type GetUsersQueryVariables = Exact<{
 }>;
 
 
-export type GetUsersQuery = { __typename?: 'Query', usersCount?: number | null, users?: Array<{ __typename?: 'User', id: string, email?: string | null, firstname?: string | null, lastname?: string | null, type?: string | null, isAdmin?: boolean | null, enabled?: boolean | null, phoneNumber?: string | null, createdAt?: any | null }> | null };
+export type GetUsersQuery = { __typename?: 'Query', usersCount?: number | null, users?: Array<{ __typename?: 'User', id: string, email?: string | null, firstname?: string | null, lastname?: string | null, type?: string | null, isAdmin?: boolean | null, enabled?: boolean | null, phoneNumber?: string | null, createdAt?: any | null, drivingLicense?: { __typename?: 'DrivingLicense', id: string, state?: string | null } | null, insurance?: { __typename?: 'Insurance', id: string, state?: string | null } | null, registrationDocument?: { __typename?: 'RegistrationDocument', id: string, state?: string | null } | null, certificate?: { __typename?: 'Certificate', id: string, state?: string | null } | null }> | null };
 
 export type GetTicketsQueryVariables = Exact<{
   where: TicketWhereInput;
@@ -4250,12 +4250,66 @@ export type UpdateTicketMutationVariables = Exact<{
 
 export type UpdateTicketMutation = { __typename?: 'Mutation', updateTicket?: { __typename?: 'Ticket', id: string, solved?: boolean | null } | null };
 
+export type GetUsersCountsQueryVariables = Exact<{
+  todayWhere: UserWhereInput;
+  weekWhere: UserWhereInput;
+  monthWhere: UserWhereInput;
+}>;
+
+
+export type GetUsersCountsQuery = { __typename?: 'Query', total?: number | null, today?: number | null, week?: number | null, month?: number | null, passengers?: number | null, drivers?: number | null };
+
+export type GetDriversAverageRatingQueryVariables = Exact<{ [key: string]: never; }>;
+
+
+export type GetDriversAverageRatingQuery = { __typename?: 'Query', users?: Array<{ __typename?: 'User', id: string, averageRate?: number | null }> | null };
+
 export type GetUserQueryVariables = Exact<{
   where: UserWhereUniqueInput;
 }>;
 
 
-export type GetUserQuery = { __typename?: 'Query', user?: { __typename?: 'User', id: string, email?: string | null, firstname?: string | null, lastname?: string | null, type?: string | null, isAdmin?: boolean | null, enabled?: boolean | null, anonymized?: boolean | null, phoneNumber?: string | null, birthdayDatetimeUtc?: any | null, affiliationCode?: string | null, age?: number | null, averageRate?: number | null, coursesCount?: number | null, stripeCustomerId?: string | null, pushNotifications?: boolean | null, createdAt?: any | null, updatedAt?: any | null } | null };
+export type GetUserQuery = { __typename?: 'Query', user?: { __typename?: 'User', id: string, email?: string | null, firstname?: string | null, lastname?: string | null, type?: string | null, isAdmin?: boolean | null, enabled?: boolean | null, anonymized?: boolean | null, phoneNumber?: string | null, birthdayDatetimeUtc?: any | null, affiliationCode?: string | null, age?: number | null, averageRate?: number | null, coursesCount?: number | null, stripeCustomerId?: string | null, pushNotifications?: boolean | null, createdAt?: any | null, updatedAt?: any | null, ratingsCount?: number | null, avatar?: { __typename?: 'ImageFieldOutput', id: string, url: string } | null, drivingLicense?: { __typename?: 'DrivingLicense', id: string, state?: string | null, obtentionYear?: number | null, createdAt?: any | null, updatedAt?: any | null, picture?: { __typename?: 'ImageFieldOutput', id: string, url: string } | null } | null, insurance?: { __typename?: 'Insurance', id: string, state?: string | null, expirationDatetimeUtc?: any | null, isExpired?: boolean | null, createdAt?: any | null, updatedAt?: any | null, picture?: { __typename?: 'ImageFieldOutput', id: string, url: string } | null } | null, registrationDocument?: { __typename?: 'RegistrationDocument', id: string, state?: string | null, createdAt?: any | null, updatedAt?: any | null, picture?: { __typename?: 'ImageFieldOutput', id: string, url: string } | null } | null, certificate?: { __typename?: 'Certificate', id: string, state?: string | null, expirationDatetime?: any | null, registrationDatetime?: any | null, createdAt?: any | null, updatedAt?: any | null, picture?: { __typename?: 'ImageFieldOutput', id: string, url: string } | null } | null, vehicule?: { __typename?: 'Vehicule', id: string, brand?: string | null, model?: string | null, color?: string | null, registration?: string | null, country?: string | null, firstYear?: any | null } | null, ratings?: Array<{ __typename?: 'Rating', id: string, note?: number | null, message?: string | null, tags?: string | null, createdAt?: any | null, user?: { __typename?: 'User', id: string, firstname?: string | null, lastname?: string | null } | null }> | null } | null };
+
+export type UpdateUserMutationVariables = Exact<{
+  where: UserWhereUniqueInput;
+  data: UserUpdateInput;
+}>;
+
+
+export type UpdateUserMutation = { __typename?: 'Mutation', updateUser?: { __typename?: 'User', id: string, enabled?: boolean | null } | null };
+
+export type UpdateDrivingLicenseMutationVariables = Exact<{
+  where: DrivingLicenseWhereUniqueInput;
+  data: DrivingLicenseUpdateInput;
+}>;
+
+
+export type UpdateDrivingLicenseMutation = { __typename?: 'Mutation', updateDrivingLicense?: { __typename?: 'DrivingLicense', id: string, state?: string | null } | null };
+
+export type UpdateInsuranceMutationVariables = Exact<{
+  where: InsuranceWhereUniqueInput;
+  data: InsuranceUpdateInput;
+}>;
+
+
+export type UpdateInsuranceMutation = { __typename?: 'Mutation', updateInsurance?: { __typename?: 'Insurance', id: string, state?: string | null } | null };
+
+export type UpdateRegistrationDocumentMutationVariables = Exact<{
+  where: RegistrationDocumentWhereUniqueInput;
+  data: RegistrationDocumentUpdateInput;
+}>;
+
+
+export type UpdateRegistrationDocumentMutation = { __typename?: 'Mutation', updateRegistrationDocument?: { __typename?: 'RegistrationDocument', id: string, state?: string | null } | null };
+
+export type UpdateCertificateMutationVariables = Exact<{
+  where: CertificateWhereUniqueInput;
+  data: CertificateUpdateInput;
+}>;
+
+
+export type UpdateCertificateMutation = { __typename?: 'Mutation', updateCertificate?: { __typename?: 'Certificate', id: string, state?: string | null } | null };
 
 
 
@@ -4388,6 +4442,22 @@ export const GetUsersDocument = `
     enabled
     phoneNumber
     createdAt
+    drivingLicense {
+      id
+      state
+    }
+    insurance {
+      id
+      state
+    }
+    registrationDocument {
+      id
+      state
+    }
+    certificate {
+      id
+      state
+    }
   }
   usersCount(where: $where)
 }
@@ -4555,6 +4625,74 @@ export const useUpdateTicketMutation = <
 
 useUpdateTicketMutation.fetcher = (variables: UpdateTicketMutationVariables, options?: RequestInit['headers']) => graphqlClient<UpdateTicketMutation, UpdateTicketMutationVariables>(UpdateTicketDocument, variables, options);
 
+export const GetUsersCountsDocument = `
+    query GetUsersCounts($todayWhere: UserWhereInput!, $weekWhere: UserWhereInput!, $monthWhere: UserWhereInput!) {
+  total: usersCount(where: {isAdmin: {equals: false}})
+  today: usersCount(where: $todayWhere)
+  week: usersCount(where: $weekWhere)
+  month: usersCount(where: $monthWhere)
+  passengers: usersCount(
+    where: {type: {equals: "passenger"}, isAdmin: {equals: false}}
+  )
+  drivers: usersCount(where: {type: {equals: "driver"}, isAdmin: {equals: false}})
+}
+    `;
+
+export const useGetUsersCountsQuery = <
+      TData = GetUsersCountsQuery,
+      TError = unknown
+    >(
+      variables: GetUsersCountsQueryVariables,
+      options?: Omit<UseQueryOptions<GetUsersCountsQuery, TError, TData>, 'queryKey'> & { queryKey?: UseQueryOptions<GetUsersCountsQuery, TError, TData>['queryKey'] }
+    ) => {
+    
+    return useQuery<GetUsersCountsQuery, TError, TData>(
+      {
+    queryKey: ['GetUsersCounts', variables],
+    queryFn: graphqlClient<GetUsersCountsQuery, GetUsersCountsQueryVariables>(GetUsersCountsDocument, variables),
+    ...options
+  }
+    )};
+
+useGetUsersCountsQuery.getKey = (variables: GetUsersCountsQueryVariables) => ['GetUsersCounts', variables];
+
+
+useGetUsersCountsQuery.fetcher = (variables: GetUsersCountsQueryVariables, options?: RequestInit['headers']) => graphqlClient<GetUsersCountsQuery, GetUsersCountsQueryVariables>(GetUsersCountsDocument, variables, options);
+
+export const GetDriversAverageRatingDocument = `
+    query GetDriversAverageRating {
+  users(
+    where: {type: {equals: "driver"}, isAdmin: {equals: false}}
+    orderBy: []
+    skip: 0
+  ) {
+    id
+    averageRate
+  }
+}
+    `;
+
+export const useGetDriversAverageRatingQuery = <
+      TData = GetDriversAverageRatingQuery,
+      TError = unknown
+    >(
+      variables?: GetDriversAverageRatingQueryVariables,
+      options?: Omit<UseQueryOptions<GetDriversAverageRatingQuery, TError, TData>, 'queryKey'> & { queryKey?: UseQueryOptions<GetDriversAverageRatingQuery, TError, TData>['queryKey'] }
+    ) => {
+    
+    return useQuery<GetDriversAverageRatingQuery, TError, TData>(
+      {
+    queryKey: variables === undefined ? ['GetDriversAverageRating'] : ['GetDriversAverageRating', variables],
+    queryFn: graphqlClient<GetDriversAverageRatingQuery, GetDriversAverageRatingQueryVariables>(GetDriversAverageRatingDocument, variables),
+    ...options
+  }
+    )};
+
+useGetDriversAverageRatingQuery.getKey = (variables?: GetDriversAverageRatingQueryVariables) => variables === undefined ? ['GetDriversAverageRating'] : ['GetDriversAverageRating', variables];
+
+
+useGetDriversAverageRatingQuery.fetcher = (variables?: GetDriversAverageRatingQueryVariables, options?: RequestInit['headers']) => graphqlClient<GetDriversAverageRatingQuery, GetDriversAverageRatingQueryVariables>(GetDriversAverageRatingDocument, variables, options);
+
 export const GetUserDocument = `
     query GetUser($where: UserWhereUniqueInput!) {
   user(where: $where) {
@@ -4576,6 +4714,77 @@ export const GetUserDocument = `
     pushNotifications
     createdAt
     updatedAt
+    avatar {
+      id
+      url
+    }
+    drivingLicense {
+      id
+      state
+      obtentionYear
+      picture {
+        id
+        url
+      }
+      createdAt
+      updatedAt
+    }
+    insurance {
+      id
+      state
+      expirationDatetimeUtc
+      isExpired
+      picture {
+        id
+        url
+      }
+      createdAt
+      updatedAt
+    }
+    registrationDocument {
+      id
+      state
+      picture {
+        id
+        url
+      }
+      createdAt
+      updatedAt
+    }
+    certificate {
+      id
+      state
+      expirationDatetime
+      registrationDatetime
+      picture {
+        id
+        url
+      }
+      createdAt
+      updatedAt
+    }
+    vehicule {
+      id
+      brand
+      model
+      color
+      registration
+      country
+      firstYear
+    }
+    ratings(orderBy: [{createdAt: desc}], take: 10) {
+      id
+      note
+      message
+      tags
+      user {
+        id
+        firstname
+        lastname
+      }
+      createdAt
+    }
+    ratingsCount
   }
 }
     `;
@@ -4600,3 +4809,128 @@ useGetUserQuery.getKey = (variables: GetUserQueryVariables) => ['GetUser', varia
 
 
 useGetUserQuery.fetcher = (variables: GetUserQueryVariables, options?: RequestInit['headers']) => graphqlClient<GetUserQuery, GetUserQueryVariables>(GetUserDocument, variables, options);
+
+export const UpdateUserDocument = `
+    mutation UpdateUser($where: UserWhereUniqueInput!, $data: UserUpdateInput!) {
+  updateUser(where: $where, data: $data) {
+    id
+    enabled
+  }
+}
+    `;
+
+export const useUpdateUserMutation = <
+      TError = unknown,
+      TContext = unknown
+    >(options?: UseMutationOptions<UpdateUserMutation, TError, UpdateUserMutationVariables, TContext>) => {
+    
+    return useMutation<UpdateUserMutation, TError, UpdateUserMutationVariables, TContext>(
+      {
+    mutationKey: ['UpdateUser'],
+    mutationFn: (variables?: UpdateUserMutationVariables) => graphqlClient<UpdateUserMutation, UpdateUserMutationVariables>(UpdateUserDocument, variables)(),
+    ...options
+  }
+    )};
+
+
+useUpdateUserMutation.fetcher = (variables: UpdateUserMutationVariables, options?: RequestInit['headers']) => graphqlClient<UpdateUserMutation, UpdateUserMutationVariables>(UpdateUserDocument, variables, options);
+
+export const UpdateDrivingLicenseDocument = `
+    mutation UpdateDrivingLicense($where: DrivingLicenseWhereUniqueInput!, $data: DrivingLicenseUpdateInput!) {
+  updateDrivingLicense(where: $where, data: $data) {
+    id
+    state
+  }
+}
+    `;
+
+export const useUpdateDrivingLicenseMutation = <
+      TError = unknown,
+      TContext = unknown
+    >(options?: UseMutationOptions<UpdateDrivingLicenseMutation, TError, UpdateDrivingLicenseMutationVariables, TContext>) => {
+    
+    return useMutation<UpdateDrivingLicenseMutation, TError, UpdateDrivingLicenseMutationVariables, TContext>(
+      {
+    mutationKey: ['UpdateDrivingLicense'],
+    mutationFn: (variables?: UpdateDrivingLicenseMutationVariables) => graphqlClient<UpdateDrivingLicenseMutation, UpdateDrivingLicenseMutationVariables>(UpdateDrivingLicenseDocument, variables)(),
+    ...options
+  }
+    )};
+
+
+useUpdateDrivingLicenseMutation.fetcher = (variables: UpdateDrivingLicenseMutationVariables, options?: RequestInit['headers']) => graphqlClient<UpdateDrivingLicenseMutation, UpdateDrivingLicenseMutationVariables>(UpdateDrivingLicenseDocument, variables, options);
+
+export const UpdateInsuranceDocument = `
+    mutation UpdateInsurance($where: InsuranceWhereUniqueInput!, $data: InsuranceUpdateInput!) {
+  updateInsurance(where: $where, data: $data) {
+    id
+    state
+  }
+}
+    `;
+
+export const useUpdateInsuranceMutation = <
+      TError = unknown,
+      TContext = unknown
+    >(options?: UseMutationOptions<UpdateInsuranceMutation, TError, UpdateInsuranceMutationVariables, TContext>) => {
+    
+    return useMutation<UpdateInsuranceMutation, TError, UpdateInsuranceMutationVariables, TContext>(
+      {
+    mutationKey: ['UpdateInsurance'],
+    mutationFn: (variables?: UpdateInsuranceMutationVariables) => graphqlClient<UpdateInsuranceMutation, UpdateInsuranceMutationVariables>(UpdateInsuranceDocument, variables)(),
+    ...options
+  }
+    )};
+
+
+useUpdateInsuranceMutation.fetcher = (variables: UpdateInsuranceMutationVariables, options?: RequestInit['headers']) => graphqlClient<UpdateInsuranceMutation, UpdateInsuranceMutationVariables>(UpdateInsuranceDocument, variables, options);
+
+export const UpdateRegistrationDocumentDocument = `
+    mutation UpdateRegistrationDocument($where: RegistrationDocumentWhereUniqueInput!, $data: RegistrationDocumentUpdateInput!) {
+  updateRegistrationDocument(where: $where, data: $data) {
+    id
+    state
+  }
+}
+    `;
+
+export const useUpdateRegistrationDocumentMutation = <
+      TError = unknown,
+      TContext = unknown
+    >(options?: UseMutationOptions<UpdateRegistrationDocumentMutation, TError, UpdateRegistrationDocumentMutationVariables, TContext>) => {
+    
+    return useMutation<UpdateRegistrationDocumentMutation, TError, UpdateRegistrationDocumentMutationVariables, TContext>(
+      {
+    mutationKey: ['UpdateRegistrationDocument'],
+    mutationFn: (variables?: UpdateRegistrationDocumentMutationVariables) => graphqlClient<UpdateRegistrationDocumentMutation, UpdateRegistrationDocumentMutationVariables>(UpdateRegistrationDocumentDocument, variables)(),
+    ...options
+  }
+    )};
+
+
+useUpdateRegistrationDocumentMutation.fetcher = (variables: UpdateRegistrationDocumentMutationVariables, options?: RequestInit['headers']) => graphqlClient<UpdateRegistrationDocumentMutation, UpdateRegistrationDocumentMutationVariables>(UpdateRegistrationDocumentDocument, variables, options);
+
+export const UpdateCertificateDocument = `
+    mutation UpdateCertificate($where: CertificateWhereUniqueInput!, $data: CertificateUpdateInput!) {
+  updateCertificate(where: $where, data: $data) {
+    id
+    state
+  }
+}
+    `;
+
+export const useUpdateCertificateMutation = <
+      TError = unknown,
+      TContext = unknown
+    >(options?: UseMutationOptions<UpdateCertificateMutation, TError, UpdateCertificateMutationVariables, TContext>) => {
+    
+    return useMutation<UpdateCertificateMutation, TError, UpdateCertificateMutationVariables, TContext>(
+      {
+    mutationKey: ['UpdateCertificate'],
+    mutationFn: (variables?: UpdateCertificateMutationVariables) => graphqlClient<UpdateCertificateMutation, UpdateCertificateMutationVariables>(UpdateCertificateDocument, variables)(),
+    ...options
+  }
+    )};
+
+
+useUpdateCertificateMutation.fetcher = (variables: UpdateCertificateMutationVariables, options?: RequestInit['headers']) => graphqlClient<UpdateCertificateMutation, UpdateCertificateMutationVariables>(UpdateCertificateDocument, variables, options);

@@ -1,5 +1,11 @@
 import { NavLink, Outlet } from "react-router-dom"
-import { LayoutDashboardIcon, TicketIcon, LogOutIcon } from "lucide-react"
+import {
+  LayoutDashboardIcon,
+  TicketIcon,
+  UsersIcon,
+  FileTextIcon,
+  LogOutIcon,
+} from "lucide-react"
 import { useAuth } from "@/hooks"
 import {
   Sidebar,
@@ -21,6 +27,8 @@ import { Separator } from "@/components/ui/separator"
 const NAV_ITEMS = [
   { to: "/", label: "Dashboard", icon: LayoutDashboardIcon },
   { to: "/tickets", label: "Tickets", icon: TicketIcon },
+  { to: "/users", label: "Utilisateurs", icon: UsersIcon },
+  { to: "/documents", label: "Documents", icon: FileTextIcon },
 ]
 
 export function AppLayout() {

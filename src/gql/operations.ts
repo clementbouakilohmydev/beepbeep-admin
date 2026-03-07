@@ -63,6 +63,22 @@ export const GetUsers = /* GraphQL */ `
       enabled
       phoneNumber
       createdAt
+      drivingLicense {
+        id
+        state
+      }
+      insurance {
+        id
+        state
+      }
+      registrationDocument {
+        id
+        state
+      }
+      certificate {
+        id
+        state
+      }
     }
     usersCount(where: $where)
   }
@@ -138,6 +154,38 @@ export const UpdateTicket = /* GraphQL */ `
   }
 `
 
+export const GetUsersCounts = /* GraphQL */ `
+  query GetUsersCounts(
+    $todayWhere: UserWhereInput!
+    $weekWhere: UserWhereInput!
+    $monthWhere: UserWhereInput!
+  ) {
+    total: usersCount(where: { isAdmin: { equals: false } })
+    today: usersCount(where: $todayWhere)
+    week: usersCount(where: $weekWhere)
+    month: usersCount(where: $monthWhere)
+    passengers: usersCount(
+      where: { type: { equals: "passenger" }, isAdmin: { equals: false } }
+    )
+    drivers: usersCount(
+      where: { type: { equals: "driver" }, isAdmin: { equals: false } }
+    )
+  }
+`
+
+export const GetDriversAverageRating = /* GraphQL */ `
+  query GetDriversAverageRating {
+    users(
+      where: { type: { equals: "driver" }, isAdmin: { equals: false } }
+      orderBy: []
+      skip: 0
+    ) {
+      id
+      averageRate
+    }
+  }
+`
+
 export const GetUser = /* GraphQL */ `
   query GetUser($where: UserWhereUniqueInput!) {
     user(where: $where) {
@@ -159,6 +207,134 @@ export const GetUser = /* GraphQL */ `
       pushNotifications
       createdAt
       updatedAt
+      avatar {
+        id
+        url
+      }
+      drivingLicense {
+        id
+        state
+        obtentionYear
+        picture {
+          id
+          url
+        }
+        createdAt
+        updatedAt
+      }
+      insurance {
+        id
+        state
+        expirationDatetimeUtc
+        isExpired
+        picture {
+          id
+          url
+        }
+        createdAt
+        updatedAt
+      }
+      registrationDocument {
+        id
+        state
+        picture {
+          id
+          url
+        }
+        createdAt
+        updatedAt
+      }
+      certificate {
+        id
+        state
+        expirationDatetime
+        registrationDatetime
+        picture {
+          id
+          url
+        }
+        createdAt
+        updatedAt
+      }
+      vehicule {
+        id
+        brand
+        model
+        color
+        registration
+        country
+        firstYear
+      }
+      ratings(orderBy: [{ createdAt: desc }], take: 10) {
+        id
+        note
+        message
+        tags
+        user {
+          id
+          firstname
+          lastname
+        }
+        createdAt
+      }
+      ratingsCount
+    }
+  }
+`
+
+export const UpdateUser = /* GraphQL */ `
+  mutation UpdateUser($where: UserWhereUniqueInput!, $data: UserUpdateInput!) {
+    updateUser(where: $where, data: $data) {
+      id
+      enabled
+    }
+  }
+`
+
+export const UpdateDrivingLicense = /* GraphQL */ `
+  mutation UpdateDrivingLicense(
+    $where: DrivingLicenseWhereUniqueInput!
+    $data: DrivingLicenseUpdateInput!
+  ) {
+    updateDrivingLicense(where: $where, data: $data) {
+      id
+      state
+    }
+  }
+`
+
+export const UpdateInsurance = /* GraphQL */ `
+  mutation UpdateInsurance(
+    $where: InsuranceWhereUniqueInput!
+    $data: InsuranceUpdateInput!
+  ) {
+    updateInsurance(where: $where, data: $data) {
+      id
+      state
+    }
+  }
+`
+
+export const UpdateRegistrationDocument = /* GraphQL */ `
+  mutation UpdateRegistrationDocument(
+    $where: RegistrationDocumentWhereUniqueInput!
+    $data: RegistrationDocumentUpdateInput!
+  ) {
+    updateRegistrationDocument(where: $where, data: $data) {
+      id
+      state
+    }
+  }
+`
+
+export const UpdateCertificate = /* GraphQL */ `
+  mutation UpdateCertificate(
+    $where: CertificateWhereUniqueInput!
+    $data: CertificateUpdateInput!
+  ) {
+    updateCertificate(where: $where, data: $data) {
+      id
+      state
     }
   }
 `
