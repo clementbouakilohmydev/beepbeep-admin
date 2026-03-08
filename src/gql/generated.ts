@@ -4271,6 +4271,26 @@ export type GetUserQueryVariables = Exact<{
 
 export type GetUserQuery = { __typename?: 'Query', user?: { __typename?: 'User', id: string, email?: string | null, firstname?: string | null, lastname?: string | null, type?: string | null, isAdmin?: boolean | null, enabled?: boolean | null, anonymized?: boolean | null, phoneNumber?: string | null, birthdayDatetimeUtc?: any | null, affiliationCode?: string | null, age?: number | null, averageRate?: number | null, coursesCount?: number | null, stripeCustomerId?: string | null, pushNotifications?: boolean | null, createdAt?: any | null, updatedAt?: any | null, ratingsCount?: number | null, avatar?: { __typename?: 'ImageFieldOutput', id: string, url: string } | null, drivingLicense?: { __typename?: 'DrivingLicense', id: string, state?: string | null, obtentionYear?: number | null, createdAt?: any | null, updatedAt?: any | null, picture?: { __typename?: 'ImageFieldOutput', id: string, url: string } | null } | null, insurance?: { __typename?: 'Insurance', id: string, state?: string | null, expirationDatetimeUtc?: any | null, isExpired?: boolean | null, createdAt?: any | null, updatedAt?: any | null, picture?: { __typename?: 'ImageFieldOutput', id: string, url: string } | null } | null, registrationDocument?: { __typename?: 'RegistrationDocument', id: string, state?: string | null, createdAt?: any | null, updatedAt?: any | null, picture?: { __typename?: 'ImageFieldOutput', id: string, url: string } | null } | null, certificate?: { __typename?: 'Certificate', id: string, state?: string | null, expirationDatetime?: any | null, registrationDatetime?: any | null, createdAt?: any | null, updatedAt?: any | null, picture?: { __typename?: 'ImageFieldOutput', id: string, url: string } | null } | null, vehicule?: { __typename?: 'Vehicule', id: string, brand?: string | null, model?: string | null, color?: string | null, registration?: string | null, country?: string | null, firstYear?: any | null } | null, ratings?: Array<{ __typename?: 'Rating', id: string, note?: number | null, message?: string | null, tags?: string | null, createdAt?: any | null, user?: { __typename?: 'User', id: string, firstname?: string | null, lastname?: string | null } | null }> | null } | null };
 
+export type GetCoursesCountsQueryVariables = Exact<{ [key: string]: never; }>;
+
+
+export type GetCoursesCountsQuery = { __typename?: 'Query', inProgress?: number | null, pending?: number | null, completed?: number | null, cancelled?: number | null };
+
+export type GetCoursesCountsByPeriodQueryVariables = Exact<{
+  todayWhere: CourseWhereInput;
+  weekWhere: CourseWhereInput;
+  monthWhere: CourseWhereInput;
+  yearWhere: CourseWhereInput;
+}>;
+
+
+export type GetCoursesCountsByPeriodQuery = { __typename?: 'Query', total?: number | null, today?: number | null, week?: number | null, month?: number | null, year?: number | null };
+
+export type GetCoursesForStatsQueryVariables = Exact<{ [key: string]: never; }>;
+
+
+export type GetCoursesForStatsQuery = { __typename?: 'Query', courses?: Array<{ __typename?: 'Course', id: string, distance?: number | null, createdAt?: any | null, startDatetimeUtc?: any | null }> | null };
+
 export type UpdateUserMutationVariables = Exact<{
   where: UserWhereUniqueInput;
   data: UserUpdateInput;
@@ -4809,6 +4829,104 @@ useGetUserQuery.getKey = (variables: GetUserQueryVariables) => ['GetUser', varia
 
 
 useGetUserQuery.fetcher = (variables: GetUserQueryVariables, options?: RequestInit['headers']) => graphqlClient<GetUserQuery, GetUserQueryVariables>(GetUserDocument, variables, options);
+
+export const GetCoursesCountsDocument = `
+    query GetCoursesCounts {
+  inProgress: coursesCount(where: {state: {equals: "in_progress"}})
+  pending: coursesCount(where: {state: {equals: "pending"}})
+  completed: coursesCount(where: {state: {equals: "completed"}})
+  cancelled: coursesCount(where: {state: {equals: "cancelled"}})
+}
+    `;
+
+export const useGetCoursesCountsQuery = <
+      TData = GetCoursesCountsQuery,
+      TError = unknown
+    >(
+      variables?: GetCoursesCountsQueryVariables,
+      options?: Omit<UseQueryOptions<GetCoursesCountsQuery, TError, TData>, 'queryKey'> & { queryKey?: UseQueryOptions<GetCoursesCountsQuery, TError, TData>['queryKey'] }
+    ) => {
+    
+    return useQuery<GetCoursesCountsQuery, TError, TData>(
+      {
+    queryKey: variables === undefined ? ['GetCoursesCounts'] : ['GetCoursesCounts', variables],
+    queryFn: graphqlClient<GetCoursesCountsQuery, GetCoursesCountsQueryVariables>(GetCoursesCountsDocument, variables),
+    ...options
+  }
+    )};
+
+useGetCoursesCountsQuery.getKey = (variables?: GetCoursesCountsQueryVariables) => variables === undefined ? ['GetCoursesCounts'] : ['GetCoursesCounts', variables];
+
+
+useGetCoursesCountsQuery.fetcher = (variables?: GetCoursesCountsQueryVariables, options?: RequestInit['headers']) => graphqlClient<GetCoursesCountsQuery, GetCoursesCountsQueryVariables>(GetCoursesCountsDocument, variables, options);
+
+export const GetCoursesCountsByPeriodDocument = `
+    query GetCoursesCountsByPeriod($todayWhere: CourseWhereInput!, $weekWhere: CourseWhereInput!, $monthWhere: CourseWhereInput!, $yearWhere: CourseWhereInput!) {
+  total: coursesCount
+  today: coursesCount(where: $todayWhere)
+  week: coursesCount(where: $weekWhere)
+  month: coursesCount(where: $monthWhere)
+  year: coursesCount(where: $yearWhere)
+}
+    `;
+
+export const useGetCoursesCountsByPeriodQuery = <
+      TData = GetCoursesCountsByPeriodQuery,
+      TError = unknown
+    >(
+      variables: GetCoursesCountsByPeriodQueryVariables,
+      options?: Omit<UseQueryOptions<GetCoursesCountsByPeriodQuery, TError, TData>, 'queryKey'> & { queryKey?: UseQueryOptions<GetCoursesCountsByPeriodQuery, TError, TData>['queryKey'] }
+    ) => {
+    
+    return useQuery<GetCoursesCountsByPeriodQuery, TError, TData>(
+      {
+    queryKey: ['GetCoursesCountsByPeriod', variables],
+    queryFn: graphqlClient<GetCoursesCountsByPeriodQuery, GetCoursesCountsByPeriodQueryVariables>(GetCoursesCountsByPeriodDocument, variables),
+    ...options
+  }
+    )};
+
+useGetCoursesCountsByPeriodQuery.getKey = (variables: GetCoursesCountsByPeriodQueryVariables) => ['GetCoursesCountsByPeriod', variables];
+
+
+useGetCoursesCountsByPeriodQuery.fetcher = (variables: GetCoursesCountsByPeriodQueryVariables, options?: RequestInit['headers']) => graphqlClient<GetCoursesCountsByPeriodQuery, GetCoursesCountsByPeriodQueryVariables>(GetCoursesCountsByPeriodDocument, variables, options);
+
+export const GetCoursesForStatsDocument = `
+    query GetCoursesForStats {
+  courses(
+    where: {state: {equals: "completed"}}
+    orderBy: [{createdAt: desc}]
+    take: 500
+    skip: 0
+  ) {
+    id
+    distance
+    createdAt
+    startDatetimeUtc
+  }
+}
+    `;
+
+export const useGetCoursesForStatsQuery = <
+      TData = GetCoursesForStatsQuery,
+      TError = unknown
+    >(
+      variables?: GetCoursesForStatsQueryVariables,
+      options?: Omit<UseQueryOptions<GetCoursesForStatsQuery, TError, TData>, 'queryKey'> & { queryKey?: UseQueryOptions<GetCoursesForStatsQuery, TError, TData>['queryKey'] }
+    ) => {
+    
+    return useQuery<GetCoursesForStatsQuery, TError, TData>(
+      {
+    queryKey: variables === undefined ? ['GetCoursesForStats'] : ['GetCoursesForStats', variables],
+    queryFn: graphqlClient<GetCoursesForStatsQuery, GetCoursesForStatsQueryVariables>(GetCoursesForStatsDocument, variables),
+    ...options
+  }
+    )};
+
+useGetCoursesForStatsQuery.getKey = (variables?: GetCoursesForStatsQueryVariables) => variables === undefined ? ['GetCoursesForStats'] : ['GetCoursesForStats', variables];
+
+
+useGetCoursesForStatsQuery.fetcher = (variables?: GetCoursesForStatsQueryVariables, options?: RequestInit['headers']) => graphqlClient<GetCoursesForStatsQuery, GetCoursesForStatsQueryVariables>(GetCoursesForStatsDocument, variables, options);
 
 export const UpdateUserDocument = `
     mutation UpdateUser($where: UserWhereUniqueInput!, $data: UserUpdateInput!) {

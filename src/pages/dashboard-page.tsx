@@ -11,6 +11,12 @@ import {
   CalendarRangeIcon,
   StarIcon,
   FileTextIcon,
+  PlayIcon,
+  ClockIcon,
+  XCircleIcon,
+  RouteIcon,
+  TimerIcon,
+  HashIcon,
 } from "lucide-react"
 import { Skeleton } from "@/components"
 import {
@@ -18,9 +24,12 @@ import {
   useGetUsersCountsQuery,
   useGetDriversAverageRatingQuery,
   useGetUsersQuery,
+  useGetCoursesCountsQuery,
+  useGetCoursesCountsByPeriodQuery,
+  useGetCoursesForStatsQuery,
 } from "@/gql/generated"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
-import { getDateWheres } from "@/lib/date"
+import { getDateWheres, getDateBoundaries } from "@/lib/date"
 
 function StatCard({
   title,
@@ -106,6 +115,58 @@ export function DashboardPage() {
     return count
   }, [driversListData])
 
+  // --- Courses ---
+  const { data: coursesCountsData, isLoading: coursesCountsLoading } =
+    useGetCoursesCountsQuery({})
+
+  const dateBoundaries = useMemo(() => getDateBoundaries(), [])
+  const { data: coursesByPeriodData, isLoading: coursesByPeriodLoading } =
+    useGetCoursesCountsByPeriodQuery({
+      todayWhere: { createdAt: { gte: dateBoundaries.todayISO } },
+      weekWhere: { createdAt: { gte: dateBoundaries.weekISO } },
+      monthWhere: { createdAt: { gte: dateBoundaries.monthISO } },
+      yearWhere: { createdAt: { gte: dateBoundaries.yearISO } },
+    })
+
+  // TODO: La distance moyenne et le temps moyen d'acceptation devraient
+  // être calculés côté back via une route custom pour éviter de fetch
+  // toutes les courses côté client.
+  const { data: coursesStatsData, isLoading: coursesStatsLoading } =
+    useGetCoursesForStatsQuery({})
+
+  const avgDistance = useMemo(() => {
+    const courses = coursesStatsData?.courses?.filter(
+      (c) => c.distance != null && c.distance > 0
+    )
+    if (!courses?.length) return "—"
+    const avg =
+      courses.reduce((sum, c) => sum + (c.distance ?? 0), 0) / courses.length
+    return `${(avg / 1000).toFixed(1)} km`
+  }, [coursesStatsData])
+
+  const avgAcceptanceTime = useMemo(() => {
+    const courses = coursesStatsData?.courses?.filter(
+      (c) => c.createdAt && c.startDatetimeUtc
+    )
+    if (!courses?.length) return "—"
+    let totalMs = 0
+    let count = 0
+    for (const c of courses) {
+      const created = new Date(c.createdAt).getTime()
+      const started = new Date(c.startDatetimeUtc).getTime()
+      const diff = started - created
+      if (diff > 0) {
+        totalMs += diff
+        count++
+      }
+    }
+    if (!count) return "—"
+    const avgMin = totalMs / count / 1000 / 60
+    if (avgMin < 1) return `${Math.round(avgMin * 60)}s`
+    if (avgMin < 60) return `${avgMin.toFixed(0)} min`
+    return `${(avgMin / 60).toFixed(1)}h`
+  }, [coursesStatsData])
+
   return (
     <div className="space-y-6">
       <div>
@@ -190,6 +251,92 @@ export function DashboardPage() {
             icon={StarIcon}
             iconClassName="text-yellow-500"
             isLoading={driversLoading}
+          />
+        </div>
+      </div>
+
+      <div>
+        <h2 className="mb-3 text-lg font-semibold">Courses — par statut</h2>
+        <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+          <StatCard
+            title="En cours"
+            value={coursesCountsData?.inProgress ?? 0}
+            icon={PlayIcon}
+            iconClassName="text-blue-500"
+            isLoading={coursesCountsLoading}
+          />
+          <StatCard
+            title="En attente"
+            value={coursesCountsData?.pending ?? 0}
+            icon={ClockIcon}
+            iconClassName="text-yellow-500"
+            isLoading={coursesCountsLoading}
+          />
+          <StatCard
+            title="Terminées"
+            value={coursesCountsData?.completed ?? 0}
+            icon={CircleCheckIcon}
+            iconClassName="text-primary"
+            isLoading={coursesCountsLoading}
+          />
+          <StatCard
+            title="Annulées"
+            value={coursesCountsData?.cancelled ?? 0}
+            icon={XCircleIcon}
+            iconClassName="text-destructive"
+            isLoading={coursesCountsLoading}
+          />
+        </div>
+      </div>
+
+      <div>
+        <h2 className="mb-3 text-lg font-semibold">Courses — par période</h2>
+        <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-5">
+          <StatCard
+            title="Aujourd'hui"
+            value={coursesByPeriodData?.today ?? 0}
+            icon={CalendarIcon}
+            isLoading={coursesByPeriodLoading}
+          />
+          <StatCard
+            title="Cette semaine"
+            value={coursesByPeriodData?.week ?? 0}
+            icon={CalendarDaysIcon}
+            isLoading={coursesByPeriodLoading}
+          />
+          <StatCard
+            title="Ce mois"
+            value={coursesByPeriodData?.month ?? 0}
+            icon={CalendarRangeIcon}
+            isLoading={coursesByPeriodLoading}
+          />
+          <StatCard
+            title="Cette année"
+            value={coursesByPeriodData?.year ?? 0}
+            icon={HashIcon}
+            isLoading={coursesByPeriodLoading}
+          />
+          <StatCard
+            title="Total"
+            value={coursesByPeriodData?.total ?? 0}
+            icon={RouteIcon}
+            isLoading={coursesByPeriodLoading}
+          />
+        </div>
+        <div className="mt-4 grid gap-4 sm:grid-cols-2">
+          <StatCard
+            title="Distance moyenne par course"
+            value={avgDistance}
+            icon={RouteIcon}
+            iconClassName="text-blue-500"
+            isLoading={coursesStatsLoading}
+          />
+          <StatCard
+            title="Temps moyen d'acceptation"
+            value={avgAcceptanceTime}
+            icon={TimerIcon}
+            iconClassName="text-yellow-500"
+            isLoading={coursesStatsLoading}
           />
         </div>
       </div>

@@ -282,6 +282,52 @@ export const GetUser = /* GraphQL */ `
   }
 `
 
+// TODO: Les valeurs de state des courses (pending, in_progress, completed, cancelled)
+// doivent être vérifiées côté back quand l'API sera de nouveau opérationnelle.
+// Ajuster les filtres ci-dessous si les valeurs diffèrent.
+export const GetCoursesCounts = /* GraphQL */ `
+  query GetCoursesCounts {
+    inProgress: coursesCount(where: { state: { equals: "in_progress" } })
+    pending: coursesCount(where: { state: { equals: "pending" } })
+    completed: coursesCount(where: { state: { equals: "completed" } })
+    cancelled: coursesCount(where: { state: { equals: "cancelled" } })
+  }
+`
+
+export const GetCoursesCountsByPeriod = /* GraphQL */ `
+  query GetCoursesCountsByPeriod(
+    $todayWhere: CourseWhereInput!
+    $weekWhere: CourseWhereInput!
+    $monthWhere: CourseWhereInput!
+    $yearWhere: CourseWhereInput!
+  ) {
+    total: coursesCount
+    today: coursesCount(where: $todayWhere)
+    week: coursesCount(where: $weekWhere)
+    month: coursesCount(where: $monthWhere)
+    year: coursesCount(where: $yearWhere)
+  }
+`
+
+// TODO: Idéalement, la distance moyenne et le temps moyen d'acceptation
+// devraient être calculés côté back via une route custom / un champ computed
+// pour éviter de fetch toutes les courses côté client.
+export const GetCoursesForStats = /* GraphQL */ `
+  query GetCoursesForStats {
+    courses(
+      where: { state: { equals: "completed" } }
+      orderBy: [{ createdAt: desc }]
+      take: 500
+      skip: 0
+    ) {
+      id
+      distance
+      createdAt
+      startDatetimeUtc
+    }
+  }
+`
+
 export const UpdateUser = /* GraphQL */ `
   mutation UpdateUser($where: UserWhereUniqueInput!, $data: UserUpdateInput!) {
     updateUser(where: $where, data: $data) {
