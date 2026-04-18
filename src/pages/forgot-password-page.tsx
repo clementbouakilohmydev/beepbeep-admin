@@ -1,14 +1,7 @@
 import { useState } from "react"
 import { Link } from "react-router-dom"
 import { toast } from "sonner"
-import {
-  Button,
-  Field,
-  FieldGroup,
-  FieldLabel,
-  Input,
-  Spinner,
-} from "@/components"
+import { Button, Field, FieldGroup, FieldLabel, Input, Spinner } from "@/components/ui"
 import { useResetPasswordMutation } from "@/gql/generated"
 
 export function ForgotPasswordPage() {

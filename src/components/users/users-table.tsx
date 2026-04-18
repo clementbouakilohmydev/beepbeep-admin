@@ -1,5 +1,4 @@
-import { useNavigate } from "react-router-dom"
-import { CircleAlertIcon } from "lucide-react"
+import { CircleAlertIcon, StarIcon } from "lucide-react"
 import {
   Table,
   TableBody,
@@ -27,6 +26,7 @@ type UsersTableProps = {
   isLoading: boolean
   isStale: boolean
   skeletonCount: number
+  onUserClick: (userId: string) => void
 }
 
 function getPendingDocsCount(user: User) {
@@ -45,32 +45,37 @@ export function UsersTable({
   isLoading,
   isStale,
   skeletonCount,
+  onUserClick,
 }: UsersTableProps) {
-  const navigate = useNavigate()
-
   return (
-    <div className={isStale ? "opacity-60 transition-opacity" : ""}>
+    <div
+      className={`overflow-x-auto ${isStale ? "opacity-60 transition-opacity" : ""}`}
+    >
       <Table>
         <TableHeader>
           <TableRow>
             <TableHead>Prénom</TableHead>
             <TableHead>Nom</TableHead>
-            <TableHead>Email</TableHead>
+            <TableHead className="hidden sm:table-cell">Email</TableHead>
             <TableHead>Type</TableHead>
             <TableHead>Statut</TableHead>
             <TableHead>Documents</TableHead>
-            <TableHead>Inscription</TableHead>
+            <TableHead className="hidden sm:table-cell">Note</TableHead>
+            <TableHead className="hidden md:table-cell">Inscription</TableHead>
           </TableRow>
         </TableHeader>
         <TableBody>
           {isLoading
             ? Array.from({ length: skeletonCount }).map((_, i) => (
                 <TableRow key={i}>
-                  {Array.from({ length: 7 }).map((_, j) => (
-                    <TableCell key={j}>
-                      <Skeleton className="h-5 w-24" />
-                    </TableCell>
-                  ))}
+                  <TableCell><Skeleton className="h-5 w-20" /></TableCell>
+                  <TableCell><Skeleton className="h-5 w-20" /></TableCell>
+                  <TableCell className="hidden sm:table-cell"><Skeleton className="h-5 w-32" /></TableCell>
+                  <TableCell><Skeleton className="h-5 w-20" /></TableCell>
+                  <TableCell><Skeleton className="h-5 w-16" /></TableCell>
+                  <TableCell><Skeleton className="h-5 w-24" /></TableCell>
+                  <TableCell className="hidden sm:table-cell"><Skeleton className="h-5 w-12" /></TableCell>
+                  <TableCell className="hidden md:table-cell"><Skeleton className="h-5 w-20" /></TableCell>
                 </TableRow>
               ))
             : users?.map((user) => {
@@ -79,13 +84,13 @@ export function UsersTable({
                   <TableRow
                     key={user.id}
                     className="cursor-pointer"
-                    onClick={() => navigate(`/users/${user.id}`)}
+                    onClick={() => onUserClick(user.id)}
                   >
                     <TableCell className="font-medium">
                       {user.firstname ?? "—"}
                     </TableCell>
                     <TableCell>{user.lastname ?? "—"}</TableCell>
-                    <TableCell className="text-muted-foreground">
+                    <TableCell className="hidden text-muted-foreground sm:table-cell">
                       {user.email ?? "—"}
                     </TableCell>
                     <TableCell>
@@ -121,7 +126,19 @@ export function UsersTable({
                         <span className="text-muted-foreground">—</span>
                       )}
                     </TableCell>
-                    <TableCell className="text-muted-foreground">
+                    <TableCell className="hidden sm:table-cell">
+                      {user.averageRate != null && user.averageRate > 0 ? (
+                        <div className="flex items-center gap-1">
+                          <StarIcon className="size-3 fill-yellow-400 text-yellow-400" />
+                          <span className="text-sm">
+                            {user.averageRate.toFixed(1)}
+                          </span>
+                        </div>
+                      ) : (
+                        <span className="text-muted-foreground">—</span>
+                      )}
+                    </TableCell>
+                    <TableCell className="hidden text-muted-foreground md:table-cell">
                       {formatDate(user.createdAt)}
                     </TableCell>
                   </TableRow>
@@ -129,7 +146,7 @@ export function UsersTable({
               })}
           {!isLoading && !users?.length && (
             <TableRow>
-              <TableCell colSpan={7} className="h-24 text-center">
+              <TableCell colSpan={8} className="h-24 text-center">
                 Aucun utilisateur trouvé
               </TableCell>
             </TableRow>

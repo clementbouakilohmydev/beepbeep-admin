@@ -1,4 +1,6 @@
-const API_URL = "https://api.beepbeepcity-pp.aleygues.fr/ks/api"
+import { SESSION_TOKEN_KEY } from "@/lib/constants"
+
+const API_URL = import.meta.env.VITE_API_URL || "https://api.beepbeepcity-pp.aleygues.fr/ks/api"
 
 const AUTH_ERROR_EVENT = "auth:expired"
 
@@ -29,11 +31,11 @@ export function graphqlClient<
   return async () => {
     const response = await fetch(API_URL, {
       method: "POST",
-      credentials: "include",
+
       headers: {
         "Content-Type": "application/json",
-        ...(localStorage.getItem("session-token")
-          ? { Authorization: `Bearer ${localStorage.getItem("session-token")}` }
+        ...(localStorage.getItem(SESSION_TOKEN_KEY)
+          ? { Authorization: `Bearer ${localStorage.getItem(SESSION_TOKEN_KEY)}` }
           : {}),
         ...(headers as Record<string, string>),
       },
@@ -43,13 +45,15 @@ export function graphqlClient<
     const json = await response.json()
 
     if (json.errors) {
-      if (localStorage.getItem("session-token") && isAuthError(json.errors)) {
+      if (localStorage.getItem(SESSION_TOKEN_KEY) && isAuthError(json.errors)) {
         window.dispatchEvent(new Event(AUTH_ERROR_EVENT))
       }
 
       const message = json.errors[0]?.message || "Erreur GraphQL"
       throw new Error(message)
     }
+
+    if (!json.data) throw new Error("Unexpected API response: missing data")
 
     return json.data
   }

@@ -1,25 +1,33 @@
-import { useEffect, useMemo, useState } from "react"
-import { useSearchParams } from "react-router-dom"
+import { useState } from "react"
 import type { DateRange } from "react-day-picker"
 import { keepPreviousData } from "@tanstack/react-query"
+import { CircleAlertIcon, CircleCheckIcon } from "lucide-react"
 import {
-  SendMessageDialog,
   TicketFilters,
   TicketsTable,
+  TicketDetailSheet,
+} from "@/components/tickets"
+import { SendMessageDialog } from "@/components/dialogs/send-message-dialog"
+import {
   Pagination,
   PaginationContent,
   PaginationItem,
   PaginationNext,
   PaginationPrevious,
-} from "@/components"
-import type { Filter } from "@/components"
-import { useDebounce, useUpdateTicket } from "@/hooks"
+} from "@/components/ui"
+import { StatCard } from "@/components/shared/stat-card"
+import { ErrorState } from "@/components/shared/error-state"
+import { usePagedSearchParams, useUpdateTicket } from "@/hooks"
 import { useGetTicketsQuery, useGetTicketsCountsQuery } from "@/gql/generated"
-
-const PAGE_SIZE = 10
+import {
+  parseTicketFilter,
+  ORDER_BY_NEWEST,
+  PAGE_SIZE,
+  type TicketFilter,
+} from "@/lib/constants"
 
 function getWhereClause(
-  filter: Filter,
+  filter: TicketFilter,
   dateRange?: DateRange,
   search?: string
 ) {
@@ -51,13 +59,20 @@ function getWhereClause(
 }
 
 export function TicketsPage() {
-  const [searchParams, setSearchParams] = useSearchParams()
-  const filter = (searchParams.get("filter") as Filter) || "all"
-  const page = Number(searchParams.get("page") || "1")
+  const {
+    searchParams,
+    page,
+    search,
+    debouncedSearch,
+    updateParams,
+    setPage,
+    handleSearchChange,
+  } = usePagedSearchParams()
+
+  const filter = parseTicketFilter(searchParams.get("filter"))
+  const ticketId = searchParams.get("ticketId")
 
   const [dateRange, setDateRange] = useState<DateRange | undefined>()
-  const [search, setSearch] = useState("")
-  const debouncedSearch = useDebounce(search)
   const [messageDialog, setMessageDialog] = useState<{
     open: boolean
     email: string
@@ -66,83 +81,87 @@ export function TicketsPage() {
 
   const { toggleSolved } = useUpdateTicket()
 
-  const setFilter = (newFilter: Filter) => {
-    const params = new URLSearchParams(searchParams)
-    if (newFilter === "all") {
-      params.delete("filter")
-    } else {
-      params.set("filter", newFilter)
-    }
-    params.delete("page")
-    setSearchParams(params, { replace: true })
+  const handleFilterChange = (newFilter: TicketFilter) => {
+    updateParams(
+      { filter: newFilter === "all" ? null : newFilter },
+      true
+    )
   }
-
-  const setPage = (newPage: number) => {
-    const params = new URLSearchParams(searchParams)
-    if (newPage <= 1) {
-      params.delete("page")
-    } else {
-      params.set("page", String(newPage))
-    }
-    setSearchParams(params, { replace: true })
-  }
-
-  useEffect(() => {
-    if (page > 1) {
-      const params = new URLSearchParams(searchParams)
-      params.delete("page")
-      setSearchParams(params, { replace: true })
-    }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [debouncedSearch])
-
-  const whereClause = useMemo(
-    () => getWhereClause(filter, dateRange, debouncedSearch),
-    [filter, dateRange, debouncedSearch]
-  )
-
-  const { data, isLoading, isPlaceholderData } = useGetTicketsQuery(
-    {
-      where: whereClause,
-      orderBy: [{ createdAt: "desc" as const }],
-      take: PAGE_SIZE,
-      skip: (page - 1) * PAGE_SIZE,
-    },
-    { placeholderData: keepPreviousData }
-  )
-
-  const { data: countsData } = useGetTicketsCountsQuery({})
-
-  const totalCount = data?.ticketsCount ?? 0
-  const totalPages = Math.max(1, Math.ceil(totalCount / PAGE_SIZE))
 
   const handleDateRangeChange = (range: DateRange | undefined) => {
     setDateRange(range)
-    const params = new URLSearchParams(searchParams)
-    params.delete("page")
-    setSearchParams(params, { replace: true })
+    if (page > 1) {
+      updateParams({ page: null })
+    }
+  }
+
+  const handleTicketClick = (id: string) => {
+    updateParams({ ticketId: id })
+  }
+
+  const handleCloseSheet = () => {
+    updateParams({ ticketId: null })
   }
 
   const handleSendMessage = (email: string, name: string) => {
     setMessageDialog({ open: true, email, name })
   }
 
+  const whereClause = getWhereClause(filter, dateRange, debouncedSearch)
+
+  const { data, isLoading, isError, refetch, isPlaceholderData } = useGetTicketsQuery(
+    {
+      where: whereClause,
+      orderBy: ORDER_BY_NEWEST,
+      take: PAGE_SIZE,
+      skip: (page - 1) * PAGE_SIZE,
+    },
+    { placeholderData: keepPreviousData }
+  )
+
+  const { data: countsData, isLoading: countsLoading } =
+    useGetTicketsCountsQuery({})
+
+  const totalCount = data?.ticketsCount ?? 0
+  const totalPages = Math.max(1, Math.ceil(totalCount / PAGE_SIZE))
+
+  if (isError && !isLoading) {
+    return <ErrorState onRetry={refetch} />
+  }
+
   return (
     <div className="space-y-6">
       <div>
-        <h1 className="text-2xl font-bold">Tickets</h1>
+        <h1 className="text-2xl font-bold">Support</h1>
         <p className="text-sm text-muted-foreground">
           Gérez les tickets de support
         </p>
       </div>
 
+      <div className="grid grid-cols-2 gap-3 sm:gap-4">
+        <StatCard
+          title="À traiter"
+          value={countsData?.pending ?? 0}
+          icon={CircleAlertIcon}
+          iconClassName="text-destructive"
+          isLoading={countsLoading}
+        />
+        <StatCard
+          title="Traités"
+          value={countsData?.solved ?? 0}
+          icon={CircleCheckIcon}
+          iconClassName="text-primary"
+          isLoading={countsLoading}
+        />
+      </div>
+
       <TicketFilters
         filter={filter}
-        onFilterChange={setFilter}
+        onFilterChange={handleFilterChange}
         dateRange={dateRange}
         onDateRangeChange={handleDateRangeChange}
         search={search}
-        onSearchChange={setSearch}
+        onSearchChange={handleSearchChange}
         counts={countsData}
       />
 
@@ -153,6 +172,7 @@ export function TicketsPage() {
         skeletonCount={PAGE_SIZE}
         onToggleSolved={toggleSolved}
         onSendMessage={handleSendMessage}
+        onTicketClick={handleTicketClick}
       />
 
       {totalPages > 1 && (
@@ -189,6 +209,11 @@ export function TicketsPage() {
           </Pagination>
         </div>
       )}
+
+      <TicketDetailSheet
+        ticketId={ticketId}
+        onClose={handleCloseSheet}
+      />
 
       <SendMessageDialog
         open={messageDialog.open}

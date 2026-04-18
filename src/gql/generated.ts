@@ -4218,7 +4218,7 @@ export type GetUsersQueryVariables = Exact<{
 }>;
 
 
-export type GetUsersQuery = { __typename?: 'Query', usersCount?: number | null, users?: Array<{ __typename?: 'User', id: string, email?: string | null, firstname?: string | null, lastname?: string | null, type?: string | null, isAdmin?: boolean | null, enabled?: boolean | null, phoneNumber?: string | null, createdAt?: any | null, drivingLicense?: { __typename?: 'DrivingLicense', id: string, state?: string | null } | null, insurance?: { __typename?: 'Insurance', id: string, state?: string | null } | null, registrationDocument?: { __typename?: 'RegistrationDocument', id: string, state?: string | null } | null, certificate?: { __typename?: 'Certificate', id: string, state?: string | null } | null }> | null };
+export type GetUsersQuery = { __typename?: 'Query', usersCount?: number | null, users?: Array<{ __typename?: 'User', id: string, email?: string | null, firstname?: string | null, lastname?: string | null, type?: string | null, isAdmin?: boolean | null, enabled?: boolean | null, phoneNumber?: string | null, createdAt?: any | null, averageRate?: number | null, ratingsCount?: number | null, drivingLicense?: { __typename?: 'DrivingLicense', id: string, state?: string | null } | null, insurance?: { __typename?: 'Insurance', id: string, state?: string | null } | null, registrationDocument?: { __typename?: 'RegistrationDocument', id: string, state?: string | null } | null, certificate?: { __typename?: 'Certificate', id: string, state?: string | null } | null }> | null };
 
 export type GetTicketsQueryVariables = Exact<{
   where: TicketWhereInput;
@@ -4257,7 +4257,7 @@ export type GetUsersCountsQueryVariables = Exact<{
 }>;
 
 
-export type GetUsersCountsQuery = { __typename?: 'Query', total?: number | null, today?: number | null, week?: number | null, month?: number | null, passengers?: number | null, drivers?: number | null };
+export type GetUsersCountsQuery = { __typename?: 'Query', total?: number | null, today?: number | null, week?: number | null, month?: number | null, passengers?: number | null, drivers?: number | null, active?: number | null, blocked?: number | null };
 
 export type GetDriversAverageRatingQueryVariables = Exact<{ [key: string]: never; }>;
 
@@ -4289,7 +4289,21 @@ export type GetCoursesCountsByPeriodQuery = { __typename?: 'Query', total?: numb
 export type GetCoursesForStatsQueryVariables = Exact<{ [key: string]: never; }>;
 
 
-export type GetCoursesForStatsQuery = { __typename?: 'Query', courses?: Array<{ __typename?: 'Course', id: string, distance?: number | null, createdAt?: any | null, startDatetimeUtc?: any | null }> | null };
+export type GetCoursesForStatsQuery = { __typename?: 'Query', courses?: Array<{ __typename?: 'Course', id: string, distance?: number | null, duration?: number | null, price?: number | null, fees?: number | null, createdAt?: any | null, startDatetimeUtc?: any | null, endDatetimeUtc?: any | null }> | null };
+
+export type GetRecentUsersQueryVariables = Exact<{
+  where: UserWhereInput;
+}>;
+
+
+export type GetRecentUsersQuery = { __typename?: 'Query', users?: Array<{ __typename?: 'User', id: string, createdAt?: any | null }> | null };
+
+export type GetRecentCoursesQueryVariables = Exact<{
+  where: CourseWhereInput;
+}>;
+
+
+export type GetRecentCoursesQuery = { __typename?: 'Query', courses?: Array<{ __typename?: 'Course', id: string, createdAt?: any | null }> | null };
 
 export type UpdateUserMutationVariables = Exact<{
   where: UserWhereUniqueInput;
@@ -4478,6 +4492,8 @@ export const GetUsersDocument = `
       id
       state
     }
+    averageRate
+    ratingsCount
   }
   usersCount(where: $where)
 }
@@ -4655,6 +4671,8 @@ export const GetUsersCountsDocument = `
     where: {type: {equals: "passenger"}, isAdmin: {equals: false}}
   )
   drivers: usersCount(where: {type: {equals: "driver"}, isAdmin: {equals: false}})
+  active: usersCount(where: {enabled: {equals: true}, isAdmin: {equals: false}})
+  blocked: usersCount(where: {enabled: {equals: false}, isAdmin: {equals: false}})
 }
     `;
 
@@ -4901,8 +4919,12 @@ export const GetCoursesForStatsDocument = `
   ) {
     id
     distance
+    duration
+    price
+    fees
     createdAt
     startDatetimeUtc
+    endDatetimeUtc
   }
 }
     `;
@@ -4927,6 +4949,66 @@ useGetCoursesForStatsQuery.getKey = (variables?: GetCoursesForStatsQueryVariable
 
 
 useGetCoursesForStatsQuery.fetcher = (variables?: GetCoursesForStatsQueryVariables, options?: RequestInit['headers']) => graphqlClient<GetCoursesForStatsQuery, GetCoursesForStatsQueryVariables>(GetCoursesForStatsDocument, variables, options);
+
+export const GetRecentUsersDocument = `
+    query GetRecentUsers($where: UserWhereInput!) {
+  users(where: $where, orderBy: [{createdAt: asc}], take: 1000, skip: 0) {
+    id
+    createdAt
+  }
+}
+    `;
+
+export const useGetRecentUsersQuery = <
+      TData = GetRecentUsersQuery,
+      TError = unknown
+    >(
+      variables: GetRecentUsersQueryVariables,
+      options?: Omit<UseQueryOptions<GetRecentUsersQuery, TError, TData>, 'queryKey'> & { queryKey?: UseQueryOptions<GetRecentUsersQuery, TError, TData>['queryKey'] }
+    ) => {
+    
+    return useQuery<GetRecentUsersQuery, TError, TData>(
+      {
+    queryKey: ['GetRecentUsers', variables],
+    queryFn: graphqlClient<GetRecentUsersQuery, GetRecentUsersQueryVariables>(GetRecentUsersDocument, variables),
+    ...options
+  }
+    )};
+
+useGetRecentUsersQuery.getKey = (variables: GetRecentUsersQueryVariables) => ['GetRecentUsers', variables];
+
+
+useGetRecentUsersQuery.fetcher = (variables: GetRecentUsersQueryVariables, options?: RequestInit['headers']) => graphqlClient<GetRecentUsersQuery, GetRecentUsersQueryVariables>(GetRecentUsersDocument, variables, options);
+
+export const GetRecentCoursesDocument = `
+    query GetRecentCourses($where: CourseWhereInput!) {
+  courses(where: $where, orderBy: [{createdAt: asc}], take: 1000, skip: 0) {
+    id
+    createdAt
+  }
+}
+    `;
+
+export const useGetRecentCoursesQuery = <
+      TData = GetRecentCoursesQuery,
+      TError = unknown
+    >(
+      variables: GetRecentCoursesQueryVariables,
+      options?: Omit<UseQueryOptions<GetRecentCoursesQuery, TError, TData>, 'queryKey'> & { queryKey?: UseQueryOptions<GetRecentCoursesQuery, TError, TData>['queryKey'] }
+    ) => {
+    
+    return useQuery<GetRecentCoursesQuery, TError, TData>(
+      {
+    queryKey: ['GetRecentCourses', variables],
+    queryFn: graphqlClient<GetRecentCoursesQuery, GetRecentCoursesQueryVariables>(GetRecentCoursesDocument, variables),
+    ...options
+  }
+    )};
+
+useGetRecentCoursesQuery.getKey = (variables: GetRecentCoursesQueryVariables) => ['GetRecentCourses', variables];
+
+
+useGetRecentCoursesQuery.fetcher = (variables: GetRecentCoursesQueryVariables, options?: RequestInit['headers']) => graphqlClient<GetRecentCoursesQuery, GetRecentCoursesQueryVariables>(GetRecentCoursesDocument, variables, options);
 
 export const UpdateUserDocument = `
     mutation UpdateUser($where: UserWhereUniqueInput!, $data: UserUpdateInput!) {

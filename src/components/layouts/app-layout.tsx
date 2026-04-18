@@ -4,6 +4,8 @@ import {
   TicketIcon,
   UsersIcon,
   FileTextIcon,
+  BarChart3Icon,
+  WalletIcon,
   LogOutIcon,
 } from "lucide-react"
 import { useAuth } from "@/hooks"
@@ -29,6 +31,8 @@ const NAV_ITEMS = [
   { to: "/tickets", label: "Tickets", icon: TicketIcon },
   { to: "/users", label: "Utilisateurs", icon: UsersIcon },
   { to: "/documents", label: "Documents", icon: FileTextIcon },
+  { to: "/performance", label: "Performance", icon: BarChart3Icon },
+  { to: "/finance", label: "Finances", icon: WalletIcon },
 ]
 
 export function AppLayout() {

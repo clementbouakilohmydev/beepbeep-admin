@@ -1,6 +1,5 @@
-import { useNavigate } from "react-router-dom"
 import type { GetTicketsQuery } from "@/gql/generated"
-import { formatDate, getUserDisplay } from "@/lib"
+import { formatDate, getUserDisplay } from "@/lib/format"
 import { Skeleton } from "@/components/ui/skeleton"
 import { TicketStatusBadge } from "./ticket-status-badge"
 import { TicketActions } from "./ticket-actions"
@@ -23,6 +22,7 @@ type TicketsTableProps = {
     currentSolved: boolean | null | undefined
   ) => void
   onSendMessage: (email: string, name: string) => void
+  onTicketClick: (ticketId: string) => void
 }
 
 export function TicketsTable({
@@ -32,19 +32,20 @@ export function TicketsTable({
   skeletonCount,
   onToggleSolved,
   onSendMessage,
+  onTicketClick,
 }: TicketsTableProps) {
-  const navigate = useNavigate()
-
   return (
-    <div className={`rounded-lg border ${isStale ? "opacity-60" : ""}`}>
+    <div
+      className={`overflow-x-auto rounded-lg border ${isStale ? "opacity-60 transition-opacity" : ""}`}
+    >
       <Table>
         <TableHeader>
           <TableRow>
             <TableHead>Objet</TableHead>
-            <TableHead>Description</TableHead>
+            <TableHead className="hidden md:table-cell">Description</TableHead>
             <TableHead>Utilisateur</TableHead>
             <TableHead>Statut</TableHead>
-            <TableHead>Date</TableHead>
+            <TableHead className="hidden sm:table-cell">Date</TableHead>
             <TableHead className="w-12" />
           </TableRow>
         </TableHeader>
@@ -52,24 +53,12 @@ export function TicketsTable({
           {isLoading ? (
             Array.from({ length: skeletonCount }).map((_, i) => (
               <TableRow key={i}>
-                <TableCell>
-                  <Skeleton className="h-4 w-24" />
-                </TableCell>
-                <TableCell>
-                  <Skeleton className="h-4 w-48" />
-                </TableCell>
-                <TableCell>
-                  <Skeleton className="h-4 w-32" />
-                </TableCell>
-                <TableCell>
-                  <Skeleton className="h-5 w-16 rounded-full" />
-                </TableCell>
-                <TableCell>
-                  <Skeleton className="h-4 w-28" />
-                </TableCell>
-                <TableCell>
-                  <Skeleton className="h-8 w-8 rounded-md" />
-                </TableCell>
+                <TableCell><Skeleton className="h-4 w-24" /></TableCell>
+                <TableCell className="hidden md:table-cell"><Skeleton className="h-4 w-48" /></TableCell>
+                <TableCell><Skeleton className="h-4 w-32" /></TableCell>
+                <TableCell><Skeleton className="h-5 w-16 rounded-full" /></TableCell>
+                <TableCell className="hidden sm:table-cell"><Skeleton className="h-4 w-28" /></TableCell>
+                <TableCell><Skeleton className="h-8 w-8 rounded-md" /></TableCell>
               </TableRow>
             ))
           ) : tickets && tickets.length > 0 ? (
@@ -77,19 +66,19 @@ export function TicketsTable({
               <TableRow
                 key={ticket.id}
                 className="cursor-pointer"
-                onClick={() => navigate(`/tickets/${ticket.id}`)}
+                onClick={() => onTicketClick(ticket.id)}
               >
                 <TableCell className="font-medium">
                   {ticket.object?.object ?? "—"}
                 </TableCell>
-                <TableCell className="max-w-[300px] truncate">
+                <TableCell className="hidden max-w-[300px] truncate md:table-cell">
                   {ticket.description ?? "—"}
                 </TableCell>
                 <TableCell>{getUserDisplay(ticket.user)}</TableCell>
                 <TableCell>
                   <TicketStatusBadge solved={ticket.solved} />
                 </TableCell>
-                <TableCell className="text-muted-foreground">
+                <TableCell className="hidden text-muted-foreground sm:table-cell">
                   {formatDate(ticket.createdAt)}
                 </TableCell>
                 <TableCell onClick={(e) => e.stopPropagation()}>

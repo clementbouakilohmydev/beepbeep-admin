@@ -1,4 +1,4 @@
-import { useCallback, useEffect, type ReactNode } from "react"
+import { useEffect, type ReactNode } from "react"
 import { useNavigate } from "react-router-dom"
 import { useQueryClient } from "@tanstack/react-query"
 import { toast } from "sonner"
@@ -8,11 +8,12 @@ import {
 } from "@/gql/generated"
 import { onAuthExpired } from "@/lib"
 import { AuthContext, type AuthUser } from "@/contexts"
+import { SESSION_TOKEN_KEY } from "@/lib/constants"
 
 export function AuthProvider({ children }: { children: ReactNode }) {
   const navigate = useNavigate()
   const queryClient = useQueryClient()
-  const token = localStorage.getItem("session-token")
+  const token = localStorage.getItem(SESSION_TOKEN_KEY)
 
   const { data, isLoading } = useGetAuthenticatedItemQuery(
     {},
@@ -23,26 +24,25 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   const user = (data?.authenticatedItem as AuthUser) ?? null
 
-  const logout = useCallback(() => {
+  const logout = () => {
     endSession(undefined as never, {
       onSettled: () => {
-        localStorage.removeItem("session-token")
+        localStorage.removeItem(SESSION_TOKEN_KEY)
         queryClient.clear()
         navigate("/login")
       },
     })
-  }, [endSession, queryClient, navigate])
-
-  const forceLogout = useCallback(() => {
-    localStorage.removeItem("session-token")
-    queryClient.clear()
-    navigate("/login")
-    toast.error("Votre session a expiré, veuillez vous reconnecter")
-  }, [queryClient, navigate])
+  }
 
   useEffect(() => {
-    return onAuthExpired(forceLogout)
-  }, [forceLogout])
+    const handleExpired = () => {
+      localStorage.removeItem(SESSION_TOKEN_KEY)
+      queryClient.clear()
+      navigate("/login")
+      toast.error("Votre session a expiré, veuillez vous reconnecter")
+    }
+    return onAuthExpired(handleExpired)
+  }, [queryClient, navigate])
 
   return (
     <AuthContext.Provider

@@ -3,15 +3,9 @@ import { Link, Navigate, useNavigate } from "react-router-dom"
 import { useQueryClient } from "@tanstack/react-query"
 import { toast } from "sonner"
 import { useAuth } from "@/hooks"
-import {
-  Button,
-  Field,
-  FieldGroup,
-  FieldLabel,
-  Input,
-  Spinner,
-} from "@/components"
+import { Button, Field, FieldGroup, FieldLabel, Input, Spinner } from "@/components/ui"
 import { useAuthenticateUserWithPasswordMutation } from "@/gql/generated"
+import { SESSION_TOKEN_KEY } from "@/lib/constants"
 
 export function LoginPage() {
   const { isAuthenticated, isLoading } = useAuth()
@@ -34,8 +28,8 @@ export function LoginPage() {
       }
 
       if (result.__typename === "UserAuthenticationWithPasswordSuccess") {
-        localStorage.setItem("session-token", result.sessionToken)
-        queryClient.invalidateQueries()
+        localStorage.setItem(SESSION_TOKEN_KEY, result.sessionToken)
+        queryClient.invalidateQueries({ queryKey: ["GetAuthenticatedItem"] })
         navigate("/")
       }
     },

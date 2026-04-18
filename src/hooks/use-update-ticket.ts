@@ -1,6 +1,7 @@
 import { useQueryClient } from "@tanstack/react-query"
 import { toast } from "sonner"
 import { useUpdateTicketMutation } from "@/gql/generated"
+import type { GetTicketsQuery, GetTicketQuery } from "@/gql/generated"
 
 export function useUpdateTicket() {
   const queryClient = useQueryClient()
@@ -19,15 +20,11 @@ export function useUpdateTicket() {
 
       queryClient.setQueriesData(
         { queryKey: ["GetTickets"] },
-        (old: Record<string, unknown> | undefined) => {
-          if (!old || !Array.isArray((old as { tickets?: unknown[] }).tickets))
-            return old
-          const typedOld = old as {
-            tickets: Array<{ id: string; solved?: boolean | null }>
-          }
+        (old: GetTicketsQuery | undefined) => {
+          if (!old?.tickets) return old
           return {
-            ...typedOld,
-            tickets: typedOld.tickets.map((t) =>
+            ...old,
+            tickets: old.tickets.map((t) =>
               t.id === variables.where.id
                 ? { ...t, solved: variables.data.solved }
                 : t
@@ -38,15 +35,12 @@ export function useUpdateTicket() {
 
       queryClient.setQueriesData(
         { queryKey: ["GetTicket"] },
-        (old: Record<string, unknown> | undefined) => {
-          if (!old || !(old as { ticket?: unknown }).ticket) return old
-          const typedOld = old as {
-            ticket: { id: string; solved?: boolean | null }
-          }
-          if (typedOld.ticket.id === variables.where.id) {
+        (old: GetTicketQuery | undefined) => {
+          if (!old?.ticket) return old
+          if (old.ticket.id === variables.where.id) {
             return {
-              ...typedOld,
-              ticket: { ...typedOld.ticket, solved: variables.data.solved },
+              ...old,
+              ticket: { ...old.ticket, solved: variables.data.solved },
             }
           }
           return old

@@ -79,6 +79,8 @@ export const GetUsers = /* GraphQL */ `
         id
         state
       }
+      averageRate
+      ratingsCount
     }
     usersCount(where: $where)
   }
@@ -169,6 +171,12 @@ export const GetUsersCounts = /* GraphQL */ `
     )
     drivers: usersCount(
       where: { type: { equals: "driver" }, isAdmin: { equals: false } }
+    )
+    active: usersCount(
+      where: { enabled: { equals: true }, isAdmin: { equals: false } }
+    )
+    blocked: usersCount(
+      where: { enabled: { equals: false }, isAdmin: { equals: false } }
     )
   }
 `
@@ -309,9 +317,9 @@ export const GetCoursesCountsByPeriod = /* GraphQL */ `
   }
 `
 
-// TODO: Idéalement, la distance moyenne et le temps moyen d'acceptation
-// devraient être calculés côté back via une route custom / un champ computed
-// pour éviter de fetch toutes les courses côté client.
+// TODO: Idéalement, ces métriques devraient être calculées côté back
+// via une route custom / un champ computed pour éviter de fetch toutes
+// les courses côté client.
 export const GetCoursesForStats = /* GraphQL */ `
   query GetCoursesForStats {
     courses(
@@ -322,8 +330,40 @@ export const GetCoursesForStats = /* GraphQL */ `
     ) {
       id
       distance
+      duration
+      price
+      fees
       createdAt
       startDatetimeUtc
+      endDatetimeUtc
+    }
+  }
+`
+
+export const GetRecentUsers = /* GraphQL */ `
+  query GetRecentUsers($where: UserWhereInput!) {
+    users(
+      where: $where
+      orderBy: [{ createdAt: asc }]
+      take: 1000
+      skip: 0
+    ) {
+      id
+      createdAt
+    }
+  }
+`
+
+export const GetRecentCourses = /* GraphQL */ `
+  query GetRecentCourses($where: CourseWhereInput!) {
+    courses(
+      where: $where
+      orderBy: [{ createdAt: asc }]
+      take: 1000
+      skip: 0
+    ) {
+      id
+      createdAt
     }
   }
 `

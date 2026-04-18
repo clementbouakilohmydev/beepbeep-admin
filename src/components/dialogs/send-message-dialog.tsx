@@ -39,7 +39,7 @@ export function SendMessageDialog({
       await sendEmail({
         to: userEmail,
         subject,
-        html: `<p>${message.replace(/\n/g, "<br />")}</p>`,
+        html: `<p>${message.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/\n/g, "<br />")}</p>`,
       })
       toast.success("Message envoyé avec succès")
       setSubject("")

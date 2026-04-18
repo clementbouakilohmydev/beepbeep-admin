@@ -62,7 +62,15 @@ function resendProxy(): Plugin {
 
 // https://vite.dev/config/
 export default defineConfig({
-  plugins: [react(), tailwindcss(), resendProxy()],
+  plugins: [
+    react({
+      babel: {
+        plugins: [["babel-plugin-react-compiler"]],
+      },
+    }),
+    tailwindcss(),
+    resendProxy(),
+  ],
   resolve: {
     alias: {
       "@": path.resolve(__dirname, "./src"),

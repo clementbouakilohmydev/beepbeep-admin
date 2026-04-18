@@ -1,4 +1,3 @@
-import { useMemo } from "react"
 import { Link } from "react-router-dom"
 import {
   CircleCheckIcon,
@@ -17,8 +16,9 @@ import {
   RouteIcon,
   TimerIcon,
   HashIcon,
+  ShieldBanIcon,
 } from "lucide-react"
-import { Skeleton } from "@/components"
+import { Skeleton } from "@/components/ui"
 import {
   useGetTicketsCountsQuery,
   useGetUsersCountsQuery,
@@ -28,67 +28,69 @@ import {
   useGetCoursesCountsByPeriodQuery,
   useGetCoursesForStatsQuery,
 } from "@/gql/generated"
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
+import { Card, CardContent } from "@/components/ui/card"
 import { getDateWheres, getDateBoundaries } from "@/lib/date"
+import { StatCard } from "@/components/shared/stat-card"
+import {
+  computeAvgDriverRating,
+  computePendingDocsCount,
+  computeAvgDistance,
+  computeAvgAcceptanceTime,
+} from "@/lib/statistics"
+import { RegistrationChart } from "@/components/dashboard/registration-chart"
+import { CoursesChart } from "@/components/dashboard/courses-chart"
+import { ErrorState } from "@/components/shared/error-state"
 
-function StatCard({
+function ShortcutCard({
   title,
   value,
   icon: Icon,
   iconClassName,
-  isLoading,
   to,
+  isLoading,
 }: {
   title: string
   value: number | string
   icon: React.ComponentType<{ className?: string }>
   iconClassName?: string
+  to: string
   isLoading: boolean
-  to?: string
 }) {
-  const card = (
-    <Card className={to ? "transition-colors hover:border-primary/50" : ""}>
-      <CardHeader className="flex flex-row items-center justify-between pb-2">
-        <CardTitle className="text-sm font-medium">{title}</CardTitle>
-        <Icon
-          className={`size-4 ${iconClassName ?? "text-muted-foreground"}`}
-        />
-      </CardHeader>
-      <CardContent>
-        {isLoading ? (
-          <Skeleton className="h-9 w-16" />
-        ) : (
-          <div className="text-3xl font-bold">{value}</div>
-        )}
-      </CardContent>
-    </Card>
+  return (
+    <Link to={to}>
+      <Card className="transition-colors hover:border-primary/50 hover:bg-accent/50">
+        <CardContent className="flex items-center gap-3 p-4">
+          <div
+            className={`flex size-10 items-center justify-center rounded-lg bg-primary/10 ${iconClassName ?? ""}`}
+          >
+            <Icon className="size-5" />
+          </div>
+          <div className="flex-1">
+            <p className="text-xs text-muted-foreground sm:text-sm">{title}</p>
+            {isLoading ? (
+              <Skeleton className="mt-1 h-6 w-10" />
+            ) : (
+              <p className="text-lg font-bold sm:text-xl">{value}</p>
+            )}
+          </div>
+        </CardContent>
+      </Card>
+    </Link>
   )
-
-  if (to) return <Link to={to}>{card}</Link>
-  return card
 }
 
 export function DashboardPage() {
-  const { data: ticketsData, isLoading: ticketsLoading } =
+  const { data: ticketsData, isLoading: ticketsLoading, isError, refetch } =
     useGetTicketsCountsQuery({})
 
-  const dateWheres = useMemo(() => getDateWheres(), [])
+  const dateWheres = getDateWheres()
   const { data: usersData, isLoading: usersLoading } =
     useGetUsersCountsQuery(dateWheres)
 
-  // TODO: Idéalement, cette moyenne devrait être calculée côté back via une route custom
   const { data: driversData, isLoading: driversLoading } =
     useGetDriversAverageRatingQuery({})
 
-  const averageDriverRating = useMemo(() => {
-    const drivers = driversData?.users?.filter(
-      (u) => u.averageRate != null && u.averageRate > 0
-    )
-    if (!drivers?.length) return "—"
-    const avg =
-      drivers.reduce((sum, u) => sum + (u.averageRate ?? 0), 0) / drivers.length
-    return avg.toFixed(1)
-  }, [driversData])
+  const averageDriverRating = computeAvgDriverRating(driversData?.users ?? [])
 
   const { data: driversListData, isLoading: driversListLoading } =
     useGetUsersQuery({
@@ -98,28 +100,14 @@ export function DashboardPage() {
       skip: 0,
     })
 
-  const pendingDocsCount = useMemo(() => {
-    if (!driversListData?.users) return 0
-    let count = 0
-    for (const user of driversListData.users) {
-      for (const key of [
-        "drivingLicense",
-        "insurance",
-        "registrationDocument",
-        "certificate",
-      ] as const) {
-        const doc = user[key] as { state?: string | null } | null | undefined
-        if (doc?.state && doc.state !== "verified") count++
-      }
-    }
-    return count
-  }, [driversListData])
+  const pendingDocsCount = computePendingDocsCount(
+    (driversListData?.users as Array<Record<string, unknown>>) ?? []
+  )
 
-  // --- Courses ---
   const { data: coursesCountsData, isLoading: coursesCountsLoading } =
     useGetCoursesCountsQuery({})
 
-  const dateBoundaries = useMemo(() => getDateBoundaries(), [])
+  const dateBoundaries = getDateBoundaries()
   const { data: coursesByPeriodData, isLoading: coursesByPeriodLoading } =
     useGetCoursesCountsByPeriodQuery({
       todayWhere: { createdAt: { gte: dateBoundaries.todayISO } },
@@ -128,44 +116,17 @@ export function DashboardPage() {
       yearWhere: { createdAt: { gte: dateBoundaries.yearISO } },
     })
 
-  // TODO: La distance moyenne et le temps moyen d'acceptation devraient
-  // être calculés côté back via une route custom pour éviter de fetch
-  // toutes les courses côté client.
   const { data: coursesStatsData, isLoading: coursesStatsLoading } =
     useGetCoursesForStatsQuery({})
 
-  const avgDistance = useMemo(() => {
-    const courses = coursesStatsData?.courses?.filter(
-      (c) => c.distance != null && c.distance > 0
-    )
-    if (!courses?.length) return "—"
-    const avg =
-      courses.reduce((sum, c) => sum + (c.distance ?? 0), 0) / courses.length
-    return `${(avg / 1000).toFixed(1)} km`
-  }, [coursesStatsData])
+  const avgDistance = computeAvgDistance(coursesStatsData?.courses ?? [])
+  const avgAcceptanceTime = computeAvgAcceptanceTime(
+    coursesStatsData?.courses ?? []
+  )
 
-  const avgAcceptanceTime = useMemo(() => {
-    const courses = coursesStatsData?.courses?.filter(
-      (c) => c.createdAt && c.startDatetimeUtc
-    )
-    if (!courses?.length) return "—"
-    let totalMs = 0
-    let count = 0
-    for (const c of courses) {
-      const created = new Date(c.createdAt).getTime()
-      const started = new Date(c.startDatetimeUtc).getTime()
-      const diff = started - created
-      if (diff > 0) {
-        totalMs += diff
-        count++
-      }
-    }
-    if (!count) return "—"
-    const avgMin = totalMs / count / 1000 / 60
-    if (avgMin < 1) return `${Math.round(avgMin * 60)}s`
-    if (avgMin < 60) return `${avgMin.toFixed(0)} min`
-    return `${(avgMin / 60).toFixed(1)}h`
-  }, [coursesStatsData])
+  if (isError && !ticketsLoading) {
+    return <ErrorState onRetry={refetch} />
+  }
 
   return (
     <div className="space-y-6">
@@ -176,9 +137,52 @@ export function DashboardPage() {
         </p>
       </div>
 
+      {/* Shortcuts */}
+      <div className="grid grid-cols-2 gap-3 sm:gap-4 lg:grid-cols-4">
+        <ShortcutCard
+          title="Tickets à traiter"
+          value={ticketsData?.pending ?? 0}
+          icon={CircleAlertIcon}
+          iconClassName="text-destructive"
+          to="/tickets?filter=pending"
+          isLoading={ticketsLoading}
+        />
+        <ShortcutCard
+          title="Documents à valider"
+          value={pendingDocsCount}
+          icon={FileTextIcon}
+          iconClassName="text-yellow-600"
+          to="/documents"
+          isLoading={driversListLoading}
+        />
+        <ShortcutCard
+          title="Conducteurs bloqués"
+          value={usersData?.blocked ?? 0}
+          icon={ShieldBanIcon}
+          iconClassName="text-destructive"
+          to="/users?status=blocked&type=driver"
+          isLoading={usersLoading}
+        />
+        <ShortcutCard
+          title="Nouveaux inscrits"
+          value={usersData?.today ?? 0}
+          icon={UsersIcon}
+          iconClassName="text-primary"
+          to="/users"
+          isLoading={usersLoading}
+        />
+      </div>
+
+      {/* Charts */}
+      <div className="grid gap-4 lg:grid-cols-2">
+        <RegistrationChart />
+        <CoursesChart />
+      </div>
+
+      {/* Tickets */}
       <div>
         <h2 className="mb-3 text-lg font-semibold">Tickets</h2>
-        <div className="grid gap-4 sm:grid-cols-2">
+        <div className="grid gap-3 sm:grid-cols-2 sm:gap-4">
           <StatCard
             title="Tickets à traiter"
             value={ticketsData?.pending ?? 0}
@@ -198,9 +202,10 @@ export function DashboardPage() {
         </div>
       </div>
 
+      {/* Users */}
       <div>
         <h2 className="mb-3 text-lg font-semibold">Utilisateurs</h2>
-        <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+        <div className="grid grid-cols-2 gap-3 sm:gap-4 lg:grid-cols-4">
           <StatCard
             title="Aujourd'hui"
             value={usersData?.today ?? 0}
@@ -230,20 +235,20 @@ export function DashboardPage() {
             to="/users"
           />
         </div>
-        <div className="mt-4 grid gap-4 sm:grid-cols-3">
+        <div className="mt-3 grid gap-3 sm:mt-4 sm:grid-cols-3 sm:gap-4">
           <StatCard
             title="Passagers"
             value={usersData?.passengers ?? 0}
             icon={UserIcon}
             isLoading={usersLoading}
-            to="/users?filter=passenger"
+            to="/users?type=passenger"
           />
           <StatCard
             title="Conducteurs"
             value={usersData?.drivers ?? 0}
             icon={CarIcon}
             isLoading={usersLoading}
-            to="/users?filter=driver"
+            to="/users?type=driver"
           />
           <StatCard
             title="Note moyenne conducteurs"
@@ -255,9 +260,10 @@ export function DashboardPage() {
         </div>
       </div>
 
+      {/* Courses by status */}
       <div>
         <h2 className="mb-3 text-lg font-semibold">Courses — par statut</h2>
-        <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+        <div className="grid grid-cols-2 gap-3 sm:gap-4 lg:grid-cols-4">
           <StatCard
             title="En cours"
             value={coursesCountsData?.inProgress ?? 0}
@@ -289,9 +295,10 @@ export function DashboardPage() {
         </div>
       </div>
 
+      {/* Courses by period */}
       <div>
         <h2 className="mb-3 text-lg font-semibold">Courses — par période</h2>
-        <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-5">
+        <div className="grid grid-cols-2 gap-3 sm:gap-4 lg:grid-cols-5">
           <StatCard
             title="Aujourd'hui"
             value={coursesByPeriodData?.today ?? 0}
@@ -323,7 +330,7 @@ export function DashboardPage() {
             isLoading={coursesByPeriodLoading}
           />
         </div>
-        <div className="mt-4 grid gap-4 sm:grid-cols-2">
+        <div className="mt-3 grid gap-3 sm:mt-4 sm:grid-cols-2 sm:gap-4">
           <StatCard
             title="Distance moyenne par course"
             value={avgDistance}
@@ -341,9 +348,10 @@ export function DashboardPage() {
         </div>
       </div>
 
+      {/* Documents */}
       <div>
         <h2 className="mb-3 text-lg font-semibold">Documents</h2>
-        <div className="grid gap-4 sm:grid-cols-2">
+        <div className="grid gap-3 sm:grid-cols-2 sm:gap-4">
           <StatCard
             title="Documents à valider"
             value={pendingDocsCount}

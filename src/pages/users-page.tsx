@@ -1,98 +1,131 @@
-import { useEffect, useMemo, useState } from "react"
-import { useSearchParams } from "react-router-dom"
 import { keepPreviousData } from "@tanstack/react-query"
 import {
   UserFilters,
   UsersTable,
+  UserStatsCards,
+  UserDetailSheet,
+} from "@/components/users"
+import {
+  parseTypeFilter,
+  parseStatusFilter,
+  PAGE_SIZE,
+  type UserTypeFilter,
+  type UserStatusFilter,
+  ORDER_BY_NEWEST,
+} from "@/lib/constants"
+import {
   Pagination,
   PaginationContent,
   PaginationItem,
   PaginationNext,
   PaginationPrevious,
-} from "@/components"
-import type { UserFilter } from "@/components"
-import { useDebounce } from "@/hooks"
+} from "@/components/ui"
+import { usePagedSearchParams } from "@/hooks"
+import { ErrorState } from "@/components/shared/error-state"
 import { useGetUsersQuery, useGetUsersCountsQuery } from "@/gql/generated"
 import { getDateWheres } from "@/lib/date"
 
-const PAGE_SIZE = 10
-
-function getWhereClause(filter: UserFilter, search?: string) {
+function getWhereClause(
+  typeFilter: UserTypeFilter,
+  statusFilter: UserStatusFilter,
+  search?: string
+) {
   const where: Record<string, unknown> = { isAdmin: { equals: false } }
 
-  if (filter === "passenger") where.type = { equals: "passenger" }
-  if (filter === "driver") where.type = { equals: "driver" }
+  if (typeFilter === "passenger") where.type = { equals: "passenger" }
+  if (typeFilter === "driver") where.type = { equals: "driver" }
+
+  if (statusFilter === "active") where.enabled = { equals: true }
+  if (statusFilter === "blocked") where.enabled = { equals: false }
 
   if (search) {
-    const contains = { contains: search, mode: "insensitive" }
-    where.OR = [
-      { firstname: contains },
-      { lastname: contains },
-      { email: contains },
-    ]
+    const terms = search.trim().split(/\s+/).filter(Boolean)
+    if (terms.length > 1) {
+      // "Jean Dupont" → firstname contains "Jean" AND lastname contains "Dupont"
+      // Also try the reverse: firstname contains "Dupont" AND lastname contains "Jean"
+      where.OR = [
+        {
+          AND: terms.map((t) => ({
+            OR: [
+              { firstname: { contains: t, mode: "insensitive" } },
+              { lastname: { contains: t, mode: "insensitive" } },
+            ],
+          })),
+        },
+        { email: { contains: search, mode: "insensitive" } },
+      ]
+    } else {
+      const contains = { contains: search, mode: "insensitive" }
+      where.OR = [
+        { firstname: contains },
+        { lastname: contains },
+        { email: contains },
+      ]
+    }
   }
 
   return where
 }
 
 export function UsersPage() {
-  const [searchParams, setSearchParams] = useSearchParams()
-  const filter = (searchParams.get("filter") as UserFilter) || "all"
-  const page = Number(searchParams.get("page") || "1")
+  const {
+    searchParams,
+    page,
+    search,
+    debouncedSearch,
+    updateParams,
+    setPage,
+    handleSearchChange,
+  } = usePagedSearchParams()
 
-  const [search, setSearch] = useState("")
-  const debouncedSearch = useDebounce(search)
+  const typeFilter = parseTypeFilter(searchParams.get("type"))
+  const statusFilter = parseStatusFilter(searchParams.get("status"))
+  const userId = searchParams.get("userId")
 
-  const setFilter = (newFilter: UserFilter) => {
-    const params = new URLSearchParams(searchParams)
-    if (newFilter === "all") {
-      params.delete("filter")
-    } else {
-      params.set("filter", newFilter)
-    }
-    params.delete("page")
-    setSearchParams(params, { replace: true })
+  const handleTypeFilterChange = (filter: UserTypeFilter) => {
+    updateParams(
+      { type: filter === "all" ? null : filter },
+      true
+    )
   }
 
-  const setPage = (newPage: number) => {
-    const params = new URLSearchParams(searchParams)
-    if (newPage <= 1) {
-      params.delete("page")
-    } else {
-      params.set("page", String(newPage))
-    }
-    setSearchParams(params, { replace: true })
+  const handleStatusFilterChange = (filter: UserStatusFilter) => {
+    updateParams(
+      { status: filter === "all" ? null : filter },
+      true
+    )
   }
 
-  useEffect(() => {
-    if (page > 1) {
-      const params = new URLSearchParams(searchParams)
-      params.delete("page")
-      setSearchParams(params, { replace: true })
-    }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [debouncedSearch])
+  const handleUserClick = (id: string) => {
+    updateParams({ userId: id })
+  }
 
-  const whereClause = useMemo(
-    () => getWhereClause(filter, debouncedSearch),
-    [filter, debouncedSearch]
-  )
+  const handleCloseSheet = () => {
+    updateParams({ userId: null })
+  }
 
-  const { data, isLoading, isPlaceholderData } = useGetUsersQuery(
+  const whereClause = getWhereClause(typeFilter, statusFilter, debouncedSearch)
+
+  const { data, isLoading, isError, refetch, isPlaceholderData } = useGetUsersQuery(
     {
       where: whereClause,
-      orderBy: [{ createdAt: "desc" as const }],
+      orderBy: ORDER_BY_NEWEST,
       take: PAGE_SIZE,
       skip: (page - 1) * PAGE_SIZE,
     },
     { placeholderData: keepPreviousData }
   )
 
-  const dateWheres = useMemo(() => getDateWheres(), [])
-  const { data: countsData } = useGetUsersCountsQuery(dateWheres)
+  const dateWheres = getDateWheres()
+  const { data: countsData, isLoading: countsLoading } =
+    useGetUsersCountsQuery(dateWheres)
 
   const totalCount = data?.usersCount ?? 0
   const totalPages = Math.max(1, Math.ceil(totalCount / PAGE_SIZE))
+
+  if (isError && !isLoading) {
+    return <ErrorState onRetry={refetch} />
+  }
 
   return (
     <div className="space-y-6">
@@ -103,11 +136,15 @@ export function UsersPage() {
         </p>
       </div>
 
+      <UserStatsCards counts={countsData} isLoading={countsLoading} />
+
       <UserFilters
-        filter={filter}
-        onFilterChange={setFilter}
+        typeFilter={typeFilter}
+        onTypeFilterChange={handleTypeFilterChange}
+        statusFilter={statusFilter}
+        onStatusFilterChange={handleStatusFilterChange}
         search={search}
-        onSearchChange={setSearch}
+        onSearchChange={handleSearchChange}
         counts={countsData}
       />
 
@@ -116,6 +153,7 @@ export function UsersPage() {
         isLoading={isLoading}
         isStale={isPlaceholderData}
         skeletonCount={PAGE_SIZE}
+        onUserClick={handleUserClick}
       />
 
       {totalPages > 1 && (
@@ -152,6 +190,8 @@ export function UsersPage() {
           </Pagination>
         </div>
       )}
+
+      <UserDetailSheet userId={userId} onClose={handleCloseSheet} />
     </div>
   )
 }

@@ -1,4 +1,4 @@
-import { useMemo, useState } from "react"
+import { useState } from "react"
 import { useNavigate } from "react-router-dom"
 import { keepPreviousData } from "@tanstack/react-query"
 import { FileWarningIcon, ExternalLinkIcon } from "lucide-react"
@@ -14,9 +14,11 @@ import {
   Skeleton,
   Button,
 } from "@/components/ui"
-import { DocumentStateBadge } from "@/components"
+import { DocumentStateBadge } from "@/components/users"
 import { formatDate, getUserDisplay } from "@/lib/format"
 import { Dialog, DialogContent, DialogTitle } from "@/components/ui/dialog"
+import { DOCUMENT_LABELS, DOCUMENT_TYPES, type DocumentType } from "@/lib/constants"
+import { ErrorState } from "@/components/shared/error-state"
 
 type DocFilter = "all" | "pending" | "processing" | "todo" | "verified"
 
@@ -27,19 +29,6 @@ const DOC_FILTERS: { value: DocFilter; label: string }[] = [
   { value: "todo", label: "À faire" },
   { value: "verified", label: "Vérifié" },
 ]
-
-const DOCUMENT_LABELS: Record<string, string> = {
-  drivingLicense: "Permis de conduire",
-  insurance: "Assurance",
-  registrationDocument: "Carte grise",
-  certificate: "Certificat",
-}
-
-type DocumentType =
-  | "drivingLicense"
-  | "insurance"
-  | "registrationDocument"
-  | "certificate"
 
 type FlatDocument = {
   userId: string
@@ -61,7 +50,7 @@ export function DocumentsPage() {
     url: string
   }>({ open: false, title: "", url: "" })
 
-  const { data, isLoading } = useGetUsersQuery(
+  const { data, isLoading, isError, refetch } = useGetUsersQuery(
     {
       where: { type: { equals: "driver" }, isAdmin: { equals: false } },
       orderBy: [{ createdAt: "desc" as const }],
@@ -86,21 +75,14 @@ export function DocumentsPage() {
   const isValidating =
     dl.isPending || ins.isPending || rd.isPending || cert.isPending
 
-  const documents = useMemo(() => {
+  const documents = (() => {
     if (!data?.users) return []
 
     const docs: FlatDocument[] = []
 
     for (const user of data.users) {
       const name = getUserDisplay(user)
-      const docTypes: DocumentType[] = [
-        "drivingLicense",
-        "insurance",
-        "registrationDocument",
-        "certificate",
-      ]
-
-      for (const type of docTypes) {
+      for (const type of DOCUMENT_TYPES) {
         const doc = user[type] as
           | {
               id: string
@@ -127,20 +109,22 @@ export function DocumentsPage() {
     }
 
     return docs
-  }, [data])
+  })()
 
-  const filteredDocuments = useMemo(() => {
-    if (filter === "all") {
-      return documents.filter((d) => d.state !== "verified")
-    }
-    return documents.filter((d) => d.state === filter)
-  }, [documents, filter])
+  const filteredDocuments =
+    filter === "all"
+      ? documents.filter((d) => d.state !== "verified")
+      : documents.filter((d) => d.state === filter)
 
   const pendingCount = documents.filter((d) => d.state === "pending").length
   const processingCount = documents.filter(
     (d) => d.state === "processing"
   ).length
   const todoCount = documents.filter((d) => d.state === "todo").length
+
+  if (isError && !isLoading) {
+    return <ErrorState onRetry={refetch} />
+  }
 
   return (
     <div className="space-y-6">
@@ -204,7 +188,7 @@ export function DocumentsPage() {
                     <TableCell>
                       <button
                         type="button"
-                        onClick={() => navigate(`/users/${doc.userId}`)}
+                        onClick={() => navigate(`/users?userId=${doc.userId}`)}
                         className="text-left font-medium hover:underline"
                       >
                         {doc.userName}

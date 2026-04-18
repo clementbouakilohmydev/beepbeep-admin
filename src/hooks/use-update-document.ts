@@ -6,15 +6,7 @@ import {
   useUpdateRegistrationDocumentMutation,
   useUpdateCertificateMutation,
 } from "@/gql/generated"
-
-const DOCUMENT_LABELS = {
-  drivingLicense: "Permis de conduire",
-  insurance: "Assurance",
-  registrationDocument: "Carte grise",
-  certificate: "Certificat",
-} as const
-
-export type DocumentType = keyof typeof DOCUMENT_LABELS
+import { DOCUMENT_LABELS, type DocumentType } from "@/lib/constants"
 
 function useMutationFor(
   type: DocumentType,

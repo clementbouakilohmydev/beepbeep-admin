@@ -1,5 +1,6 @@
 export { useAuth } from "./use-auth"
 export { useDebounce } from "./use-debounce"
 export { useIsMobile } from "./use-mobile"
-export { useUpdateDocument, type DocumentType } from "./use-update-document"
+export { usePagedSearchParams } from "./use-paged-search-params"
+export { useUpdateDocument } from "./use-update-document"
 export { useUpdateTicket } from "./use-update-ticket"

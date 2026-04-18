@@ -1,4 +1,5 @@
 export { TicketActions } from "./ticket-actions"
-export { TicketFilters, type Filter } from "./ticket-filters"
+export { TicketFilters } from "./ticket-filters"
 export { TicketStatusBadge } from "./ticket-status-badge"
 export { TicketsTable } from "./tickets-table"
+export { TicketDetailSheet } from "./ticket-detail-sheet"
