@@ -1,2 +1,6 @@
 export { RegistrationChart } from "./registration-chart"
 export { CoursesChart } from "./courses-chart"
+export { UsersDistributionChart } from "./users-distribution-chart"
+export { CoursesStatusBarChart } from "./courses-status-bar-chart"
+export { TicketsPieChart } from "./tickets-pie-chart"
+export { TicketsTrendChart } from "./tickets-trend-chart"

@@ -81,7 +81,7 @@ export function DocumentCard({
             <div className="flex gap-2">
               {onValidate && (
                 <Button
-                  size="sm"
+
                   onClick={onValidate}
                   disabled={isValidating}
                   className="flex-1"
@@ -92,7 +92,7 @@ export function DocumentCard({
               )}
               {onReject && (
                 <Button
-                  size="sm"
+
                   variant="outline"
                   onClick={onReject}
                   disabled={isValidating}

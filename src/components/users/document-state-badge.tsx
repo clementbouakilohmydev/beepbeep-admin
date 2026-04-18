@@ -1,37 +1,34 @@
-import { Badge } from "@/components/ui/badge"
+import { StatusBadge } from "@/components/shared/status-badge"
+import type { StatusBadgeProps } from "@/components/shared/status-badge"
 
 type DocumentStateBadgeProps = {
   state: string | null | undefined
 }
 
-const STATE_CONFIG: Record<string, { label: string; className: string }> = {
+const STATE_CONFIG: Record<string, { label: string; variant: StatusBadgeProps["variant"] }> = {
   verified: {
     label: "Vérifié",
-    className: "bg-primary/10 text-primary",
+    variant: "primary",
   },
   pending: {
     label: "En attente",
-    className: "bg-yellow-500/10 text-yellow-600",
+    variant: "yellow",
   },
   processing: {
     label: "En cours",
-    className: "bg-blue-500/10 text-blue-600",
+    variant: "blue",
   },
   todo: {
     label: "À faire",
-    className: "bg-muted text-muted-foreground",
+    variant: "muted",
   },
 }
 
 export function DocumentStateBadge({ state }: DocumentStateBadgeProps) {
   const config = STATE_CONFIG[state ?? ""] ?? {
     label: state ?? "—",
-    className: "bg-muted text-muted-foreground",
+    variant: "muted" as const,
   }
 
-  return (
-    <Badge variant="secondary" className={config.className}>
-      {config.label}
-    </Badge>
-  )
+  return <StatusBadge label={config.label} variant={config.variant} />
 }

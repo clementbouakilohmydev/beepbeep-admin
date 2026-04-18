@@ -1,4 +1,4 @@
-import { Badge } from "@/components/ui/badge"
+import { StatusBadge } from "@/components/shared/status-badge"
 
 type UserStatusBadgeProps = {
   enabled: boolean | null | undefined
@@ -6,16 +6,8 @@ type UserStatusBadgeProps = {
 
 export function UserStatusBadge({ enabled }: UserStatusBadgeProps) {
   if (enabled) {
-    return (
-      <Badge variant="secondary" className="bg-primary/10 text-primary">
-        Actif
-      </Badge>
-    )
+    return <StatusBadge label="Actif" variant="primary" />
   }
 
-  return (
-    <Badge variant="secondary" className="bg-destructive/10 text-destructive">
-      Bloqué
-    </Badge>
-  )
+  return <StatusBadge label="Bloqué" variant="destructive" />
 }

@@ -26,6 +26,15 @@ export function getUserDisplay(
   return name || user.email || "—"
 }
 
+export function formatShortDate(date: string | null | undefined) {
+  if (!date) return "—"
+  return new Date(date).toLocaleDateString(LOCALE, {
+    day: "2-digit",
+    month: "2-digit",
+    year: "numeric",
+  })
+}
+
 export function formatCurrency(value: number) {
   return new Intl.NumberFormat(LOCALE, {
     style: "currency",

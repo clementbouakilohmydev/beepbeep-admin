@@ -4,7 +4,7 @@ import {
   CalendarRangeIcon,
   UsersIcon,
 } from "lucide-react"
-import { Card, CardContent, CardHeader, CardTitle, Skeleton } from "@/components/ui"
+import { StatCard } from "@/components/shared/stat-card"
 
 type UserStatsCardsProps = {
   counts?: {
@@ -26,24 +26,14 @@ const STATS = [
 export function UserStatsCards({ counts, isLoading }: UserStatsCardsProps) {
   return (
     <div className="grid grid-cols-2 gap-3 sm:grid-cols-4 sm:gap-4">
-      {STATS.map(({ key, label, icon: Icon }) => (
-        <Card key={key}>
-          <CardHeader className="flex flex-row items-center justify-between pb-1 sm:pb-2">
-            <CardTitle className="text-xs font-medium sm:text-sm">
-              {label}
-            </CardTitle>
-            <Icon className="size-3.5 text-muted-foreground sm:size-4" />
-          </CardHeader>
-          <CardContent>
-            {isLoading ? (
-              <Skeleton className="h-7 w-12 sm:h-9 sm:w-16" />
-            ) : (
-              <div className="text-2xl font-bold sm:text-3xl">
-                {counts?.[key] ?? 0}
-              </div>
-            )}
-          </CardContent>
-        </Card>
+      {STATS.map(({ key, label, icon }) => (
+        <StatCard
+          key={key}
+          title={label}
+          value={counts?.[key] ?? 0}
+          icon={icon}
+          isLoading={isLoading}
+        />
       ))}
     </div>
   )

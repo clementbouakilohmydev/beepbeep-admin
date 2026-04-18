@@ -6,15 +6,13 @@ import {
   CarIcon,
   HashIcon,
 } from "lucide-react"
-import type { GetUserQuery } from "@/gql/generated"
+import type { MappedUser } from "@/lib/mappers"
 import { Separator } from "@/components/ui"
 import { formatDate } from "@/lib/format"
 import { LOCALE } from "@/lib/constants"
 
-type User = NonNullable<GetUserQuery["user"]>
-
 type UserSheetInfoProps = {
-  user: User
+  user: MappedUser
 }
 
 function InfoRow({

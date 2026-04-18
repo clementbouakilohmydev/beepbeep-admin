@@ -1,5 +1,5 @@
 import { useState } from "react"
-import { useNavigate } from "react-router-dom"
+
 import {
   MailIcon,
   UserIcon,
@@ -11,6 +11,7 @@ import {
 } from "lucide-react"
 import { useGetTicketQuery } from "@/gql/generated"
 import { useUpdateTicket } from "@/hooks"
+import { mapTicket } from "@/lib/mappers"
 import { formatDate, getUserDisplay } from "@/lib/format"
 import {
   Button,
@@ -18,12 +19,11 @@ import {
   Separator,
 } from "@/components/ui"
 import {
-  Sheet,
-  SheetContent,
   SheetHeader,
   SheetTitle,
   SheetDescription,
 } from "@/components/ui/sheet"
+import { DetailSheet } from "@/components/shared/detail-sheet"
 import {
   AlertDialog,
   AlertDialogAction,
@@ -40,13 +40,14 @@ import { SendMessageDialog } from "@/components/dialogs/send-message-dialog"
 type TicketDetailSheetProps = {
   ticketId: string | null
   onClose: () => void
+  onUserClick?: (userId: string) => void
 }
 
 export function TicketDetailSheet({
   ticketId,
   onClose,
+  onUserClick,
 }: TicketDetailSheetProps) {
-  const navigate = useNavigate()
   const [confirmOpen, setConfirmOpen] = useState(false)
   const [messageOpen, setMessageOpen] = useState(false)
 
@@ -57,14 +58,10 @@ export function TicketDetailSheet({
     { enabled: !!ticketId }
   )
 
-  const ticket = data?.ticket
+  const ticket = data?.ticket ? mapTicket(data.ticket) : null
 
   return (
-    <Sheet open={!!ticketId} onOpenChange={(open) => !open && onClose()}>
-      <SheetContent
-        side="right"
-        className="max-w-full overflow-y-auto sm:max-w-lg lg:max-w-xl"
-      >
+    <DetailSheet open={!!ticketId} onClose={onClose}>
         {isLoading ? (
           <SheetLoadingSkeleton />
         ) : !ticket ? (
@@ -78,7 +75,7 @@ export function TicketDetailSheet({
               <div className="flex items-start justify-between gap-2">
                 <div>
                   <SheetTitle>
-                    {ticket.object?.object ?? "Ticket"}
+                    {ticket.subject}
                   </SheetTitle>
                   <SheetDescription>#{ticket.id}</SheetDescription>
                 </div>
@@ -87,7 +84,7 @@ export function TicketDetailSheet({
               <div className="flex flex-wrap gap-2 pt-2">
                 <Button
                   variant="outline"
-                  size="sm"
+
                   onClick={() => setConfirmOpen(true)}
                 >
                   {ticket.solved ? (
@@ -105,7 +102,7 @@ export function TicketDetailSheet({
                 {ticket.user?.email && (
                   <Button
                     variant="outline"
-                    size="sm"
+
                     onClick={() => setMessageOpen(true)}
                   >
                     <MailIcon className="mr-1.5 size-3.5" />
@@ -180,11 +177,11 @@ export function TicketDetailSheet({
                     <Separator className="my-3" />
                     <Button
                       variant="ghost"
-                      size="sm"
+
                       className="w-full"
                       onClick={() => {
                         onClose()
-                        navigate(`/users?userId=${ticket.user!.id}`)
+                        onUserClick?.(ticket.user!.id)
                       }}
                     >
                       <ExternalLinkIcon className="mr-1.5 size-3.5" />
@@ -236,8 +233,7 @@ export function TicketDetailSheet({
             )}
           </>
         )}
-      </SheetContent>
-    </Sheet>
+    </DetailSheet>
   )
 }
 

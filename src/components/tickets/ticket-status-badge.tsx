@@ -1,4 +1,4 @@
-import { Badge } from "@/components/ui/badge"
+import { StatusBadge } from "@/components/shared/status-badge"
 
 type TicketStatusBadgeProps = {
   solved: boolean | null | undefined
@@ -6,16 +6,8 @@ type TicketStatusBadgeProps = {
 
 export function TicketStatusBadge({ solved }: TicketStatusBadgeProps) {
   if (solved) {
-    return (
-      <Badge variant="secondary" className="bg-primary/10 text-primary">
-        Traité
-      </Badge>
-    )
+    return <StatusBadge label="Traité" variant="primary" />
   }
 
-  return (
-    <Badge variant="secondary" className="bg-destructive/10 text-destructive">
-      À traiter
-    </Badge>
-  )
+  return <StatusBadge label="À traiter" variant="destructive" />
 }

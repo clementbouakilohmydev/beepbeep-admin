@@ -1,12 +1,10 @@
 import { StarIcon } from "lucide-react"
-import type { GetUserQuery } from "@/gql/generated"
+import type { MappedUser } from "@/lib/mappers"
 import { Badge, Card, CardContent } from "@/components/ui"
 import { formatDate } from "@/lib/format"
 
-type User = NonNullable<GetUserQuery["user"]>
-
 type UserSheetRatingsProps = {
-  ratings: NonNullable<User["ratings"]>
+  ratings: NonNullable<MappedUser["ratings"]>
   ratingsCount: number
 }
 

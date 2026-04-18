@@ -52,7 +52,7 @@ export function UserFilters({
               <Button
                 key={f.value}
                 variant={typeFilter === f.value ? "default" : "outline"}
-                size="sm"
+
                 onClick={() => onTypeFilterChange(f.value)}
               >
                 {f.label}
@@ -84,7 +84,7 @@ export function UserFilters({
             <Button
               key={f.value}
               variant={statusFilter === f.value ? "default" : "outline"}
-              size="sm"
+
               onClick={() => onStatusFilterChange(f.value)}
             >
               {f.label}

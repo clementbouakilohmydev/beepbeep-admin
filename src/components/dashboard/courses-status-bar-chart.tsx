@@ -11,14 +11,14 @@ const chartConfig = {
   count: { label: "Courses" },
 } satisfies ChartConfig
 
-const STATUS_COLORS: Record<string, string> = {
-  "En cours": "#3b82f6",
-  "En attente": "#eab308",
-  "Terminées": "var(--color-primary)",
-  "Annulées": "var(--color-destructive)",
-}
+const COLORS = [
+  "var(--color-chart-1)",
+  "oklch(0.795 0.184 86.047)",
+  "var(--color-primary)",
+  "var(--color-destructive)",
+]
 
-type CoursesStatusChartProps = {
+type CoursesStatusBarChartProps = {
   data?: {
     inProgress?: number | null
     pending?: number | null
@@ -28,7 +28,10 @@ type CoursesStatusChartProps = {
   isLoading: boolean
 }
 
-export function CoursesStatusChart({ data, isLoading }: CoursesStatusChartProps) {
+export function CoursesStatusBarChart({
+  data,
+  isLoading,
+}: CoursesStatusBarChartProps) {
   const chartData = [
     { name: "En cours", count: data?.inProgress ?? 0 },
     { name: "En attente", count: data?.pending ?? 0 },
@@ -40,14 +43,14 @@ export function CoursesStatusChart({ data, isLoading }: CoursesStatusChartProps)
     <Card>
       <CardHeader className="pb-2">
         <CardTitle className="text-sm font-medium">
-          Répartition par statut
+          Courses par statut
         </CardTitle>
       </CardHeader>
       <CardContent>
         {isLoading ? (
-          <Skeleton className="h-[250px] w-full" />
+          <Skeleton className="h-[200px] w-full" />
         ) : (
-          <ChartContainer config={chartConfig} className="h-[250px] w-full">
+          <ChartContainer config={chartConfig} className="h-[200px] w-full">
             <BarChart data={chartData}>
               <CartesianGrid strokeDasharray="3 3" vertical={false} />
               <XAxis
@@ -61,15 +64,12 @@ export function CoursesStatusChart({ data, isLoading }: CoursesStatusChartProps)
                 axisLine={false}
                 fontSize={11}
                 allowDecimals={false}
-                width={40}
+                width={30}
               />
               <ChartTooltip content={<ChartTooltipContent />} />
               <Bar dataKey="count" name="count" radius={[4, 4, 0, 0]}>
-                {chartData.map((entry) => (
-                  <Cell
-                    key={entry.name}
-                    fill={STATUS_COLORS[entry.name] ?? "var(--color-primary)"}
-                  />
+                {chartData.map((_, i) => (
+                  <Cell key={i} fill={COLORS[i]} />
                 ))}
               </Bar>
             </BarChart>

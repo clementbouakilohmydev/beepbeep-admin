@@ -1,9 +1,7 @@
-import type { GetUserQuery } from "@/gql/generated"
-
-type User = NonNullable<GetUserQuery["user"]>
+import type { MappedUser } from "@/lib/mappers"
 
 type UserSheetVehicleProps = {
-  vehicule: NonNullable<User["vehicule"]>
+  vehicule: NonNullable<MappedUser["vehicule"]>
 }
 
 export function UserSheetVehicle({ vehicule }: UserSheetVehicleProps) {

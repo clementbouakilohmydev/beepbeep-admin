@@ -12,7 +12,7 @@ export function ErrorState({ message = "Une erreur est survenue", onRetry }: Err
       <AlertTriangleIcon className="size-8 text-destructive" />
       <p className="text-sm text-muted-foreground">{message}</p>
       {onRetry && (
-        <Button variant="outline" size="sm" onClick={onRetry}>Réessayer</Button>
+        <Button variant="outline" onClick={onRetry}>Réessayer</Button>
       )}
     </div>
   )

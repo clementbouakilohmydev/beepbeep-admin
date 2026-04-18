@@ -1,29 +1,25 @@
-import { Badge } from "@/components/ui/badge"
+import { StatusBadge } from "@/components/shared/status-badge"
 
 type UserTypeBadgeProps = {
   type: string | null | undefined
 }
 
-const TYPE_CONFIG: Record<string, { label: string; className: string }> = {
+const TYPE_CONFIG: Record<string, { label: string; variant: "primary" | "destructive" | "muted" }> = {
   passenger: {
     label: "Passager",
-    className: "bg-blue-500/10 text-blue-600",
+    variant: "primary",
   },
   driver: {
     label: "Conducteur",
-    className: "bg-purple-500/10 text-purple-600",
+    variant: "destructive",
   },
 }
 
 export function UserTypeBadge({ type }: UserTypeBadgeProps) {
   const config = TYPE_CONFIG[type ?? ""] ?? {
     label: type ?? "—",
-    className: "bg-muted text-muted-foreground",
+    variant: "muted" as const,
   }
 
-  return (
-    <Badge variant="secondary" className={config.className}>
-      {config.label}
-    </Badge>
-  )
+  return <StatusBadge label={config.label} variant={config.variant} />
 }

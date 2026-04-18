@@ -13,13 +13,7 @@ import {
   type UserStatusFilter,
   ORDER_BY_NEWEST,
 } from "@/lib/constants"
-import {
-  Pagination,
-  PaginationContent,
-  PaginationItem,
-  PaginationNext,
-  PaginationPrevious,
-} from "@/components/ui"
+import { PaginationSection } from "@/components/shared/pagination-section"
 import { usePagedSearchParams } from "@/hooks"
 import { ErrorState } from "@/components/shared/error-state"
 import { useGetUsersQuery, useGetUsersCountsQuery } from "@/gql/generated"
@@ -129,13 +123,6 @@ export function UsersPage() {
 
   return (
     <div className="space-y-6">
-      <div>
-        <h1 className="text-2xl font-bold">Utilisateurs</h1>
-        <p className="text-sm text-muted-foreground">
-          Gérez les utilisateurs de la plateforme
-        </p>
-      </div>
-
       <UserStatsCards counts={countsData} isLoading={countsLoading} />
 
       <UserFilters
@@ -156,40 +143,13 @@ export function UsersPage() {
         onUserClick={handleUserClick}
       />
 
-      {totalPages > 1 && (
-        <div className="flex items-center justify-between">
-          <p className="text-sm text-muted-foreground">
-            {totalCount} utilisateur{totalCount > 1 ? "s" : ""} · Page {page} /{" "}
-            {totalPages}
-          </p>
-          <Pagination>
-            <PaginationContent>
-              <PaginationItem>
-                <PaginationPrevious
-                  text="Précédent"
-                  onClick={() => setPage(page - 1)}
-                  className={
-                    page <= 1
-                      ? "pointer-events-none opacity-50"
-                      : "cursor-pointer"
-                  }
-                />
-              </PaginationItem>
-              <PaginationItem>
-                <PaginationNext
-                  text="Suivant"
-                  onClick={() => setPage(page + 1)}
-                  className={
-                    page >= totalPages
-                      ? "pointer-events-none opacity-50"
-                      : "cursor-pointer"
-                  }
-                />
-              </PaginationItem>
-            </PaginationContent>
-          </Pagination>
-        </div>
-      )}
+      <PaginationSection
+        page={page}
+        totalPages={totalPages}
+        totalCount={totalCount}
+        itemName="utilisateur"
+        onPageChange={setPage}
+      />
 
       <UserDetailSheet userId={userId} onClose={handleCloseSheet} />
     </div>

@@ -20,6 +20,7 @@ import { ErrorState } from "@/components/shared/error-state"
 import { CoursesStatusChart } from "@/components/performance/courses-status-chart"
 import { CoursesTrendChart } from "@/components/performance/courses-trend-chart"
 import { CoursesMetrics } from "@/components/performance/courses-metrics"
+import { AvgDistanceChart } from "@/components/performance/avg-distance-chart"
 
 export function PerformancePage() {
   const { data: statusData, isLoading: statusLoading, isError, refetch } =
@@ -43,13 +44,6 @@ export function PerformancePage() {
 
   return (
     <div className="space-y-6">
-      <div>
-        <h1 className="text-2xl font-bold">Performance</h1>
-        <p className="text-sm text-muted-foreground">
-          Métriques et analyse des courses
-        </p>
-      </div>
-
       {/* Status counts */}
       <div>
         <h2 className="mb-3 text-lg font-semibold">Par statut</h2>
@@ -138,6 +132,7 @@ export function PerformancePage() {
         <h2 className="mb-3 text-lg font-semibold">Visualisation</h2>
         <div className="grid gap-4 lg:grid-cols-2">
           <CoursesTrendChart />
+          <AvgDistanceChart />
           <CoursesStatusChart data={statusData} isLoading={statusLoading} />
         </div>
       </div>

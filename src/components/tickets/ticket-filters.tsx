@@ -30,7 +30,7 @@ export function TicketFilters({
         <div className="flex flex-wrap items-center gap-2">
           <Button
             variant={filter === "all" ? "default" : "outline"}
-            size="sm"
+
             onClick={() => onFilterChange("all")}
           >
             Tous
@@ -42,7 +42,7 @@ export function TicketFilters({
           </Button>
           <Button
             variant={filter === "pending" ? "default" : "outline"}
-            size="sm"
+
             onClick={() => onFilterChange("pending")}
           >
             À traiter
@@ -54,7 +54,7 @@ export function TicketFilters({
           </Button>
           <Button
             variant={filter === "solved" ? "default" : "outline"}
-            size="sm"
+
             onClick={() => onFilterChange("solved")}
           >
             Traités

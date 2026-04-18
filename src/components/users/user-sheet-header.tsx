@@ -2,7 +2,8 @@ import {
   ShieldBanIcon,
   ShieldCheckIcon,
 } from "lucide-react"
-import type { GetUserQuery, UpdateUserMutationVariables } from "@/gql/generated"
+import type { UpdateUserMutationVariables } from "@/gql/generated"
+import type { MappedUser } from "@/lib/mappers"
 import { Button } from "@/components/ui"
 import {
   SheetHeader,
@@ -23,10 +24,8 @@ import {
 import { UserTypeBadge } from "./user-type-badge"
 import { UserStatusBadge } from "./user-status-badge"
 
-type User = NonNullable<GetUserQuery["user"]>
-
 type UserSheetHeaderProps = {
-  user: User
+  user: MappedUser
   updateUser: (variables: UpdateUserMutationVariables) => void
   isUpdatingUser: boolean
 }
@@ -39,9 +38,9 @@ export function UserSheetHeader({
   return (
     <SheetHeader>
       <div className="flex items-start gap-3">
-        {user.avatar?.url ? (
+        {user.avatarUrl ? (
           <img
-            src={user.avatar.url}
+            src={user.avatarUrl}
             alt="Avatar"
             className="size-12 rounded-full object-cover"
           />
@@ -67,7 +66,7 @@ export function UserSheetHeader({
           <AlertDialogTrigger asChild>
             <Button
               variant={user.enabled ? "outline" : "default"}
-              size="sm"
+
               disabled={isUpdatingUser}
               className="w-full sm:w-auto"
             >

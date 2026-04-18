@@ -2,11 +2,9 @@ import { useQueryClient } from "@tanstack/react-query"
 import { toast } from "sonner"
 import { useGetUserQuery, useUpdateUserMutation } from "@/gql/generated"
 import { useUpdateDocument } from "@/hooks"
+import { mapUser } from "@/lib/mappers"
 import { Skeleton } from "@/components/ui"
-import {
-  Sheet,
-  SheetContent,
-} from "@/components/ui/sheet"
+import { DetailSheet } from "@/components/shared/detail-sheet"
 import { DocumentCardSkeleton } from "./document-card"
 import { UserSheetHeader } from "./user-sheet-header"
 import { UserSheetInfo } from "./user-sheet-info"
@@ -27,7 +25,7 @@ export function UserDetailSheet({ userId, onClose }: UserDetailSheetProps) {
     { enabled: !!userId }
   )
 
-  const user = data?.user
+  const user = data?.user ? mapUser(data.user) : null
 
   const invalidateUser = () => {
     queryClient.invalidateQueries({ queryKey: ["GetUser"] })
@@ -56,11 +54,7 @@ export function UserDetailSheet({ userId, onClose }: UserDetailSheetProps) {
   const isDriver = user?.type === "driver"
 
   return (
-    <Sheet open={!!userId} onOpenChange={(open) => !open && onClose()}>
-      <SheetContent
-        side="right"
-        className="max-w-full overflow-y-auto sm:max-w-xl lg:max-w-2xl"
-      >
+    <DetailSheet open={!!userId} onClose={onClose}>
         {isLoading ? (
           <SheetLoadingSkeleton />
         ) : !user ? (
@@ -102,8 +96,7 @@ export function UserDetailSheet({ userId, onClose }: UserDetailSheetProps) {
             </div>
           </>
         )}
-      </SheetContent>
-    </Sheet>
+    </DetailSheet>
   )
 }
 

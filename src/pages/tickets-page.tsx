@@ -1,4 +1,5 @@
 import { useState } from "react"
+import { useNavigate } from "react-router-dom"
 import type { DateRange } from "react-day-picker"
 import { keepPreviousData } from "@tanstack/react-query"
 import { CircleAlertIcon, CircleCheckIcon } from "lucide-react"
@@ -8,13 +9,7 @@ import {
   TicketDetailSheet,
 } from "@/components/tickets"
 import { SendMessageDialog } from "@/components/dialogs/send-message-dialog"
-import {
-  Pagination,
-  PaginationContent,
-  PaginationItem,
-  PaginationNext,
-  PaginationPrevious,
-} from "@/components/ui"
+import { PaginationSection } from "@/components/shared/pagination-section"
 import { StatCard } from "@/components/shared/stat-card"
 import { ErrorState } from "@/components/shared/error-state"
 import { usePagedSearchParams, useUpdateTicket } from "@/hooks"
@@ -59,6 +54,7 @@ function getWhereClause(
 }
 
 export function TicketsPage() {
+  const navigate = useNavigate()
   const {
     searchParams,
     page,
@@ -131,13 +127,6 @@ export function TicketsPage() {
 
   return (
     <div className="space-y-6">
-      <div>
-        <h1 className="text-2xl font-bold">Support</h1>
-        <p className="text-sm text-muted-foreground">
-          Gérez les tickets de support
-        </p>
-      </div>
-
       <div className="grid grid-cols-2 gap-3 sm:gap-4">
         <StatCard
           title="À traiter"
@@ -175,44 +164,18 @@ export function TicketsPage() {
         onTicketClick={handleTicketClick}
       />
 
-      {totalPages > 1 && (
-        <div className="flex items-center justify-between">
-          <p className="text-sm text-muted-foreground">
-            {totalCount} ticket{totalCount > 1 ? "s" : ""} · Page {page} /{" "}
-            {totalPages}
-          </p>
-          <Pagination>
-            <PaginationContent>
-              <PaginationItem>
-                <PaginationPrevious
-                  text="Précédent"
-                  onClick={() => setPage(page - 1)}
-                  className={
-                    page <= 1
-                      ? "pointer-events-none opacity-50"
-                      : "cursor-pointer"
-                  }
-                />
-              </PaginationItem>
-              <PaginationItem>
-                <PaginationNext
-                  text="Suivant"
-                  onClick={() => setPage(page + 1)}
-                  className={
-                    page >= totalPages
-                      ? "pointer-events-none opacity-50"
-                      : "cursor-pointer"
-                  }
-                />
-              </PaginationItem>
-            </PaginationContent>
-          </Pagination>
-        </div>
-      )}
+      <PaginationSection
+        page={page}
+        totalPages={totalPages}
+        totalCount={totalCount}
+        itemName="ticket"
+        onPageChange={setPage}
+      />
 
       <TicketDetailSheet
         ticketId={ticketId}
         onClose={handleCloseSheet}
+        onUserClick={(userId) => navigate(`/users?userId=${userId}`)}
       />
 
       <SendMessageDialog

@@ -15,39 +15,14 @@ import { ErrorState } from "@/components/shared/error-state"
 import { useGetCoursesForStatsQuery } from "@/gql/generated"
 import { getDateBoundaries } from "@/lib/date"
 import { formatCurrency } from "@/lib/format"
-
-type Course = {
-  price?: number | null
-  fees?: number | null
-  createdAt?: string | null
-}
-
-function computeRevenue(courses: Course[], since?: string) {
-  const filtered = since
-    ? courses.filter((c) => c.createdAt && c.createdAt >= since)
-    : courses
-  const total = filtered.reduce((sum, c) => sum + (c.price ?? 0), 0)
-  return total
-}
-
-function computeFees(courses: Course[], since?: string) {
-  const filtered = since
-    ? courses.filter((c) => c.createdAt && c.createdAt >= since)
-    : courses
-  return filtered.reduce((sum, c) => sum + (c.fees ?? 0), 0)
-}
-
-function computeAvgBasket(courses: Course[]) {
-  const valid = courses.filter((c) => c.price != null && c.price > 0)
-  if (!valid.length) return 0
-  return valid.reduce((sum, c) => sum + (c.price ?? 0), 0) / valid.length
-}
+import { computeRevenue, computeFees, computeAvgBasket } from "@/lib/statistics"
+import { RevenueChart, AvgBasketChart } from "@/components/finance"
 
 export function FinancePage() {
   const { data: statsData, isLoading: statsLoading, isError, refetch } =
     useGetCoursesForStatsQuery({})
 
-  const courses = (statsData?.courses ?? []) as Course[]
+  const courses = statsData?.courses ?? []
   const boundaries = getDateBoundaries()
 
   const revenueToday = computeRevenue(courses, boundaries.todayISO)
@@ -65,13 +40,6 @@ export function FinancePage() {
 
   return (
     <div className="space-y-6">
-      <div>
-        <h1 className="text-2xl font-bold">Économie & Finances</h1>
-        <p className="text-sm text-muted-foreground">
-          Revenus, panier moyen et indicateurs financiers
-        </p>
-      </div>
-
       {/* Revenue */}
       <div>
         <h2 className="mb-3 text-lg font-semibold">
@@ -120,6 +88,12 @@ export function FinancePage() {
         </div>
       </div>
 
+      {/* Charts */}
+      <div className="grid gap-4 lg:grid-cols-2">
+        <RevenueChart />
+        <AvgBasketChart />
+      </div>
+
       {/* Key metrics */}
       <div>
         <h2 className="mb-3 text-lg font-semibold">Indicateurs clés</h2>
@@ -166,7 +140,7 @@ export function FinancePage() {
                   Nécessite une intégration avec l'API App Store Connect
                 </p>
               </div>
-              <span className="rounded-full bg-yellow-500/10 px-3 py-1 text-xs font-medium text-yellow-600">
+              <span className="rounded-full bg-yellow-500/20 px-3 py-1 text-xs font-medium text-yellow-400">
                 À configurer
               </span>
             </CardContent>
@@ -182,7 +156,7 @@ export function FinancePage() {
                   Nécessite une intégration avec l'API Google Play Console
                 </p>
               </div>
-              <span className="rounded-full bg-yellow-500/10 px-3 py-1 text-xs font-medium text-yellow-600">
+              <span className="rounded-full bg-yellow-500/20 px-3 py-1 text-xs font-medium text-yellow-400">
                 À configurer
               </span>
             </CardContent>

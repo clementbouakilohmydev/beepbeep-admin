@@ -7,6 +7,33 @@ type CourseWithStats = {
   startDatetimeUtc?: string | null
 }
 
+type CourseWithFinance = {
+  price?: number | null
+  fees?: number | null
+  createdAt?: string | null
+}
+
+export function computeRevenue(courses: CourseWithFinance[], since?: string) {
+  const filtered = since
+    ? courses.filter((c) => c.createdAt && c.createdAt >= since)
+    : courses
+  const total = filtered.reduce((sum, c) => sum + (c.price ?? 0), 0)
+  return total
+}
+
+export function computeFees(courses: CourseWithFinance[], since?: string) {
+  const filtered = since
+    ? courses.filter((c) => c.createdAt && c.createdAt >= since)
+    : courses
+  return filtered.reduce((sum, c) => sum + (c.fees ?? 0), 0)
+}
+
+export function computeAvgBasket(courses: CourseWithFinance[]) {
+  const valid = courses.filter((c) => c.price != null && c.price > 0)
+  if (!valid.length) return 0
+  return valid.reduce((sum, c) => sum + (c.price ?? 0), 0) / valid.length
+}
+
 export function computeAvgDistance(courses: CourseWithStats[]) {
   const valid = courses.filter((c) => c.distance != null && c.distance > 0)
   if (!valid.length) return "—"
