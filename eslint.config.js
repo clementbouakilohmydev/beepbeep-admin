@@ -8,7 +8,7 @@ import tseslint from 'typescript-eslint'
 import { defineConfig, globalIgnores } from 'eslint/config'
 
 export default defineConfig([
-  globalIgnores(['dist']),
+  globalIgnores(['dist', 'src/shared/**', 'src/gql/generated.ts']),
   {
     files: ['**/*.{ts,tsx}'],
     extends: [
@@ -28,6 +28,15 @@ export default defineConfig([
     languageOptions: {
       ecmaVersion: 2020,
       globals: globals.browser,
+    },
+  },
+  // shadcn/ui vendor components co-localisent variants (cva) et composants ; les
+  // règles fast-refresh / react-compiler ne s'y appliquent pas pertinemment.
+  {
+    files: ['src/components/ui/**/*.{ts,tsx}'],
+    rules: {
+      'react-refresh/only-export-components': 'off',
+      'react-compiler/react-compiler': 'off',
     },
   },
 ])

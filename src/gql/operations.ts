@@ -217,7 +217,7 @@ export const GetUser = /* GraphQL */ `
       updatedAt
       avatar {
         id
-        uri
+        url
       }
       drivingLicense {
         id
@@ -225,7 +225,7 @@ export const GetUser = /* GraphQL */ `
         obtentionYear
         picture {
           id
-          uri
+          url
         }
         createdAt
         updatedAt
@@ -237,7 +237,7 @@ export const GetUser = /* GraphQL */ `
         isExpired
         picture {
           id
-          uri
+          url
         }
         createdAt
         updatedAt
@@ -247,7 +247,7 @@ export const GetUser = /* GraphQL */ `
         state
         picture {
           id
-          uri
+          url
         }
         createdAt
         updatedAt
@@ -259,7 +259,7 @@ export const GetUser = /* GraphQL */ `
         registrationDatetime
         picture {
           id
-          uri
+          url
         }
         createdAt
         updatedAt

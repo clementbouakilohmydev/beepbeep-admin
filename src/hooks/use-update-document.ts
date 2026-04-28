@@ -7,6 +7,7 @@ import {
   useUpdateCertificateMutation,
 } from "@/gql/generated"
 import { DOCUMENT_LABELS, type DocumentType } from "@/lib/constants"
+import { DOCUMENT_STATE } from "@/validation/document"
 
 function useMutationFor(
   type: DocumentType,
@@ -57,10 +58,10 @@ export function useUpdateDocument(type: DocumentType) {
   )
 
   const validate = (id: string) =>
-    mutate({ where: { id }, data: { state: "verified" } } as never)
+    mutate({ where: { id }, data: { state: DOCUMENT_STATE.VERIFIED } } as never)
 
   const reject = (id: string) =>
-    mutate({ where: { id }, data: { state: "todo" } } as never)
+    mutate({ where: { id }, data: { state: DOCUMENT_STATE.TODO } } as never)
 
   return { validate, reject, isPending }
 }

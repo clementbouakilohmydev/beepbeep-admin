@@ -30,7 +30,7 @@ export function UserSheetDocuments({
         <DocumentCard
           title="Permis de conduire"
           state={user.drivingLicense?.state}
-          pictureUrl={user.drivingLicense?.picture?.uri}
+          pictureUrl={user.drivingLicense?.picture?.url}
           createdAt={user.drivingLicense?.createdAt}
           updatedAt={user.drivingLicense?.updatedAt}
           isValidating={isValidatingDoc}
@@ -55,7 +55,7 @@ export function UserSheetDocuments({
         <DocumentCard
           title="Assurance"
           state={user.insurance?.state}
-          pictureUrl={user.insurance?.picture?.uri}
+          pictureUrl={user.insurance?.picture?.url}
           createdAt={user.insurance?.createdAt}
           updatedAt={user.insurance?.updatedAt}
           isValidating={isValidatingDoc}
@@ -93,7 +93,7 @@ export function UserSheetDocuments({
         <DocumentCard
           title="Carte grise"
           state={user.registrationDocument?.state}
-          pictureUrl={user.registrationDocument?.picture?.uri}
+          pictureUrl={user.registrationDocument?.picture?.url}
           createdAt={user.registrationDocument?.createdAt}
           updatedAt={user.registrationDocument?.updatedAt}
           isValidating={isValidatingDoc}
@@ -113,7 +113,7 @@ export function UserSheetDocuments({
         <DocumentCard
           title="Certificat"
           state={user.certificate?.state}
-          pictureUrl={user.certificate?.picture?.uri}
+          pictureUrl={user.certificate?.picture?.url}
           createdAt={user.certificate?.createdAt}
           updatedAt={user.certificate?.updatedAt}
           isValidating={isValidatingDoc}

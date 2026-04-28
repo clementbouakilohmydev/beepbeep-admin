@@ -15,11 +15,11 @@ export type Scalars = {
   Boolean: { input: boolean; output: boolean; }
   Int: { input: number; output: number; }
   Float: { input: number; output: number; }
-  DateTime: { input: any; output: any; }
+  DateTime: { input: string; output: string; }
   /** The `JSON` scalar type represents JSON values as specified by [ECMA-404](http://www.ecma-international.org/publications/files/ECMA-ST/ECMA-404.pdf). */
-  JSON: { input: any; output: any; }
+  JSON: { input: Record<string, unknown>; output: Record<string, unknown>; }
   /** The `Upload` scalar type represents a file upload. */
-  Upload: { input: any; output: any; }
+  Upload: { input: File; output: File; }
 };
 
 export type AddPushTokenType = {
@@ -4218,7 +4218,7 @@ export type GetUsersQueryVariables = Exact<{
 }>;
 
 
-export type GetUsersQuery = { __typename?: 'Query', usersCount?: number | null, users?: Array<{ __typename?: 'User', id: string, email?: string | null, firstname?: string | null, lastname?: string | null, type?: string | null, isAdmin?: boolean | null, enabled?: boolean | null, phoneNumber?: string | null, createdAt?: any | null, averageRate?: number | null, ratingsCount?: number | null, drivingLicense?: { __typename?: 'DrivingLicense', id: string, state?: string | null } | null, insurance?: { __typename?: 'Insurance', id: string, state?: string | null } | null, registrationDocument?: { __typename?: 'RegistrationDocument', id: string, state?: string | null } | null, certificate?: { __typename?: 'Certificate', id: string, state?: string | null } | null }> | null };
+export type GetUsersQuery = { __typename?: 'Query', usersCount?: number | null, users?: Array<{ __typename?: 'User', id: string, email?: string | null, firstname?: string | null, lastname?: string | null, type?: string | null, isAdmin?: boolean | null, enabled?: boolean | null, phoneNumber?: string | null, createdAt?: string | null, averageRate?: number | null, ratingsCount?: number | null, drivingLicense?: { __typename?: 'DrivingLicense', id: string, state?: string | null } | null, insurance?: { __typename?: 'Insurance', id: string, state?: string | null } | null, registrationDocument?: { __typename?: 'RegistrationDocument', id: string, state?: string | null } | null, certificate?: { __typename?: 'Certificate', id: string, state?: string | null } | null }> | null };
 
 export type GetTicketsQueryVariables = Exact<{
   where: TicketWhereInput;
@@ -4228,7 +4228,7 @@ export type GetTicketsQueryVariables = Exact<{
 }>;
 
 
-export type GetTicketsQuery = { __typename?: 'Query', ticketsCount?: number | null, tickets?: Array<{ __typename?: 'Ticket', id: string, solved?: boolean | null, description?: string | null, createdAt?: any | null, updatedAt?: any | null, object?: { __typename?: 'TicketObject', id: string, object?: string | null } | null, user?: { __typename?: 'User', id: string, email?: string | null, firstname?: string | null, lastname?: string | null } | null }> | null };
+export type GetTicketsQuery = { __typename?: 'Query', ticketsCount?: number | null, tickets?: Array<{ __typename?: 'Ticket', id: string, solved?: boolean | null, description?: string | null, createdAt?: string | null, updatedAt?: string | null, object?: { __typename?: 'TicketObject', id: string, object?: string | null } | null, user?: { __typename?: 'User', id: string, email?: string | null, firstname?: string | null, lastname?: string | null } | null }> | null };
 
 export type GetTicketsCountsQueryVariables = Exact<{ [key: string]: never; }>;
 
@@ -4240,7 +4240,7 @@ export type GetTicketQueryVariables = Exact<{
 }>;
 
 
-export type GetTicketQuery = { __typename?: 'Query', ticket?: { __typename?: 'Ticket', id: string, solved?: boolean | null, description?: string | null, createdAt?: any | null, updatedAt?: any | null, object?: { __typename?: 'TicketObject', id: string, object?: string | null } | null, user?: { __typename?: 'User', id: string, email?: string | null, firstname?: string | null, lastname?: string | null, phoneNumber?: string | null } | null } | null };
+export type GetTicketQuery = { __typename?: 'Query', ticket?: { __typename?: 'Ticket', id: string, solved?: boolean | null, description?: string | null, createdAt?: string | null, updatedAt?: string | null, object?: { __typename?: 'TicketObject', id: string, object?: string | null } | null, user?: { __typename?: 'User', id: string, email?: string | null, firstname?: string | null, lastname?: string | null, phoneNumber?: string | null } | null } | null };
 
 export type UpdateTicketMutationVariables = Exact<{
   where: TicketWhereUniqueInput;
@@ -4269,7 +4269,7 @@ export type GetUserQueryVariables = Exact<{
 }>;
 
 
-export type GetUserQuery = { __typename?: 'Query', user?: { __typename?: 'User', id: string, email?: string | null, firstname?: string | null, lastname?: string | null, type?: string | null, isAdmin?: boolean | null, enabled?: boolean | null, anonymized?: boolean | null, phoneNumber?: string | null, birthdayDatetimeUtc?: any | null, affiliationCode?: string | null, age?: number | null, averageRate?: number | null, coursesCount?: number | null, stripeCustomerId?: string | null, pushNotifications?: boolean | null, createdAt?: any | null, updatedAt?: any | null, ratingsCount?: number | null, avatar?: { __typename?: 'ImageFieldOutput', id: string, url: string } | null, drivingLicense?: { __typename?: 'DrivingLicense', id: string, state?: string | null, obtentionYear?: number | null, createdAt?: any | null, updatedAt?: any | null, picture?: { __typename?: 'ImageFieldOutput', id: string, url: string } | null } | null, insurance?: { __typename?: 'Insurance', id: string, state?: string | null, expirationDatetimeUtc?: any | null, isExpired?: boolean | null, createdAt?: any | null, updatedAt?: any | null, picture?: { __typename?: 'ImageFieldOutput', id: string, url: string } | null } | null, registrationDocument?: { __typename?: 'RegistrationDocument', id: string, state?: string | null, createdAt?: any | null, updatedAt?: any | null, picture?: { __typename?: 'ImageFieldOutput', id: string, url: string } | null } | null, certificate?: { __typename?: 'Certificate', id: string, state?: string | null, expirationDatetime?: any | null, registrationDatetime?: any | null, createdAt?: any | null, updatedAt?: any | null, picture?: { __typename?: 'ImageFieldOutput', id: string, url: string } | null } | null, vehicule?: { __typename?: 'Vehicule', id: string, brand?: string | null, model?: string | null, color?: string | null, registration?: string | null, country?: string | null, firstYear?: any | null } | null, ratings?: Array<{ __typename?: 'Rating', id: string, note?: number | null, message?: string | null, tags?: string | null, createdAt?: any | null, user?: { __typename?: 'User', id: string, firstname?: string | null, lastname?: string | null } | null }> | null } | null };
+export type GetUserQuery = { __typename?: 'Query', user?: { __typename?: 'User', id: string, email?: string | null, firstname?: string | null, lastname?: string | null, type?: string | null, isAdmin?: boolean | null, enabled?: boolean | null, anonymized?: boolean | null, phoneNumber?: string | null, birthdayDatetimeUtc?: string | null, affiliationCode?: string | null, age?: number | null, averageRate?: number | null, coursesCount?: number | null, stripeCustomerId?: string | null, pushNotifications?: boolean | null, createdAt?: string | null, updatedAt?: string | null, ratingsCount?: number | null, avatar?: { __typename?: 'ImageFieldOutput', id: string, url: string } | null, drivingLicense?: { __typename?: 'DrivingLicense', id: string, state?: string | null, obtentionYear?: number | null, createdAt?: string | null, updatedAt?: string | null, picture?: { __typename?: 'ImageFieldOutput', id: string, url: string } | null } | null, insurance?: { __typename?: 'Insurance', id: string, state?: string | null, expirationDatetimeUtc?: string | null, isExpired?: boolean | null, createdAt?: string | null, updatedAt?: string | null, picture?: { __typename?: 'ImageFieldOutput', id: string, url: string } | null } | null, registrationDocument?: { __typename?: 'RegistrationDocument', id: string, state?: string | null, createdAt?: string | null, updatedAt?: string | null, picture?: { __typename?: 'ImageFieldOutput', id: string, url: string } | null } | null, certificate?: { __typename?: 'Certificate', id: string, state?: string | null, expirationDatetime?: string | null, registrationDatetime?: string | null, createdAt?: string | null, updatedAt?: string | null, picture?: { __typename?: 'ImageFieldOutput', id: string, url: string } | null } | null, vehicule?: { __typename?: 'Vehicule', id: string, brand?: string | null, model?: string | null, color?: string | null, registration?: string | null, country?: string | null, firstYear?: string | null } | null, ratings?: Array<{ __typename?: 'Rating', id: string, note?: number | null, message?: string | null, tags?: string | null, createdAt?: string | null, user?: { __typename?: 'User', id: string, firstname?: string | null, lastname?: string | null } | null }> | null } | null };
 
 export type GetCoursesCountsQueryVariables = Exact<{ [key: string]: never; }>;
 
@@ -4289,21 +4289,21 @@ export type GetCoursesCountsByPeriodQuery = { __typename?: 'Query', total?: numb
 export type GetCoursesForStatsQueryVariables = Exact<{ [key: string]: never; }>;
 
 
-export type GetCoursesForStatsQuery = { __typename?: 'Query', courses?: Array<{ __typename?: 'Course', id: string, distance?: number | null, duration?: number | null, price?: number | null, fees?: number | null, createdAt?: any | null, startDatetimeUtc?: any | null, endDatetimeUtc?: any | null }> | null };
+export type GetCoursesForStatsQuery = { __typename?: 'Query', courses?: Array<{ __typename?: 'Course', id: string, distance?: number | null, duration?: number | null, price?: number | null, fees?: number | null, createdAt?: string | null, startDatetimeUtc?: string | null, endDatetimeUtc?: string | null }> | null };
 
 export type GetRecentUsersQueryVariables = Exact<{
   where: UserWhereInput;
 }>;
 
 
-export type GetRecentUsersQuery = { __typename?: 'Query', users?: Array<{ __typename?: 'User', id: string, createdAt?: any | null }> | null };
+export type GetRecentUsersQuery = { __typename?: 'Query', users?: Array<{ __typename?: 'User', id: string, createdAt?: string | null }> | null };
 
 export type GetRecentCoursesQueryVariables = Exact<{
   where: CourseWhereInput;
 }>;
 
 
-export type GetRecentCoursesQuery = { __typename?: 'Query', courses?: Array<{ __typename?: 'Course', id: string, createdAt?: any | null }> | null };
+export type GetRecentCoursesQuery = { __typename?: 'Query', courses?: Array<{ __typename?: 'Course', id: string, createdAt?: string | null }> | null };
 
 export type UpdateUserMutationVariables = Exact<{
   where: UserWhereUniqueInput;

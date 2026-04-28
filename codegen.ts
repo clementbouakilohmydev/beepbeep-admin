@@ -22,6 +22,15 @@ const config: CodegenConfig = {
         addInfiniteQuery: false,
         enumsAsTypes: true,
         useTypeImports: true,
+        scalars: {
+          DateTime: "string",
+          JSON: "Record<string, unknown>",
+          Decimal: "string",
+          Upload: "File",
+        },
+        // Pour aligner avec `beepbeepcity-app` qui utilise `typesPrefix: GQL_`,
+        // ajouter ici `typesPrefix: "GQL_"`. Décidé en 2026-04 de NE PAS le faire :
+        // ~25 fichiers à mettre à jour pour un bénéfice purement cosmétique.
       },
     },
   },

@@ -7,8 +7,9 @@ import {
   useEndSessionMutation,
 } from "@/gql/generated"
 import { onAuthExpired } from "@/lib"
-import { AuthContext, type AuthUser } from "@/contexts"
+import { AuthContext } from "@/contexts"
 import { SESSION_TOKEN_KEY } from "@/lib/constants"
+import { parseAuthUser } from "@/validation/auth"
 
 function getToken() {
   return localStorage.getItem(SESSION_TOKEN_KEY)
@@ -42,7 +43,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   const { mutate: endSession } = useEndSessionMutation()
 
-  const user = (data?.authenticatedItem as AuthUser) ?? null
+  const user = parseAuthUser(data?.authenticatedItem)
 
   const logout = () => {
     endSession(undefined as never, {

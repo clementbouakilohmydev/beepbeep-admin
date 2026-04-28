@@ -57,7 +57,7 @@ export function flattenUserDocuments(
           docType: type,
           docId: doc.id,
           state: doc.state,
-          pictureUrl: doc.picture?.uri,
+          pictureUrl: doc.picture?.url,
           createdAt: doc.createdAt,
         })
       }
