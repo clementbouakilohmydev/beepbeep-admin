@@ -2,8 +2,6 @@
 
 > Repo GitLab : `custom-admin`
 
-> Repo GitLab : `custom-admin`
-
 Dashboard interne BeepBeepCity (gestion users, drivers, tickets, documents, finance, performance). Voir `../CLAUDE.md` pour le contexte global du monorepo.
 
 ## Stack
