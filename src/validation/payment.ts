@@ -1,20 +1,25 @@
 import { z } from "zod"
 
 /**
- * États possibles d'un Payment côté Keystone (cf back/api/src/models/Payment.ts).
+ * États possibles d'un Payment côté Keystone.
+ * Source de vérité : back/api/src/models/Payment.ts (Payment.state.options).
  *
- * Cycle de vie typique : pending → succeeded → transferred (driver payout)
- * Erreurs / annulations : failed, refunded, cancelled, rejected, failedRefund
+ * Cycle de vie :
+ *   pending → verification → authorized → succeeded → transferred (driver payout)
+ * Branches d'échec / remboursement : rejected, refunded, failedRefund.
+ *
+ * Note : Payment n'a pas d'état "canceled" (les courses annulées sont signalées
+ * sur Course.state, pas sur Payment).
  */
 export const PAYMENT_STATES = [
   "pending",
+  "verification",
+  "authorized",
   "succeeded",
-  "failed",
-  "transferred",
+  "rejected",
   "refunded",
   "failedRefund",
-  "cancelled",
-  "rejected",
+  "transferred",
 ] as const
 
 export const paymentStateSchema = z.enum(PAYMENT_STATES)
@@ -22,13 +27,13 @@ export type PaymentState = z.infer<typeof paymentStateSchema>
 
 export const PAYMENT_STATE = {
   PENDING: "pending",
+  VERIFICATION: "verification",
+  AUTHORIZED: "authorized",
   SUCCEEDED: "succeeded",
-  FAILED: "failed",
-  TRANSFERRED: "transferred",
+  REJECTED: "rejected",
   REFUNDED: "refunded",
   FAILED_REFUND: "failedRefund",
-  CANCELLED: "cancelled",
-  REJECTED: "rejected",
+  TRANSFERRED: "transferred",
 } as const satisfies Record<string, PaymentState>
 
 /**
@@ -61,12 +66,6 @@ export type PaymentParsed = z.infer<typeof paymentSchema>
 export function isPaymentTerminal(state: PaymentState | null | undefined): boolean {
   if (!state) return false
   return (
-    [
-      "transferred",
-      "refunded",
-      "failedRefund",
-      "cancelled",
-      "rejected",
-    ] satisfies PaymentState[]
+    ["transferred", "refunded", "failedRefund", "rejected"] satisfies PaymentState[]
   ).includes(state as never)
 }

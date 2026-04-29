@@ -21,9 +21,9 @@ const COLORS = [
 type CoursesStatusBarChartProps = {
   data?: {
     inProgress?: number | null
-    pending?: number | null
+    rejected?: number | null
     completed?: number | null
-    cancelled?: number | null
+    canceled?: number | null
   }
   isLoading: boolean
 }
@@ -34,9 +34,9 @@ export function CoursesStatusBarChart({
 }: CoursesStatusBarChartProps) {
   const chartData = [
     { name: "En cours", count: data?.inProgress ?? 0 },
-    { name: "En attente", count: data?.pending ?? 0 },
+    { name: "Rejetées", count: data?.rejected ?? 0 },
     { name: "Terminées", count: data?.completed ?? 0 },
-    { name: "Annulées", count: data?.cancelled ?? 0 },
+    { name: "Annulées", count: data?.canceled ?? 0 },
   ]
 
   return (

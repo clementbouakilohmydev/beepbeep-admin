@@ -60,8 +60,11 @@ export function useUpdateDocument(type: DocumentType) {
   const validate = (id: string) =>
     mutate({ where: { id }, data: { state: DOCUMENT_STATE.VERIFIED } } as never)
 
+  // "Rejeter" remet le doc en file d'attente côté back (pas d'état "rejected" sur les
+  // documents, ils ont seulement pending → processing → verified). Le driver verra son
+  // doc redevenir "à valider" et pourra renvoyer une nouvelle version.
   const reject = (id: string) =>
-    mutate({ where: { id }, data: { state: DOCUMENT_STATE.TODO } } as never)
+    mutate({ where: { id }, data: { state: DOCUMENT_STATE.PENDING } } as never)
 
   return { validate, reject, isPending }
 }

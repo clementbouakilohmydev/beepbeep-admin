@@ -4274,7 +4274,7 @@ export type GetUserQuery = { __typename?: 'Query', user?: { __typename?: 'User',
 export type GetCoursesCountsQueryVariables = Exact<{ [key: string]: never; }>;
 
 
-export type GetCoursesCountsQuery = { __typename?: 'Query', inProgress?: number | null, pending?: number | null, completed?: number | null, cancelled?: number | null };
+export type GetCoursesCountsQuery = { __typename?: 'Query', inProgress?: number | null, rejected?: number | null, completed?: number | null, canceled?: number | null };
 
 export type GetCoursesCountsByPeriodQueryVariables = Exact<{
   todayWhere: CourseWhereInput;
@@ -4850,10 +4850,10 @@ useGetUserQuery.fetcher = (variables: GetUserQueryVariables, options?: RequestIn
 
 export const GetCoursesCountsDocument = `
     query GetCoursesCounts {
-  inProgress: coursesCount(where: {state: {equals: "in_progress"}})
-  pending: coursesCount(where: {state: {equals: "pending"}})
-  completed: coursesCount(where: {state: {equals: "completed"}})
-  cancelled: coursesCount(where: {state: {equals: "cancelled"}})
+  inProgress: coursesCount(where: {state: {equals: "accepted"}})
+  rejected: coursesCount(where: {state: {equals: "rejected"}})
+  completed: coursesCount(where: {state: {equals: "paid"}})
+  canceled: coursesCount(where: {state: {equals: "canceled"}})
 }
     `;
 
@@ -4912,7 +4912,7 @@ useGetCoursesCountsByPeriodQuery.fetcher = (variables: GetCoursesCountsByPeriodQ
 export const GetCoursesForStatsDocument = `
     query GetCoursesForStats {
   courses(
-    where: {state: {equals: "completed"}}
+    where: {state: {equals: "paid"}}
     orderBy: [{createdAt: desc}]
     take: 500
     skip: 0

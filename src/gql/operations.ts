@@ -290,15 +290,14 @@ export const GetUser = /* GraphQL */ `
   }
 `
 
-// TODO: Les valeurs de state des courses (pending, in_progress, completed, cancelled)
-// doivent être vérifiées côté back quand l'API sera de nouveau opérationnelle.
-// Ajuster les filtres ci-dessous si les valeurs diffèrent.
+// États Course alignés sur back/api/src/models/Course.ts: ["accepted", "rejected", "canceled", "paid"]
+// Note d'orthographe : "canceled" (1 L) côté back — ne pas mettre 2 L.
 export const GetCoursesCounts = /* GraphQL */ `
   query GetCoursesCounts {
-    inProgress: coursesCount(where: { state: { equals: "in_progress" } })
-    pending: coursesCount(where: { state: { equals: "pending" } })
-    completed: coursesCount(where: { state: { equals: "completed" } })
-    cancelled: coursesCount(where: { state: { equals: "cancelled" } })
+    inProgress: coursesCount(where: { state: { equals: "accepted" } })
+    rejected: coursesCount(where: { state: { equals: "rejected" } })
+    completed: coursesCount(where: { state: { equals: "paid" } })
+    canceled: coursesCount(where: { state: { equals: "canceled" } })
   }
 `
 
@@ -323,7 +322,7 @@ export const GetCoursesCountsByPeriod = /* GraphQL */ `
 export const GetCoursesForStats = /* GraphQL */ `
   query GetCoursesForStats {
     courses(
-      where: { state: { equals: "completed" } }
+      where: { state: { equals: "paid" } }
       orderBy: [{ createdAt: desc }]
       take: 500
       skip: 0

@@ -2,29 +2,25 @@ import { z } from "zod"
 
 /**
  * États possibles d'un document driver côté Keystone.
- * Source : `back/api/src/models/{DrivingLicense,Insurance,...}.ts`
+ * Source de vérité : back/api/src/models/{DrivingLicense,Insurance,Certificate,RegistrationDocument}.ts
  *
- * - `todo`     : pas encore soumis ou rejeté (à refaire)
- * - `pending`  : soumis, en attente de validation admin
- * - `verified` : validé par un admin
- * - `expired`  : valide mais date d'expiration passée
+ * - `pending`    : soumis, en attente de validation admin (état initial)
+ * - `processing` : en cours d'examen
+ * - `verified`   : validé par un admin
+ *
+ * L'expiration n'est pas un state — c'est un champ séparé `expirationDatetimeUtc` +
+ * un champ virtuel `isExpired` (sur Insurance et Certificate uniquement).
  */
-export const DOCUMENT_STATES = [
-  "todo",
-  "pending",
-  "verified",
-  "expired",
-] as const
+export const DOCUMENT_STATES = ["pending", "processing", "verified"] as const
 
 export const documentStateSchema = z.enum(DOCUMENT_STATES)
 export type DocumentState = z.infer<typeof documentStateSchema>
 
 /** Constantes typées pour usage côté code (évite les strings magiques) */
 export const DOCUMENT_STATE = {
-  TODO: "todo",
   PENDING: "pending",
+  PROCESSING: "processing",
   VERIFIED: "verified",
-  EXPIRED: "expired",
 } as const satisfies Record<string, DocumentState>
 
 /**

@@ -56,8 +56,8 @@ export function PerformancePage() {
             isLoading={statusLoading}
           />
           <StatCard
-            title="En attente"
-            value={statusData?.pending ?? 0}
+            title="Rejetées"
+            value={statusData?.rejected ?? 0}
             icon={ClockIcon}
             iconClassName="text-yellow-500"
             isLoading={statusLoading}
@@ -71,7 +71,7 @@ export function PerformancePage() {
           />
           <StatCard
             title="Annulées"
-            value={statusData?.cancelled ?? 0}
+            value={statusData?.canceled ?? 0}
             icon={XCircleIcon}
             iconClassName="text-destructive"
             isLoading={statusLoading}

@@ -17,31 +17,46 @@ export const CURRENCY = "EUR" as const;
 export const MAX_RATING = 5;
 
 // ─── Course / Trip states ──────────────────────────────────────────────
+// ⚠️ Source de vérité = back/api/src/models/Course.ts (Course.state.options)
+// Note d'orthographe : le back utilise "canceled" (1 L), pas "cancelled" (2 L).
+// Les rows en DB sont déjà en "canceled" — ne pas changer le back sans migration.
+
+/** Tous les états valides d'une Course côté back */
+export const COURSE_STATES = ["accepted", "canceled", "rejected", "paid"] as const;
+
+export type CourseState = (typeof COURSE_STATES)[number] | (string & {});
 
 /** États de course considérés comme terminés (plus de suivi attendu) */
 export const FINISHED_COURSE_STATES: readonly string[] = [
   "paid",
-  "cancelled",
+  "canceled",
   "rejected",
 ];
 
-/** États de paiement considérés comme finalisés */
+// ─── Payment states ────────────────────────────────────────────────────
+// Source de vérité = back/api/src/models/Payment.ts (Payment.state.options)
+
+/** Tous les états valides d'un Payment côté back */
+export const PAYMENT_STATES = [
+  "pending",
+  "verification",
+  "authorized",
+  "succeeded",
+  "rejected",
+  "refunded",
+  "failedRefund",
+  "transferred",
+] as const;
+
+export type PaymentState = (typeof PAYMENT_STATES)[number] | (string & {});
+
+/** États de paiement considérés comme finalisés (Payment ne connaît pas "canceled") */
 export const FINISHED_PAYMENT_STATES: readonly string[] = [
   "transferred",
   "refunded",
   "failedRefund",
-  "cancelled",
   "rejected",
 ];
-
-export type CourseState = "paid" | "cancelled" | "rejected" | (string & {});
-export type PaymentState =
-  | "transferred"
-  | "refunded"
-  | "failedRefund"
-  | "cancelled"
-  | "rejected"
-  | (string & {});
 
 // ─── Document types ────────────────────────────────────────────────────
 
