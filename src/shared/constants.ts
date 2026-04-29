@@ -17,19 +17,19 @@ export const CURRENCY = "EUR" as const;
 export const MAX_RATING = 5;
 
 // ─── Course / Trip states ──────────────────────────────────────────────
-// ⚠️ Source de vérité = back/api/src/models/Course.ts (Course.state.options)
-// Note d'orthographe : le back utilise "canceled" (1 L), pas "cancelled" (2 L).
-// Les rows en DB sont déjà en "canceled" — ne pas changer le back sans migration.
+// Source de vérité = back/api/src/models/Course.ts (Course.state.options)
+// Orthographe : "cancelled" (2 L). Les valeurs Stripe internes utilisent
+// "canceled" (1 L, US) mais ne fuient jamais via Course.state.
 
 /** Tous les états valides d'une Course côté back */
-export const COURSE_STATES = ["accepted", "canceled", "rejected", "paid"] as const;
+export const COURSE_STATES = ["accepted", "cancelled", "rejected", "paid"] as const;
 
 export type CourseState = (typeof COURSE_STATES)[number] | (string & {});
 
 /** États de course considérés comme terminés (plus de suivi attendu) */
 export const FINISHED_COURSE_STATES: readonly string[] = [
   "paid",
-  "canceled",
+  "cancelled",
   "rejected",
 ];
 
@@ -50,7 +50,7 @@ export const PAYMENT_STATES = [
 
 export type PaymentState = (typeof PAYMENT_STATES)[number] | (string & {});
 
-/** États de paiement considérés comme finalisés (Payment ne connaît pas "canceled") */
+/** États de paiement considérés comme finalisés (Payment n'a pas d'état d'annulation) */
 export const FINISHED_PAYMENT_STATES: readonly string[] = [
   "transferred",
   "refunded",

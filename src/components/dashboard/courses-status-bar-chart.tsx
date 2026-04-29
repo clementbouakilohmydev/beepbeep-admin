@@ -23,7 +23,7 @@ type CoursesStatusBarChartProps = {
     inProgress?: number | null
     rejected?: number | null
     completed?: number | null
-    canceled?: number | null
+    cancelled?: number | null
   }
   isLoading: boolean
 }
@@ -36,7 +36,7 @@ export function CoursesStatusBarChart({
     { name: "En cours", count: data?.inProgress ?? 0 },
     { name: "Rejetées", count: data?.rejected ?? 0 },
     { name: "Terminées", count: data?.completed ?? 0 },
-    { name: "Annulées", count: data?.canceled ?? 0 },
+    { name: "Annulées", count: data?.cancelled ?? 0 },
   ]
 
   return (

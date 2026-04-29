@@ -71,7 +71,7 @@ export function PerformancePage() {
           />
           <StatCard
             title="Annulées"
-            value={statusData?.canceled ?? 0}
+            value={statusData?.cancelled ?? 0}
             icon={XCircleIcon}
             iconClassName="text-destructive"
             isLoading={statusLoading}

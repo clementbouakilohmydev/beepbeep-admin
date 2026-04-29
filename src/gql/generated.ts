@@ -4274,7 +4274,7 @@ export type GetUserQuery = { __typename?: 'Query', user?: { __typename?: 'User',
 export type GetCoursesCountsQueryVariables = Exact<{ [key: string]: never; }>;
 
 
-export type GetCoursesCountsQuery = { __typename?: 'Query', inProgress?: number | null, rejected?: number | null, completed?: number | null, canceled?: number | null };
+export type GetCoursesCountsQuery = { __typename?: 'Query', inProgress?: number | null, rejected?: number | null, completed?: number | null, cancelled?: number | null };
 
 export type GetCoursesCountsByPeriodQueryVariables = Exact<{
   todayWhere: CourseWhereInput;
@@ -4853,7 +4853,7 @@ export const GetCoursesCountsDocument = `
   inProgress: coursesCount(where: {state: {equals: "accepted"}})
   rejected: coursesCount(where: {state: {equals: "rejected"}})
   completed: coursesCount(where: {state: {equals: "paid"}})
-  canceled: coursesCount(where: {state: {equals: "canceled"}})
+  cancelled: coursesCount(where: {state: {equals: "cancelled"}})
 }
     `;
 

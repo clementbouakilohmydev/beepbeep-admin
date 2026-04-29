@@ -290,14 +290,13 @@ export const GetUser = /* GraphQL */ `
   }
 `
 
-// États Course alignés sur back/api/src/models/Course.ts: ["accepted", "rejected", "canceled", "paid"]
-// Note d'orthographe : "canceled" (1 L) côté back — ne pas mettre 2 L.
+// États Course alignés sur back/api/src/models/Course.ts: ["accepted", "rejected", "cancelled", "paid"]
 export const GetCoursesCounts = /* GraphQL */ `
   query GetCoursesCounts {
     inProgress: coursesCount(where: { state: { equals: "accepted" } })
     rejected: coursesCount(where: { state: { equals: "rejected" } })
     completed: coursesCount(where: { state: { equals: "paid" } })
-    canceled: coursesCount(where: { state: { equals: "canceled" } })
+    cancelled: coursesCount(where: { state: { equals: "cancelled" } })
   }
 `
 
