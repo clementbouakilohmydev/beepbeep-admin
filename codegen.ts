@@ -28,7 +28,7 @@ const config: CodegenConfig = {
           Decimal: "string",
           Upload: "File",
         },
-        // Pour aligner avec `beepbeepcity-app` qui utilise `typesPrefix: GQL_`,
+        // Pour aligner avec `mobile` qui utilise `typesPrefix: GQL_`,
         // ajouter ici `typesPrefix: "GQL_"`. Décidé en 2026-04 de NE PAS le faire :
         // ~25 fichiers à mettre à jour pour un bénéfice purement cosmétique.
       },

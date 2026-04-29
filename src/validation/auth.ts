@@ -7,7 +7,7 @@ import { z } from "zod"
  * accesses qui filtrent, version de l'API en avance/retard). Ces schemas
  * empêchent un cast aveugle de générer des erreurs silencieuses.
  *
- * Pattern emprunté à `beepbeepcity-app/validation/`.
+ * Pattern emprunté à `mobile/validation/`.
  */
 
 export const authUserSchema = z.object({

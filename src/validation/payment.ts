@@ -1,7 +1,7 @@
 import { z } from "zod"
 
 /**
- * États possibles d'un Payment côté Keystone (cf bo-v2/api/src/models/Payment.ts).
+ * États possibles d'un Payment côté Keystone (cf back/api/src/models/Payment.ts).
  *
  * Cycle de vie typique : pending → succeeded → transferred (driver payout)
  * Erreurs / annulations : failed, refunded, cancelled, rejected, failedRefund

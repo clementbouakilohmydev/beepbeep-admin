@@ -2,7 +2,7 @@ import { z } from "zod"
 
 /**
  * États possibles d'un document driver côté Keystone.
- * Source : `beepbeepcity-bo-v2/api/src/models/{DrivingLicense,Insurance,...}.ts`
+ * Source : `back/api/src/models/{DrivingLicense,Insurance,...}.ts`
  *
  * - `todo`     : pas encore soumis ou rejeté (à refaire)
  * - `pending`  : soumis, en attente de validation admin
