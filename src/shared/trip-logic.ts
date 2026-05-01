@@ -17,7 +17,6 @@ import {
   CONTACT_WINDOW_HOURS,
   COURSE_DISPLAY_BUFFER_MINUTES,
   DISTANCE_THRESHOLD_METERS,
-  FINISHED_COURSE_STATES,
   FINISHED_PAYMENT_STATES,
   FREE_CANCELLATION_HOURS,
 } from "./constants";
@@ -28,42 +27,67 @@ type CourseLike = { state?: string | null };
 type PaymentLike = { state?: string | null };
 type TripLike = {
   coursesCount?: number | null;
-  courses?: CourseLike[] | null;
+  activeCourse?: CourseLike | null;
   payment?: PaymentLike | null;
   endDatetimeUtc?: string | null;
+  isInstant?: boolean | null;
+  createdAt?: string | null;
 };
+
+/**
+ * Validité d'une annonce instant (en min). Doit rester aligné avec
+ * back/api/src/utils/matching.ts → INSTANT_TRIP_VALIDITY_MINUTES.
+ */
+const INSTANT_TRIP_VALIDITY_MINUTES = 45;
 
 // ─── Helpers de course ─────────────────────────────────────────────────
 
 /**
- * Trouve la première course active (non terminée) dans une liste.
- */
-export const findActiveCourse = <T extends CourseLike>(
-  courses?: T[] | null
-): T | null =>
-  courses?.find((c) => !FINISHED_COURSE_STATES.includes(c.state || "")) ?? null;
-
-/**
- * Détermine si un trip est encore "actif" :
- * - il a au moins une course non terminée
- * - ET le paiement n'est pas finalisé
+ * Détermine si un trip est encore "en cours" du point de vue passenger/driver.
+ * Ne renvoie true QUE si la course active est en state="accepted" — un
+ * trip dont la course est passée à "paid" (terminée par le passenger)
+ * doit disparaître de la home même si le cron n'a pas encore basculé le
+ * payment en "succeeded".
+ *
+ * NB : Trip.activeCourse côté back inclut intentionnellement les paid pour
+ * permettre d'afficher le driver dans la modale de rating juste après
+ * l'arrivée. C'est ici qu'on filtre côté client.
  */
 export const isTripActive = (trip?: TripLike | null): boolean => {
   if (!trip) return false;
   if ((trip.coursesCount || 0) === 0) return false;
   const paymentState = trip.payment?.state || "";
   if (FINISHED_PAYMENT_STATES.includes(paymentState)) return false;
-  return !!findActiveCourse(trip.courses);
+  if (!trip.activeCourse) return false;
+  return trip.activeCourse.state === "accepted";
 };
 
 /**
- * Vrai si le trip est expiré : endDatetimeUtc passé ET aucune course rattachée.
+ * Vrai si le trip est expiré (= annonce non prise en charge) :
+ * - instant : créé il y a plus que INSTANT_TRIP_VALIDITY_MINUTES
+ * - planifié : endDatetimeUtc passé
+ * Et dans tous les cas : aucune course rattachée.
+ *
+ * Le back exécute un cron `expireAnnouncements` qui supprime physiquement
+ * les Trip dans cet état toutes les 5 min ; cette fonction sert à gérer
+ * l'affichage côté client entre deux passages du cron.
  */
 export const isTripExpired = (trip?: TripLike | null): boolean => {
-  if (!trip?.endDatetimeUtc) return false;
-  const hasNoCourses = !trip.courses?.length;
-  const isDatePassed = new Date(trip.endDatetimeUtc).getTime() < Date.now();
-  return isDatePassed && hasNoCourses;
+  if (!trip) return false;
+  const hasNoCourses = (trip.coursesCount || 0) === 0;
+  if (!hasNoCourses) return false;
+
+  if (trip.isInstant && trip.createdAt) {
+    const createdAtMs = new Date(trip.createdAt).getTime();
+    const validityMs = INSTANT_TRIP_VALIDITY_MINUTES * 60 * 1000;
+    return Date.now() > createdAtMs + validityMs;
+  }
+
+  if (trip.endDatetimeUtc) {
+    return Date.now() > new Date(trip.endDatetimeUtc).getTime();
+  }
+
+  return false;
 };
 
 // ─── Fenêtres de temps ─────────────────────────────────────────────────
