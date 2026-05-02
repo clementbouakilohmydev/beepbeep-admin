@@ -1593,6 +1593,8 @@ type User {
   isAdmin: Boolean
   enabled: Boolean
   anonymized: Boolean
+  deletedAt: DateTime
+  deletionReason: String
   password: PasswordState
   type: String
   driver: Driver
@@ -1686,6 +1688,8 @@ input UserWhereInput {
   isAdmin: BooleanFilter
   enabled: BooleanFilter
   anonymized: BooleanFilter
+  deletedAt: DateTimeNullableFilter
+  deletionReason: StringFilter
   password: PasswordFilter
   type: StringFilter
   driver: DriverWhereInput
@@ -1757,6 +1761,8 @@ input UserOrderByInput {
   isAdmin: OrderDirection
   enabled: OrderDirection
   anonymized: OrderDirection
+  deletedAt: OrderDirection
+  deletionReason: OrderDirection
   type: OrderDirection
   lastname: OrderDirection
   firstname: OrderDirection
@@ -1775,6 +1781,8 @@ input UserUpdateInput {
   isAdmin: Boolean
   enabled: Boolean
   anonymized: Boolean
+  deletedAt: DateTime
+  deletionReason: String
   password: String
   type: String
   driver: DriverRelateToOneForUpdateInput
@@ -1894,6 +1902,8 @@ input UserCreateInput {
   isAdmin: Boolean
   enabled: Boolean
   anonymized: Boolean
+  deletedAt: DateTime
+  deletionReason: String
   password: String
   type: String
   driver: DriverRelateToOneForCreateInput
@@ -2460,6 +2470,23 @@ type Mutation {
   updatePassword(oldPassword: String!, newPassword: String!): UpdatePasswordType!
   sendUserCode(email: String!): SendUserCodeType!
   validateUserCode(email: String!, code: String!): Boolean!
+
+  """
+  Marque le compte de l'utilisateur courant comme supprimé.
+  - Vérifie le mot de passe (re-confirmation).
+  - Refuse si engagement actif (course acceptée, paiement en cours,
+    balance Stripe Connect non transférée).
+  - Anonymise les données seulement plus tard (TODO : cron de hard
+    anonymization). En V1, le User reste consultable pour réactivation.
+  """
+  deleteMyAccount(password: String!, reason: String): DeleteMyAccountResult!
+
+  """
+  Réactive le compte de l'utilisateur courant (annule le soft-delete
+  posé par deleteMyAccount). L'user doit être logué (le mdp n'a jamais
+  changé pendant la suppression, donc le re-login fonctionne).
+  """
+  reactivateMyAccount: Boolean!
   addBankAccount(ownerFirstname: String!, ownerLastname: String!, iban: String!): ID
   deleteCard(cardId: ID!): Boolean!
   pay(paymentId: ID!, secure: Boolean! = true): PayType!
@@ -2724,6 +2751,18 @@ type TripDetailsType {
 input NodeInput {
   lat: Float
   lng: Float
+}
+
+"""
+Résultat de deleteMyAccount.
+- success=true : compte marqué comme supprimé (deletedAt set côté DB).
+- success=false : un blocage métier empêche la suppression maintenant ;
+  `reasonCode` indique au client quel cas afficher.
+"""
+type DeleteMyAccountResult {
+  success: Boolean!
+  reasonCode: String
+  reasonMessage: String
 }
 
 type PayType {
