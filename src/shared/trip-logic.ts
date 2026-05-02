@@ -13,10 +13,14 @@
  */
 
 import {
-  CANCEL_CUTOFF_MINUTES,
-  CONTACT_WINDOW_HOURS,
+  CANCEL_GRACE_MIN_MINUTES,
+  CANCEL_GRACE_PERCENT,
+  CONTACT_AFTER_END_MINUTES,
+  CONTACT_BEFORE_START_MINUTES,
   COURSE_DISPLAY_BUFFER_MINUTES,
   DISTANCE_THRESHOLD_METERS,
+  END_COURSE_THRESHOLD_MIN_MINUTES,
+  END_COURSE_THRESHOLD_PERCENT,
   FINISHED_PAYMENT_STATES,
   FREE_CANCELLATION_HOURS,
 } from "./constants";
@@ -93,19 +97,6 @@ export const isTripExpired = (trip?: TripLike | null): boolean => {
 // ─── Fenêtres de temps ─────────────────────────────────────────────────
 
 /**
- * Vrai si le passager peut encore annuler la course
- * (plus de CANCEL_CUTOFF_MINUTES min avant le départ).
- */
-export const isCancelWindowOpen = (
-  startDatetimeUtc?: string | null
-): boolean => {
-  if (!startDatetimeUtc) return true;
-  const minutesUntilStart =
-    (new Date(startDatetimeUtc).getTime() - Date.now()) / (1000 * 60);
-  return minutesUntilStart > CANCEL_CUTOFF_MINUTES;
-};
-
-/**
  * Vrai si l'annulation est gratuite (> FREE_CANCELLATION_HOURS avant le départ).
  */
 export const isCancellationFree = (
@@ -148,21 +139,6 @@ export const isCoursePastDisplayWindow = (
 };
 
 /**
- * Vrai si on est encore dans la fenêtre CONTACT_WINDOW_HOURS après la fin estimée.
- */
-export const isContactWindowOpen = (
-  startDatetimeUtc?: string | null,
-  durationMinutes?: number | null
-): boolean => {
-  if (!startDatetimeUtc) return false;
-  const duration = durationMinutes || 0;
-  const estimatedEnd =
-    new Date(startDatetimeUtc).getTime() + duration * 60 * 1000;
-  const windowEnd = estimatedEnd + CONTACT_WINDOW_HOURS * 60 * 60 * 1000;
-  return Date.now() <= windowEnd;
-};
-
-/**
  * Vrai si la course a commencé (startDatetimeUtc dans le passé).
  */
 export const hasCourseStarted = (
@@ -170,6 +146,109 @@ export const hasCourseStarted = (
 ): boolean => {
   if (!startDatetimeUtc) return false;
   return Date.now() > new Date(startDatetimeUtc).getTime();
+};
+
+// ─── Fenêtres des CTA pendant la course ────────────────────────────────
+
+/**
+ * Calcule les bornes temporelles effectives d'une course :
+ * - trip planifié : start = trip.startDatetimeUtc
+ * - trip instant  : start = course.createdAt (moment où le driver accepte ;
+ *   le trip.startDatetimeUtc d'une annonce instant correspond à sa
+ *   création passenger, ce qui n'a pas de sens comme "départ réel")
+ *
+ * `durationMinutes` reste celui du Trip (estimation Google Maps) dans les
+ * deux cas — on n'a pas mieux à disposition côté client.
+ *
+ * Renvoie `null` si on ne dispose pas d'un start exploitable (ex : annonce
+ * instant sans course encore acceptée).
+ */
+export type CourseTimeWindow = {
+  /** Timestamp ms du début effectif de la course */
+  startMs: number;
+  /** Timestamp ms de la fin estimée (start + duration) */
+  endMs: number;
+  /** Durée en ms (= durationMinutes × 60s) */
+  durationMs: number;
+};
+
+export const getCourseTimeWindow = (params: {
+  startDatetimeUtc?: string | null;
+  durationMinutes?: number | null;
+  isInstant?: boolean | null;
+  courseCreatedAt?: string | null;
+}): CourseTimeWindow | null => {
+  const startSrc = params.isInstant && params.courseCreatedAt
+    ? params.courseCreatedAt
+    : params.startDatetimeUtc;
+  if (!startSrc) return null;
+  const startMs = new Date(startSrc).getTime();
+  if (Number.isNaN(startMs)) return null;
+  const durationMs = Math.max(0, (params.durationMinutes || 0) * 60 * 1000);
+  return { startMs, durationMs, endMs: startMs + durationMs };
+};
+
+/**
+ * Bouton "Contacter le driver/passenger" :
+ * visible à partir de CONTACT_BEFORE_START_MINUTES avant le départ effectif,
+ * masqué après CONTACT_AFTER_END_MINUTES après la fin estimée.
+ */
+export const canShowContactButton = (params: {
+  startDatetimeUtc?: string | null;
+  durationMinutes?: number | null;
+  isInstant?: boolean | null;
+  courseCreatedAt?: string | null;
+}): boolean => {
+  const w = getCourseTimeWindow(params);
+  if (!w) return false;
+  const now = Date.now();
+  const lower = w.startMs - CONTACT_BEFORE_START_MINUTES * 60 * 1000;
+  const upper = w.endMs + CONTACT_AFTER_END_MINUTES * 60 * 1000;
+  return now >= lower && now <= upper;
+};
+
+/**
+ * Bouton "Annuler la course" :
+ * reste visible jusqu'à `start + max(CANCEL_GRACE_PERCENT × durée,
+ * CANCEL_GRACE_MIN_MINUTES)` — laisse une marge après le départ théorique
+ * pour les annulations de dernière minute (problème véhicule, etc.).
+ */
+export const canShowCancelButton = (params: {
+  startDatetimeUtc?: string | null;
+  durationMinutes?: number | null;
+  isInstant?: boolean | null;
+  courseCreatedAt?: string | null;
+}): boolean => {
+  const w = getCourseTimeWindow(params);
+  // Pas de fenêtre = pas encore de start exploitable → on autorise
+  // (ex : passenger qui veut supprimer son annonce instant non acceptée).
+  if (!w) return true;
+  const grace = Math.max(
+    w.durationMs * CANCEL_GRACE_PERCENT,
+    CANCEL_GRACE_MIN_MINUTES * 60 * 1000
+  );
+  return Date.now() <= w.startMs + grace;
+};
+
+/**
+ * Bouton "Course terminée" / "Arrivée à destination" :
+ * apparaît après `start + max(END_COURSE_THRESHOLD_PERCENT × durée,
+ * END_COURSE_THRESHOLD_MIN_MINUTES)`. Sur un trajet moto/scooter, le driver
+ * arrive souvent en avance — on l'autorise à clore dès la moitié écoulée.
+ */
+export const canShowEndCourseButton = (params: {
+  startDatetimeUtc?: string | null;
+  durationMinutes?: number | null;
+  isInstant?: boolean | null;
+  courseCreatedAt?: string | null;
+}): boolean => {
+  const w = getCourseTimeWindow(params);
+  if (!w) return false;
+  const threshold = Math.max(
+    w.durationMs * END_COURSE_THRESHOLD_PERCENT,
+    END_COURSE_THRESHOLD_MIN_MINUTES * 60 * 1000
+  );
+  return Date.now() >= w.startMs + threshold;
 };
 
 // ─── Format & display ──────────────────────────────────────────────────

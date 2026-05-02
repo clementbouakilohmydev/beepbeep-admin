@@ -76,14 +76,29 @@ export const DOCUMENT_TYPES = Object.keys(DOCUMENT_LABELS) as DocumentType[];
 /** Seuil en mètres pour basculer en label "moins de 1 km" */
 export const DISTANCE_THRESHOLD_METERS = 1000;
 
-/** Seuil en minutes avant le départ pour bloquer l'annulation passager */
-export const CANCEL_CUTOFF_MINUTES = 30;
-
 /** Seuil en heures pour annulation gratuite (avant ce délai = sans frais) */
 export const FREE_CANCELLATION_HOURS = 24;
 
-/** Seuil en heures pour la fenêtre de contact après fin estimée d'une course */
-export const CONTACT_WINDOW_HOURS = 24;
-
 /** Marge en minutes après la fin théorique avant de masquer la course de la home */
 export const COURSE_DISPLAY_BUFFER_MINUTES = 60;
+
+// ─── Course action buttons (windows) ───────────────────────────────────
+// Fenêtres de visibilité des CTA durant le cycle de vie d'une course.
+// Les seuils relatifs (% de la durée) garantissent un comportement cohérent
+// entre un trajet de 5 min et un trajet de 60 min, avec un plancher en min
+// pour éviter une fenêtre quasi-nulle sur les très courts trajets.
+
+/** Bouton "Contacter" : visible à partir de N min avant le départ */
+export const CONTACT_BEFORE_START_MINUTES = 60;
+/** Bouton "Contacter" : encore visible jusqu'à N min après la fin estimée */
+export const CONTACT_AFTER_END_MINUTES = 15;
+
+/** Bouton "Annuler" : reste visible % de la durée après le début théorique */
+export const CANCEL_GRACE_PERCENT = 0.2;
+/** Plancher en minutes du même grace (si le trajet est très court) */
+export const CANCEL_GRACE_MIN_MINUTES = 5;
+
+/** Bouton "Course terminée" : devient visible après % de la durée écoulée */
+export const END_COURSE_THRESHOLD_PERCENT = 0.5;
+/** Plancher en minutes du même seuil (idem trajets courts) */
+export const END_COURSE_THRESHOLD_MIN_MINUTES = 5;
