@@ -76,8 +76,19 @@ export const DOCUMENT_TYPES = Object.keys(DOCUMENT_LABELS) as DocumentType[];
 /** Seuil en mètres pour basculer en label "moins de 1 km" */
 export const DISTANCE_THRESHOLD_METERS = 1000;
 
-/** Seuil en heures pour annulation gratuite (avant ce délai = sans frais) */
-export const FREE_CANCELLATION_HOURS = 24;
+/**
+ * Seuil en heures avant le départ en deçà duquel l'annulation passenger
+ * déclenche des frais (capture Stripe partielle de CANCELLATION_FEE_EUR).
+ * Doit rester aligné avec back env `FREE_CANCELATION_HOURS` (default 1).
+ */
+export const FREE_CANCELLATION_HOURS = 1;
+
+/**
+ * Montant en € prélevé sur le passenger en cas d'annulation tardive
+ * (idem default back env `CANCELATION_FEES=500` cents). Le même montant
+ * est versé au driver en indemnité.
+ */
+export const CANCELLATION_FEE_EUR = 5;
 
 /** Marge en minutes après la fin théorique avant de masquer la course de la home */
 export const COURSE_DISPLAY_BUFFER_MINUTES = 60;

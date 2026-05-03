@@ -309,6 +309,7 @@ type Course {
   duration: Int
   price: Float
   fees: Float
+  cancellationFee: Float
   distance: Int
   trip: Trip
   driver: User
@@ -343,6 +344,7 @@ input CourseWhereInput {
   duration: IntNullableFilter
   price: FloatNullableFilter
   fees: FloatNullableFilter
+  cancellationFee: FloatNullableFilter
   distance: IntNullableFilter
   trip: TripWhereInput
   driver: UserWhereInput
@@ -398,6 +400,7 @@ input CourseOrderByInput {
   duration: OrderDirection
   price: OrderDirection
   fees: OrderDirection
+  cancellationFee: OrderDirection
   distance: OrderDirection
   updatedAt: OrderDirection
   createdAt: OrderDirection
@@ -415,6 +418,7 @@ input CourseUpdateInput {
   duration: Int
   price: Float
   fees: Float
+  cancellationFee: Float
   distance: Int
   trip: TripRelateToOneForUpdateInput
   driver: UserRelateToOneForUpdateInput
@@ -475,6 +479,7 @@ input CourseCreateInput {
   duration: Int
   price: Float
   fees: Float
+  cancellationFee: Float
   distance: Int
   trip: TripRelateToOneForCreateInput
   driver: UserRelateToOneForCreateInput
