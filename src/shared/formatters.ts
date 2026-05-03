@@ -88,16 +88,19 @@ export function formatCurrency(value: number): string {
 }
 
 type GetPriceParams = {
-  /** Prix de base de la course */
+  /** Montant total payé par le passenger (= Course.price côté back, V1) */
   price: string | number;
-  /** Frais de service */
+  /** Commission plateforme retenue sur le driver (= Course.fees côté back, V1) */
   fees: string | number;
-  /** True = on calcule le revenu driver (price seul), false = total passenger (price+fees) */
+  /** True = montant net reçu par le driver (price - fees), false = montant payé par le passenger (price) */
   isDriver: boolean;
 };
 
 /**
- * Calcule et formate le prix d'une course pour passenger (price+fees) ou driver (price).
+ * Affiche le prix d'une course du point de vue de l'utilisateur courant.
+ * Sémantique V1 (cf back/api/src/services/distance.ts) :
+ *   - `price` = montant total passenger (TTC plateforme).
+ *   - `fees`  = commission plateforme prélevée sur le driver.
  * Format français : "13,00 €".
  */
 export const getPrice = ({ fees, price, isDriver }: GetPriceParams): string => {
@@ -108,7 +111,7 @@ export const getPrice = ({ fees, price, isDriver }: GetPriceParams): string => {
     return "0 €";
   }
 
-  const finalPrice = isDriver ? priceNum : priceNum + feesNum;
+  const finalPrice = isDriver ? priceNum - feesNum : priceNum;
   return `${finalPrice.toFixed(2).replace(".", ",")} €`;
 };
 
