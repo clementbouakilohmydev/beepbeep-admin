@@ -259,8 +259,12 @@ export const canShowEndCourseButton = (params: {
  * getDistanceLabel(2500) // "Départ à 3 km"
  * getDistanceLabel(800)  // "Départ à moins de 1 km"
  */
-export const getDistanceLabel = (distance?: number): string => {
-  if (!distance || distance < 0) return "";
+export const getDistanceLabel = (distance?: number | null): string => {
+  // 0 est une valeur valide (driver est très proche / co-localisé avec le pickup) :
+  // ne masquer que null/undefined/négatif. Avant, `!distance` masquait le cas 0
+  // → labels incohérents quand 2 pickups au même endroit donnaient 0 vs 1+ via
+  // Math.floor côté back.
+  if (distance == null || distance < 0) return "";
   return distance > DISTANCE_THRESHOLD_METERS
     ? `Départ à ${(distance / 1000).toFixed(0)} km`
     : "Départ à moins de 1 km";
