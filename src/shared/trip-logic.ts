@@ -125,17 +125,21 @@ export const isTripPast = (
 /**
  * Vrai si la course doit être retirée de l'affichage home
  * (fin théorique + COURSE_DISPLAY_BUFFER_MINUTES dépassée).
+ *
+ * Pour un trip instant, le start effectif est `course.createdAt` (moment où
+ * le driver accepte) et non `trip.startDatetimeUtc` (= création de l'annonce).
+ * Sinon, une annonce instant acceptée 30 min après sa création disparaît
+ * prématurément de la home alors que la course est encore en cours.
  */
-export const isCoursePastDisplayWindow = (
-  startDatetimeUtc?: string | null,
-  durationMinutes?: number | null
-): boolean => {
-  if (!startDatetimeUtc) return false;
-  const duration = durationMinutes || 0;
-  const estimatedEnd =
-    new Date(startDatetimeUtc).getTime() + duration * 60 * 1000;
-  const displayEnd = estimatedEnd + COURSE_DISPLAY_BUFFER_MINUTES * 60 * 1000;
-  return Date.now() > displayEnd;
+export const isCoursePastDisplayWindow = (params: {
+  startDatetimeUtc?: string | null;
+  durationMinutes?: number | null;
+  isInstant?: boolean | null;
+  courseCreatedAt?: string | null;
+}): boolean => {
+  const w = getCourseTimeWindow(params);
+  if (!w) return false;
+  return Date.now() > w.endMs + COURSE_DISPLAY_BUFFER_MINUTES * 60 * 1000;
 };
 
 /**
