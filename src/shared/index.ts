@@ -13,3 +13,4 @@ export * from "./constants";
 export * from "./trip-logic";
 export * from "./formatters";
 export * from "./error-codes";
+export * from "./passenger-home-state";

@@ -18,11 +18,13 @@ import {
   CONTACT_AFTER_END_MINUTES,
   CONTACT_BEFORE_START_MINUTES,
   COURSE_DISPLAY_BUFFER_MINUTES,
+  CourseState,
   DISTANCE_THRESHOLD_METERS,
   END_COURSE_THRESHOLD_MIN_MINUTES,
   END_COURSE_THRESHOLD_PERCENT,
   FINISHED_PAYMENT_STATES,
   FREE_CANCELLATION_HOURS,
+  INSTANT_TRIP_VALIDITY_MINUTES,
 } from "./constants";
 
 // ─── Types structurels (sans dépendance codegen) ───────────────────────
@@ -37,12 +39,6 @@ type TripLike = {
   isInstant?: boolean | null;
   createdAt?: string | null;
 };
-
-/**
- * Validité d'une annonce instant (en min). Doit rester aligné avec
- * back/api/src/utils/matching.ts → INSTANT_TRIP_VALIDITY_MINUTES.
- */
-const INSTANT_TRIP_VALIDITY_MINUTES = 45;
 
 // ─── Helpers de course ─────────────────────────────────────────────────
 
@@ -63,7 +59,7 @@ export const isTripActive = (trip?: TripLike | null): boolean => {
   const paymentState = trip.payment?.state || "";
   if (FINISHED_PAYMENT_STATES.includes(paymentState)) return false;
   if (!trip.activeCourse) return false;
-  return trip.activeCourse.state === "accepted";
+  return trip.activeCourse.state === CourseState.ACCEPTED;
 };
 
 /**

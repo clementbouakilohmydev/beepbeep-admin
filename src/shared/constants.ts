@@ -21,42 +21,89 @@ export const MAX_RATING = 5;
 // Orthographe : "cancelled" (2 L). Les valeurs Stripe internes utilisent
 // "canceled" (1 L, US) mais ne fuient jamais via Course.state.
 
-/** Tous les états valides d'une Course côté back */
-export const COURSE_STATES = ["accepted", "cancelled", "rejected", "paid"] as const;
+/**
+ * Enum des états Course consommé via `CourseState.ACCEPTED` etc, plutôt
+ * que les chaînes nues "accepted"/"paid"/etc qui se prêtaient aux typos
+ * silencieuses (cf legacy "acepted course" dans Course.validateInput).
+ */
+export const CourseState = {
+  ACCEPTED: "accepted",
+  CANCELLED: "cancelled",
+  REJECTED: "rejected",
+  PAID: "paid",
+} as const;
 
-export type CourseState = (typeof COURSE_STATES)[number] | (string & {});
+/** Tous les états valides d'une Course côté back */
+export const COURSE_STATES = [
+  CourseState.ACCEPTED,
+  CourseState.CANCELLED,
+  CourseState.REJECTED,
+  CourseState.PAID,
+] as const;
+
+export type CourseStateValue = (typeof COURSE_STATES)[number] | (string & {});
 
 /** États de course considérés comme terminés (plus de suivi attendu) */
 export const FINISHED_COURSE_STATES: readonly string[] = [
-  "paid",
-  "cancelled",
-  "rejected",
+  CourseState.PAID,
+  CourseState.CANCELLED,
+  CourseState.REJECTED,
 ];
 
 // ─── Payment states ────────────────────────────────────────────────────
 // Source de vérité = back/api/src/models/Payment.ts (Payment.state.options)
 
+/**
+ * Enum des états Payment. Même rationale que CourseState — sans enum, le
+ * passage manuel d'un cron qui setait state="suceeded" (typo) au lieu de
+ * "succeeded" était indétectable.
+ */
+export const PaymentState = {
+  PENDING: "pending",
+  VERIFICATION: "verification",
+  AUTHORIZED: "authorized",
+  SUCCEEDED: "succeeded",
+  REJECTED: "rejected",
+  REFUNDED: "refunded",
+  FAILED_REFUND: "failedRefund",
+  TRANSFERRED: "transferred",
+} as const;
+
 /** Tous les états valides d'un Payment côté back */
 export const PAYMENT_STATES = [
-  "pending",
-  "verification",
-  "authorized",
-  "succeeded",
-  "rejected",
-  "refunded",
-  "failedRefund",
-  "transferred",
+  PaymentState.PENDING,
+  PaymentState.VERIFICATION,
+  PaymentState.AUTHORIZED,
+  PaymentState.SUCCEEDED,
+  PaymentState.REJECTED,
+  PaymentState.REFUNDED,
+  PaymentState.FAILED_REFUND,
+  PaymentState.TRANSFERRED,
 ] as const;
 
-export type PaymentState = (typeof PAYMENT_STATES)[number] | (string & {});
+export type PaymentStateValue = (typeof PAYMENT_STATES)[number] | (string & {});
 
 /** États de paiement considérés comme finalisés (Payment n'a pas d'état d'annulation) */
 export const FINISHED_PAYMENT_STATES: readonly string[] = [
-  "transferred",
-  "refunded",
-  "failedRefund",
-  "rejected",
+  PaymentState.TRANSFERRED,
+  PaymentState.REFUNDED,
+  PaymentState.FAILED_REFUND,
+  PaymentState.REJECTED,
 ];
+
+// ─── Trip rules ────────────────────────────────────────────────────────
+
+/**
+ * Validité d'une annonce instant en minutes. Source unique consommée par :
+ *   - shared/trip-logic.ts (front : isTripExpired)
+ *   - back/utils/matching.ts (re-export pour ne pas casser les imports)
+ *   - back/models/Trip.ts (validateInput passenger_already_has_announcement)
+ *   - back/virtuals/DriverTripsArroundField.ts (filtre des annonces visibles)
+ *
+ * Avant de modifier, vérifier que le cron `expireAnnouncements` (toutes
+ * les 5 min) laisse le temps de prise en charge raisonnable.
+ */
+export const INSTANT_TRIP_VALIDITY_MINUTES = 45;
 
 // ─── Document types ────────────────────────────────────────────────────
 
