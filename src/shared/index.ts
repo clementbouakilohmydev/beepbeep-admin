@@ -12,3 +12,4 @@
 export * from "./constants";
 export * from "./trip-logic";
 export * from "./formatters";
+export * from "./error-codes";
