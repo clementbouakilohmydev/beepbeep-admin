@@ -18,8 +18,6 @@ export type Scalars = {
   DateTime: { input: string; output: string; }
   /** The `JSON` scalar type represents JSON values as specified by [ECMA-404](http://www.ecma-international.org/publications/files/ECMA-ST/ECMA-404.pdf). */
   JSON: { input: Record<string, unknown>; output: Record<string, unknown>; }
-  /** The `Upload` scalar type represents a file upload. */
-  Upload: { input: File; output: File; }
 };
 
 export type AddPushTokenType = {
@@ -214,7 +212,7 @@ export type Certificate = {
   createdAt?: Maybe<Scalars['DateTime']['output']>;
   expirationDatetime?: Maybe<Scalars['DateTime']['output']>;
   id: Scalars['ID']['output'];
-  picture?: Maybe<ImageFieldOutput>;
+  picture?: Maybe<File>;
   registrationDatetime?: Maybe<Scalars['DateTime']['output']>;
   state?: Maybe<Scalars['String']['output']>;
   updatedAt?: Maybe<Scalars['DateTime']['output']>;
@@ -224,7 +222,7 @@ export type Certificate = {
 export type CertificateCreateInput = {
   createdAt?: InputMaybe<Scalars['DateTime']['input']>;
   expirationDatetime?: InputMaybe<Scalars['DateTime']['input']>;
-  picture?: InputMaybe<ImageFieldInput>;
+  picture?: InputMaybe<FileRelateToOneForCreateInput>;
   registrationDatetime?: InputMaybe<Scalars['DateTime']['input']>;
   state?: InputMaybe<Scalars['String']['input']>;
   updatedAt?: InputMaybe<Scalars['DateTime']['input']>;
@@ -259,7 +257,7 @@ export type CertificateUpdateArgs = {
 export type CertificateUpdateInput = {
   createdAt?: InputMaybe<Scalars['DateTime']['input']>;
   expirationDatetime?: InputMaybe<Scalars['DateTime']['input']>;
-  picture?: InputMaybe<ImageFieldInput>;
+  picture?: InputMaybe<FileRelateToOneForUpdateInput>;
   registrationDatetime?: InputMaybe<Scalars['DateTime']['input']>;
   state?: InputMaybe<Scalars['String']['input']>;
   updatedAt?: InputMaybe<Scalars['DateTime']['input']>;
@@ -273,6 +271,7 @@ export type CertificateWhereInput = {
   createdAt?: InputMaybe<DateTimeNullableFilter>;
   expirationDatetime?: InputMaybe<DateTimeNullableFilter>;
   id?: InputMaybe<IdFilter>;
+  picture?: InputMaybe<FileWhereInput>;
   registrationDatetime?: InputMaybe<DateTimeNullableFilter>;
   state?: InputMaybe<StringNullableFilter>;
   updatedAt?: InputMaybe<DateTimeNullableFilter>;
@@ -291,7 +290,7 @@ export type ClearPushTokensType = {
 
 export type Course = {
   __typename?: 'Course';
-  askedBy?: Maybe<Scalars['String']['output']>;
+  cancellationFee?: Maybe<Scalars['Float']['output']>;
   createdAt?: Maybe<Scalars['DateTime']['output']>;
   distance?: Maybe<Scalars['Int']['output']>;
   driver?: Maybe<User>;
@@ -306,7 +305,8 @@ export type Course = {
   passenger?: Maybe<User>;
   payment?: Maybe<Payment>;
   price?: Maybe<Scalars['Float']['output']>;
-  ratings?: Maybe<Rating>;
+  ratings?: Maybe<Array<Rating>>;
+  ratingsCount?: Maybe<Scalars['Int']['output']>;
   startDatetimeUtc?: Maybe<Scalars['DateTime']['output']>;
   state?: Maybe<Scalars['String']['output']>;
   terminatedByDriver?: Maybe<Scalars['Boolean']['output']>;
@@ -330,8 +330,22 @@ export type CourseMessagesCountArgs = {
   where?: MessageWhereInput;
 };
 
+
+export type CourseRatingsArgs = {
+  cursor?: InputMaybe<RatingWhereUniqueInput>;
+  orderBy?: Array<RatingOrderByInput>;
+  skip?: Scalars['Int']['input'];
+  take?: InputMaybe<Scalars['Int']['input']>;
+  where?: RatingWhereInput;
+};
+
+
+export type CourseRatingsCountArgs = {
+  where?: RatingWhereInput;
+};
+
 export type CourseCreateInput = {
-  askedBy?: InputMaybe<Scalars['String']['input']>;
+  cancellationFee?: InputMaybe<Scalars['Float']['input']>;
   createdAt?: InputMaybe<Scalars['DateTime']['input']>;
   distance?: InputMaybe<Scalars['Int']['input']>;
   driver?: InputMaybe<UserRelateToOneForCreateInput>;
@@ -344,7 +358,7 @@ export type CourseCreateInput = {
   passenger?: InputMaybe<UserRelateToOneForCreateInput>;
   payment?: InputMaybe<PaymentRelateToOneForCreateInput>;
   price?: InputMaybe<Scalars['Float']['input']>;
-  ratings?: InputMaybe<RatingRelateToOneForCreateInput>;
+  ratings?: InputMaybe<RatingRelateToManyForCreateInput>;
   startDatetimeUtc?: InputMaybe<Scalars['DateTime']['input']>;
   state?: InputMaybe<Scalars['String']['input']>;
   terminatedByDriver?: InputMaybe<Scalars['Boolean']['input']>;
@@ -361,7 +375,7 @@ export type CourseManyRelationFilter = {
 };
 
 export type CourseOrderByInput = {
-  askedBy?: InputMaybe<OrderDirection>;
+  cancellationFee?: InputMaybe<OrderDirection>;
   createdAt?: InputMaybe<OrderDirection>;
   distance?: InputMaybe<OrderDirection>;
   duration?: InputMaybe<OrderDirection>;
@@ -405,7 +419,7 @@ export type CourseUpdateArgs = {
 };
 
 export type CourseUpdateInput = {
-  askedBy?: InputMaybe<Scalars['String']['input']>;
+  cancellationFee?: InputMaybe<Scalars['Float']['input']>;
   createdAt?: InputMaybe<Scalars['DateTime']['input']>;
   distance?: InputMaybe<Scalars['Int']['input']>;
   driver?: InputMaybe<UserRelateToOneForUpdateInput>;
@@ -418,7 +432,7 @@ export type CourseUpdateInput = {
   passenger?: InputMaybe<UserRelateToOneForUpdateInput>;
   payment?: InputMaybe<PaymentRelateToOneForUpdateInput>;
   price?: InputMaybe<Scalars['Float']['input']>;
-  ratings?: InputMaybe<RatingRelateToOneForUpdateInput>;
+  ratings?: InputMaybe<RatingRelateToManyForUpdateInput>;
   startDatetimeUtc?: InputMaybe<Scalars['DateTime']['input']>;
   state?: InputMaybe<Scalars['String']['input']>;
   terminatedByDriver?: InputMaybe<Scalars['Boolean']['input']>;
@@ -432,7 +446,7 @@ export type CourseWhereInput = {
   AND?: InputMaybe<Array<CourseWhereInput>>;
   NOT?: InputMaybe<Array<CourseWhereInput>>;
   OR?: InputMaybe<Array<CourseWhereInput>>;
-  askedBy?: InputMaybe<StringFilter>;
+  cancellationFee?: InputMaybe<FloatNullableFilter>;
   createdAt?: InputMaybe<DateTimeNullableFilter>;
   distance?: InputMaybe<IntNullableFilter>;
   driver?: InputMaybe<UserWhereInput>;
@@ -446,7 +460,7 @@ export type CourseWhereInput = {
   passenger?: InputMaybe<UserWhereInput>;
   payment?: InputMaybe<PaymentWhereInput>;
   price?: InputMaybe<FloatNullableFilter>;
-  ratings?: InputMaybe<RatingWhereInput>;
+  ratings?: InputMaybe<RatingManyRelationFilter>;
   startDatetimeUtc?: InputMaybe<DateTimeNullableFilter>;
   state?: InputMaybe<StringFilter>;
   terminatedByDriver?: InputMaybe<BooleanFilter>;
@@ -459,7 +473,6 @@ export type CourseWhereInput = {
 export type CourseWhereUniqueInput = {
   id?: InputMaybe<Scalars['ID']['input']>;
   payment?: InputMaybe<PaymentWhereUniqueInput>;
-  ratings?: InputMaybe<RatingWhereUniqueInput>;
 };
 
 export type DateTimeFilter = {
@@ -482,6 +495,19 @@ export type DateTimeNullableFilter = {
   lte?: InputMaybe<Scalars['DateTime']['input']>;
   not?: InputMaybe<DateTimeNullableFilter>;
   notIn?: InputMaybe<Array<Scalars['DateTime']['input']>>;
+};
+
+/**
+ * Résultat de deleteMyAccount.
+ * - success=true : compte marqué comme supprimé (deletedAt set côté DB).
+ * - success=false : un blocage métier empêche la suppression maintenant ;
+ *   `reasonCode` indique au client quel cas afficher.
+ */
+export type DeleteMyAccountResult = {
+  __typename?: 'DeleteMyAccountResult';
+  reasonCode?: Maybe<Scalars['String']['output']>;
+  reasonMessage?: Maybe<Scalars['String']['output']>;
+  success: Scalars['Boolean']['output'];
 };
 
 export type Driver = {
@@ -519,7 +545,6 @@ export type DriverSlotsCountArgs = {
 
 export type DriverTripsArroundArgs = {
   fromDatetimeUtc?: InputMaybe<Scalars['String']['input']>;
-  radius: Scalars['Int']['input'];
   toDatetimeUtc?: InputMaybe<Scalars['String']['input']>;
 };
 
@@ -628,7 +653,7 @@ export type DriverSlotWhereInput = {
   createdAt?: InputMaybe<DateTimeNullableFilter>;
   fromTime?: InputMaybe<IntFilter>;
   id?: InputMaybe<IdFilter>;
-  isoWeekday?: InputMaybe<IntNullableFilter>;
+  isoWeekday?: InputMaybe<IntFilter>;
   toTime?: InputMaybe<IntFilter>;
   updatedAt?: InputMaybe<DateTimeNullableFilter>;
   user?: InputMaybe<UserWhereInput>;
@@ -688,9 +713,11 @@ export type DriverWhereUniqueInput = {
 export type DrivingLicense = {
   __typename?: 'DrivingLicense';
   createdAt?: Maybe<Scalars['DateTime']['output']>;
+  expirationDatetimeUtc?: Maybe<Scalars['DateTime']['output']>;
   id: Scalars['ID']['output'];
+  isExpired?: Maybe<Scalars['Boolean']['output']>;
   obtentionYear?: Maybe<Scalars['Int']['output']>;
-  picture?: Maybe<ImageFieldOutput>;
+  picture?: Maybe<File>;
   state?: Maybe<Scalars['String']['output']>;
   updatedAt?: Maybe<Scalars['DateTime']['output']>;
   user?: Maybe<User>;
@@ -698,8 +725,10 @@ export type DrivingLicense = {
 
 export type DrivingLicenseCreateInput = {
   createdAt?: InputMaybe<Scalars['DateTime']['input']>;
+  expirationDatetimeUtc?: InputMaybe<Scalars['DateTime']['input']>;
+  isExpired?: InputMaybe<Scalars['Boolean']['input']>;
   obtentionYear?: InputMaybe<Scalars['Int']['input']>;
-  picture?: InputMaybe<ImageFieldInput>;
+  picture?: InputMaybe<FileRelateToOneForCreateInput>;
   state?: InputMaybe<Scalars['String']['input']>;
   updatedAt?: InputMaybe<Scalars['DateTime']['input']>;
   user?: InputMaybe<UserRelateToOneForCreateInput>;
@@ -707,7 +736,9 @@ export type DrivingLicenseCreateInput = {
 
 export type DrivingLicenseOrderByInput = {
   createdAt?: InputMaybe<OrderDirection>;
+  expirationDatetimeUtc?: InputMaybe<OrderDirection>;
   id?: InputMaybe<OrderDirection>;
+  isExpired?: InputMaybe<OrderDirection>;
   obtentionYear?: InputMaybe<OrderDirection>;
   state?: InputMaybe<OrderDirection>;
   updatedAt?: InputMaybe<OrderDirection>;
@@ -731,8 +762,10 @@ export type DrivingLicenseUpdateArgs = {
 
 export type DrivingLicenseUpdateInput = {
   createdAt?: InputMaybe<Scalars['DateTime']['input']>;
+  expirationDatetimeUtc?: InputMaybe<Scalars['DateTime']['input']>;
+  isExpired?: InputMaybe<Scalars['Boolean']['input']>;
   obtentionYear?: InputMaybe<Scalars['Int']['input']>;
-  picture?: InputMaybe<ImageFieldInput>;
+  picture?: InputMaybe<FileRelateToOneForUpdateInput>;
   state?: InputMaybe<Scalars['String']['input']>;
   updatedAt?: InputMaybe<Scalars['DateTime']['input']>;
   user?: InputMaybe<UserRelateToOneForUpdateInput>;
@@ -743,8 +776,11 @@ export type DrivingLicenseWhereInput = {
   NOT?: InputMaybe<Array<DrivingLicenseWhereInput>>;
   OR?: InputMaybe<Array<DrivingLicenseWhereInput>>;
   createdAt?: InputMaybe<DateTimeNullableFilter>;
+  expirationDatetimeUtc?: InputMaybe<DateTimeNullableFilter>;
   id?: InputMaybe<IdFilter>;
+  isExpired?: InputMaybe<BooleanFilter>;
   obtentionYear?: InputMaybe<IntNullableFilter>;
+  picture?: InputMaybe<FileWhereInput>;
   state?: InputMaybe<StringNullableFilter>;
   updatedAt?: InputMaybe<DateTimeNullableFilter>;
   user?: InputMaybe<UserWhereInput>;
@@ -833,6 +869,78 @@ export type EquipmentWhereUniqueInput = {
   id?: InputMaybe<Scalars['ID']['input']>;
 };
 
+export type File = {
+  __typename?: 'File';
+  contentLength?: Maybe<Scalars['Int']['output']>;
+  createdAt?: Maybe<Scalars['DateTime']['output']>;
+  fullpath?: Maybe<Scalars['String']['output']>;
+  id: Scalars['ID']['output'];
+  mimetype?: Maybe<Scalars['String']['output']>;
+  updatedAt?: Maybe<Scalars['DateTime']['output']>;
+  uri?: Maybe<Scalars['String']['output']>;
+  user?: Maybe<User>;
+};
+
+export type FileCreateInput = {
+  contentLength?: InputMaybe<Scalars['Int']['input']>;
+  createdAt?: InputMaybe<Scalars['DateTime']['input']>;
+  fullpath?: InputMaybe<Scalars['String']['input']>;
+  mimetype?: InputMaybe<Scalars['String']['input']>;
+  updatedAt?: InputMaybe<Scalars['DateTime']['input']>;
+  user?: InputMaybe<UserRelateToOneForCreateInput>;
+};
+
+export type FileOrderByInput = {
+  contentLength?: InputMaybe<OrderDirection>;
+  createdAt?: InputMaybe<OrderDirection>;
+  fullpath?: InputMaybe<OrderDirection>;
+  id?: InputMaybe<OrderDirection>;
+  mimetype?: InputMaybe<OrderDirection>;
+  updatedAt?: InputMaybe<OrderDirection>;
+};
+
+export type FileRelateToOneForCreateInput = {
+  connect?: InputMaybe<FileWhereUniqueInput>;
+  create?: InputMaybe<FileCreateInput>;
+};
+
+export type FileRelateToOneForUpdateInput = {
+  connect?: InputMaybe<FileWhereUniqueInput>;
+  create?: InputMaybe<FileCreateInput>;
+  disconnect?: InputMaybe<Scalars['Boolean']['input']>;
+};
+
+export type FileUpdateArgs = {
+  data: FileUpdateInput;
+  where: FileWhereUniqueInput;
+};
+
+export type FileUpdateInput = {
+  contentLength?: InputMaybe<Scalars['Int']['input']>;
+  createdAt?: InputMaybe<Scalars['DateTime']['input']>;
+  fullpath?: InputMaybe<Scalars['String']['input']>;
+  mimetype?: InputMaybe<Scalars['String']['input']>;
+  updatedAt?: InputMaybe<Scalars['DateTime']['input']>;
+  user?: InputMaybe<UserRelateToOneForUpdateInput>;
+};
+
+export type FileWhereInput = {
+  AND?: InputMaybe<Array<FileWhereInput>>;
+  NOT?: InputMaybe<Array<FileWhereInput>>;
+  OR?: InputMaybe<Array<FileWhereInput>>;
+  contentLength?: InputMaybe<IntNullableFilter>;
+  createdAt?: InputMaybe<DateTimeNullableFilter>;
+  fullpath?: InputMaybe<StringFilter>;
+  id?: InputMaybe<IdFilter>;
+  mimetype?: InputMaybe<StringFilter>;
+  updatedAt?: InputMaybe<DateTimeNullableFilter>;
+  user?: InputMaybe<UserWhereInput>;
+};
+
+export type FileWhereUniqueInput = {
+  id?: InputMaybe<Scalars['ID']['input']>;
+};
+
 export type FloatNullableFilter = {
   equals?: InputMaybe<Scalars['Float']['input']>;
   gt?: InputMaybe<Scalars['Float']['input']>;
@@ -855,33 +963,13 @@ export type IdFilter = {
   notIn?: InputMaybe<Array<Scalars['ID']['input']>>;
 };
 
-export type ImageExtension =
-  | 'gif'
-  | 'jpg'
-  | 'png'
-  | 'webp';
-
-export type ImageFieldInput = {
-  upload: Scalars['Upload']['input'];
-};
-
-export type ImageFieldOutput = {
-  __typename?: 'ImageFieldOutput';
-  extension: ImageExtension;
-  filesize: Scalars['Int']['output'];
-  height: Scalars['Int']['output'];
-  id: Scalars['ID']['output'];
-  url: Scalars['String']['output'];
-  width: Scalars['Int']['output'];
-};
-
 export type Insurance = {
   __typename?: 'Insurance';
   createdAt?: Maybe<Scalars['DateTime']['output']>;
   expirationDatetimeUtc?: Maybe<Scalars['DateTime']['output']>;
   id: Scalars['ID']['output'];
   isExpired?: Maybe<Scalars['Boolean']['output']>;
-  picture?: Maybe<ImageFieldOutput>;
+  picture?: Maybe<File>;
   state?: Maybe<Scalars['String']['output']>;
   updatedAt?: Maybe<Scalars['DateTime']['output']>;
   user?: Maybe<User>;
@@ -891,7 +979,7 @@ export type InsuranceCreateInput = {
   createdAt?: InputMaybe<Scalars['DateTime']['input']>;
   expirationDatetimeUtc?: InputMaybe<Scalars['DateTime']['input']>;
   isExpired?: InputMaybe<Scalars['Boolean']['input']>;
-  picture?: InputMaybe<ImageFieldInput>;
+  picture?: InputMaybe<FileRelateToOneForCreateInput>;
   state?: InputMaybe<Scalars['String']['input']>;
   updatedAt?: InputMaybe<Scalars['DateTime']['input']>;
   user?: InputMaybe<UserRelateToOneForCreateInput>;
@@ -926,7 +1014,7 @@ export type InsuranceUpdateInput = {
   createdAt?: InputMaybe<Scalars['DateTime']['input']>;
   expirationDatetimeUtc?: InputMaybe<Scalars['DateTime']['input']>;
   isExpired?: InputMaybe<Scalars['Boolean']['input']>;
-  picture?: InputMaybe<ImageFieldInput>;
+  picture?: InputMaybe<FileRelateToOneForUpdateInput>;
   state?: InputMaybe<Scalars['String']['input']>;
   updatedAt?: InputMaybe<Scalars['DateTime']['input']>;
   user?: InputMaybe<UserRelateToOneForUpdateInput>;
@@ -940,6 +1028,7 @@ export type InsuranceWhereInput = {
   expirationDatetimeUtc?: InputMaybe<DateTimeFilter>;
   id?: InputMaybe<IdFilter>;
   isExpired?: InputMaybe<BooleanFilter>;
+  picture?: InputMaybe<FileWhereInput>;
   state?: InputMaybe<StringNullableFilter>;
   updatedAt?: InputMaybe<DateTimeNullableFilter>;
   user?: InputMaybe<UserWhereInput>;
@@ -1235,6 +1324,7 @@ export type Mutation = {
   addPushToken?: Maybe<AddPushTokenType>;
   applyAffiliationCode: Affiliation;
   authenticateUserWithPassword?: Maybe<UserAuthenticationWithPasswordResult>;
+  cancelCourse?: Maybe<Scalars['Boolean']['output']>;
   clearPushTokens?: Maybe<ClearPushTokensType>;
   createAddress?: Maybe<Address>;
   createAddresses?: Maybe<Array<Maybe<Address>>>;
@@ -1251,6 +1341,8 @@ export type Mutation = {
   createDrivingLicense?: Maybe<DrivingLicense>;
   createDrivingLicenses?: Maybe<Array<Maybe<DrivingLicense>>>;
   createEquipment?: Maybe<Equipment>;
+  createFile?: Maybe<File>;
+  createFiles?: Maybe<Array<Maybe<File>>>;
   createInsurance?: Maybe<Insurance>;
   createInsurances?: Maybe<Array<Maybe<Insurance>>>;
   createLocation?: Maybe<Location>;
@@ -1300,12 +1392,23 @@ export type Mutation = {
   deleteDrivingLicense?: Maybe<DrivingLicense>;
   deleteDrivingLicenses?: Maybe<Array<Maybe<DrivingLicense>>>;
   deleteEquipment?: Maybe<Equipment>;
+  deleteFile?: Maybe<File>;
+  deleteFiles?: Maybe<Array<Maybe<File>>>;
   deleteInsurance?: Maybe<Insurance>;
   deleteInsurances?: Maybe<Array<Maybe<Insurance>>>;
   deleteLocation?: Maybe<Location>;
   deleteLocations?: Maybe<Array<Maybe<Location>>>;
   deleteMessage?: Maybe<Message>;
   deleteMessages?: Maybe<Array<Maybe<Message>>>;
+  /**
+   * Marque le compte de l'utilisateur courant comme supprimé.
+   * - Vérifie le mot de passe (re-confirmation).
+   * - Refuse si engagement actif (course acceptée, paiement en cours,
+   *   balance Stripe Connect non transférée).
+   * - Anonymise les données seulement plus tard (TODO : cron de hard
+   *   anonymization). En V1, le User reste consultable pour réactivation.
+   */
+  deleteMyAccount: DeleteMyAccountResult;
   deleteNode?: Maybe<Node>;
   deleteNodes?: Maybe<Array<Maybe<Node>>>;
   deleteNotification?: Maybe<Notification>;
@@ -1336,6 +1439,12 @@ export type Mutation = {
   enableUser?: Maybe<User>;
   endSession: Scalars['Boolean']['output'];
   pay: PayType;
+  /**
+   * Réactive le compte de l'utilisateur courant (annule le soft-delete
+   * posé par deleteMyAccount). L'user doit être logué (le mdp n'a jamais
+   * changé pendant la suppression, donc le re-login fonctionne).
+   */
+  reactivateMyAccount: Scalars['Boolean']['output'];
   resetPassword: ResetPasswordType;
   sendUserCode: SendUserCodeType;
   terminateCourse?: Maybe<Scalars['Boolean']['output']>;
@@ -1354,6 +1463,8 @@ export type Mutation = {
   updateDrivingLicense?: Maybe<DrivingLicense>;
   updateDrivingLicenses?: Maybe<Array<Maybe<DrivingLicense>>>;
   updateEquipment?: Maybe<Equipment>;
+  updateFile?: Maybe<File>;
+  updateFiles?: Maybe<Array<Maybe<File>>>;
   updateInsurance?: Maybe<Insurance>;
   updateInsurances?: Maybe<Array<Maybe<Insurance>>>;
   updateLocation?: Maybe<Location>;
@@ -1412,6 +1523,11 @@ export type MutationApplyAffiliationCodeArgs = {
 export type MutationAuthenticateUserWithPasswordArgs = {
   email: Scalars['String']['input'];
   password: Scalars['String']['input'];
+};
+
+
+export type MutationCancelCourseArgs = {
+  courseId: Scalars['ID']['input'];
 };
 
 
@@ -1487,6 +1603,16 @@ export type MutationCreateDrivingLicensesArgs = {
 
 export type MutationCreateEquipmentArgs = {
   data: EquipmentCreateInput;
+};
+
+
+export type MutationCreateFileArgs = {
+  data: FileCreateInput;
+};
+
+
+export type MutationCreateFilesArgs = {
+  data: Array<FileCreateInput>;
 };
 
 
@@ -1735,6 +1861,16 @@ export type MutationDeleteEquipmentArgs = {
 };
 
 
+export type MutationDeleteFileArgs = {
+  where: FileWhereUniqueInput;
+};
+
+
+export type MutationDeleteFilesArgs = {
+  where: Array<FileWhereUniqueInput>;
+};
+
+
 export type MutationDeleteInsuranceArgs = {
   where: InsuranceWhereUniqueInput;
 };
@@ -1762,6 +1898,12 @@ export type MutationDeleteMessageArgs = {
 
 export type MutationDeleteMessagesArgs = {
   where: Array<MessageWhereUniqueInput>;
+};
+
+
+export type MutationDeleteMyAccountArgs = {
+  password: Scalars['String']['input'];
+  reason?: InputMaybe<Scalars['String']['input']>;
 };
 
 
@@ -2001,6 +2143,17 @@ export type MutationUpdateDrivingLicensesArgs = {
 export type MutationUpdateEquipmentArgs = {
   data: EquipmentUpdateInput;
   where: EquipmentWhereUniqueInput;
+};
+
+
+export type MutationUpdateFileArgs = {
+  data: FileUpdateInput;
+  where: FileWhereUniqueInput;
+};
+
+
+export type MutationUpdateFilesArgs = {
+  data: Array<FileUpdateArgs>;
 };
 
 
@@ -2351,6 +2504,7 @@ export type Page = {
   name?: Maybe<Scalars['String']['output']>;
   sections?: Maybe<Array<PageSection>>;
   sectionsCount?: Maybe<Scalars['Int']['output']>;
+  slug?: Maybe<Scalars['String']['output']>;
   updatedAt?: Maybe<Scalars['DateTime']['output']>;
 };
 
@@ -2373,6 +2527,7 @@ export type PageCreateInput = {
   description?: InputMaybe<Scalars['String']['input']>;
   name?: InputMaybe<Scalars['String']['input']>;
   sections?: InputMaybe<PageSectionRelateToManyForCreateInput>;
+  slug?: InputMaybe<Scalars['String']['input']>;
   updatedAt?: InputMaybe<Scalars['DateTime']['input']>;
 };
 
@@ -2381,6 +2536,7 @@ export type PageOrderByInput = {
   description?: InputMaybe<OrderDirection>;
   id?: InputMaybe<OrderDirection>;
   name?: InputMaybe<OrderDirection>;
+  slug?: InputMaybe<OrderDirection>;
   updatedAt?: InputMaybe<OrderDirection>;
 };
 
@@ -2478,6 +2634,7 @@ export type PageUpdateInput = {
   description?: InputMaybe<Scalars['String']['input']>;
   name?: InputMaybe<Scalars['String']['input']>;
   sections?: InputMaybe<PageSectionRelateToManyForUpdateInput>;
+  slug?: InputMaybe<Scalars['String']['input']>;
   updatedAt?: InputMaybe<Scalars['DateTime']['input']>;
 };
 
@@ -2490,11 +2647,13 @@ export type PageWhereInput = {
   id?: InputMaybe<IdFilter>;
   name?: InputMaybe<StringFilter>;
   sections?: InputMaybe<PageSectionManyRelationFilter>;
+  slug?: InputMaybe<StringFilter>;
   updatedAt?: InputMaybe<DateTimeNullableFilter>;
 };
 
 export type PageWhereUniqueInput = {
   id?: InputMaybe<Scalars['ID']['input']>;
+  slug?: InputMaybe<Scalars['String']['input']>;
 };
 
 export type PasswordFilter = {
@@ -2519,12 +2678,15 @@ export type Payment = {
   __typename?: 'Payment';
   course?: Maybe<Course>;
   createdAt?: Maybe<Scalars['DateTime']['output']>;
+  fees?: Maybe<Scalars['Float']['output']>;
   id: Scalars['ID']['output'];
+  paymentError?: Maybe<Scalars['Boolean']['output']>;
   price?: Maybe<Scalars['Float']['output']>;
   state?: Maybe<Scalars['String']['output']>;
   stripeCaptured?: Maybe<Scalars['Boolean']['output']>;
   stripeIntentId?: Maybe<Scalars['String']['output']>;
   stripeTransferId?: Maybe<Scalars['String']['output']>;
+  transferError?: Maybe<Scalars['Boolean']['output']>;
   trip?: Maybe<Trip>;
   updatedAt?: Maybe<Scalars['DateTime']['output']>;
   user?: Maybe<User>;
@@ -2533,11 +2695,14 @@ export type Payment = {
 export type PaymentCreateInput = {
   course?: InputMaybe<CourseRelateToOneForCreateInput>;
   createdAt?: InputMaybe<Scalars['DateTime']['input']>;
+  fees?: InputMaybe<Scalars['Float']['input']>;
+  paymentError?: InputMaybe<Scalars['Boolean']['input']>;
   price?: InputMaybe<Scalars['Float']['input']>;
   state?: InputMaybe<Scalars['String']['input']>;
   stripeCaptured?: InputMaybe<Scalars['Boolean']['input']>;
   stripeIntentId?: InputMaybe<Scalars['String']['input']>;
   stripeTransferId?: InputMaybe<Scalars['String']['input']>;
+  transferError?: InputMaybe<Scalars['Boolean']['input']>;
   trip?: InputMaybe<TripRelateToOneForCreateInput>;
   updatedAt?: InputMaybe<Scalars['DateTime']['input']>;
   user?: InputMaybe<UserRelateToOneForCreateInput>;
@@ -2551,12 +2716,15 @@ export type PaymentManyRelationFilter = {
 
 export type PaymentOrderByInput = {
   createdAt?: InputMaybe<OrderDirection>;
+  fees?: InputMaybe<OrderDirection>;
   id?: InputMaybe<OrderDirection>;
+  paymentError?: InputMaybe<OrderDirection>;
   price?: InputMaybe<OrderDirection>;
   state?: InputMaybe<OrderDirection>;
   stripeCaptured?: InputMaybe<OrderDirection>;
   stripeIntentId?: InputMaybe<OrderDirection>;
   stripeTransferId?: InputMaybe<OrderDirection>;
+  transferError?: InputMaybe<OrderDirection>;
   updatedAt?: InputMaybe<OrderDirection>;
 };
 
@@ -2591,11 +2759,14 @@ export type PaymentUpdateArgs = {
 export type PaymentUpdateInput = {
   course?: InputMaybe<CourseRelateToOneForUpdateInput>;
   createdAt?: InputMaybe<Scalars['DateTime']['input']>;
+  fees?: InputMaybe<Scalars['Float']['input']>;
+  paymentError?: InputMaybe<Scalars['Boolean']['input']>;
   price?: InputMaybe<Scalars['Float']['input']>;
   state?: InputMaybe<Scalars['String']['input']>;
   stripeCaptured?: InputMaybe<Scalars['Boolean']['input']>;
   stripeIntentId?: InputMaybe<Scalars['String']['input']>;
   stripeTransferId?: InputMaybe<Scalars['String']['input']>;
+  transferError?: InputMaybe<Scalars['Boolean']['input']>;
   trip?: InputMaybe<TripRelateToOneForUpdateInput>;
   updatedAt?: InputMaybe<Scalars['DateTime']['input']>;
   user?: InputMaybe<UserRelateToOneForUpdateInput>;
@@ -2607,12 +2778,15 @@ export type PaymentWhereInput = {
   OR?: InputMaybe<Array<PaymentWhereInput>>;
   course?: InputMaybe<CourseWhereInput>;
   createdAt?: InputMaybe<DateTimeNullableFilter>;
+  fees?: InputMaybe<FloatNullableFilter>;
   id?: InputMaybe<IdFilter>;
+  paymentError?: InputMaybe<BooleanFilter>;
   price?: InputMaybe<FloatNullableFilter>;
   state?: InputMaybe<StringNullableFilter>;
   stripeCaptured?: InputMaybe<BooleanFilter>;
   stripeIntentId?: InputMaybe<StringNullableFilter>;
   stripeTransferId?: InputMaybe<StringNullableFilter>;
+  transferError?: InputMaybe<BooleanFilter>;
   trip?: InputMaybe<TripWhereInput>;
   updatedAt?: InputMaybe<DateTimeNullableFilter>;
   user?: InputMaybe<UserWhereInput>;
@@ -2652,6 +2826,9 @@ export type Query = {
   equipment?: Maybe<Equipment>;
   equipments?: Maybe<Array<Equipment>>;
   equipmentsCount?: Maybe<Scalars['Int']['output']>;
+  file?: Maybe<File>;
+  files?: Maybe<Array<File>>;
+  filesCount?: Maybe<Scalars['Int']['output']>;
   getPendingCoursesCount: Scalars['Int']['output'];
   insurance?: Maybe<Insurance>;
   insurances?: Maybe<Array<Insurance>>;
@@ -2860,6 +3037,25 @@ export type QueryEquipmentsArgs = {
 
 export type QueryEquipmentsCountArgs = {
   where?: EquipmentWhereInput;
+};
+
+
+export type QueryFileArgs = {
+  where: FileWhereUniqueInput;
+};
+
+
+export type QueryFilesArgs = {
+  cursor?: InputMaybe<FileWhereUniqueInput>;
+  orderBy?: Array<FileOrderByInput>;
+  skip?: Scalars['Int']['input'];
+  take?: InputMaybe<Scalars['Int']['input']>;
+  where?: FileWhereInput;
+};
+
+
+export type QueryFilesCountArgs = {
+  where?: FileWhereInput;
 };
 
 
@@ -3234,17 +3430,6 @@ export type RatingRelateToManyForUpdateInput = {
   set?: InputMaybe<Array<RatingWhereUniqueInput>>;
 };
 
-export type RatingRelateToOneForCreateInput = {
-  connect?: InputMaybe<RatingWhereUniqueInput>;
-  create?: InputMaybe<RatingCreateInput>;
-};
-
-export type RatingRelateToOneForUpdateInput = {
-  connect?: InputMaybe<RatingWhereUniqueInput>;
-  create?: InputMaybe<RatingCreateInput>;
-  disconnect?: InputMaybe<Scalars['Boolean']['input']>;
-};
-
 export type RatingUpdateArgs = {
   data: RatingUpdateInput;
   where: RatingWhereUniqueInput;
@@ -3277,15 +3462,16 @@ export type RatingWhereInput = {
 };
 
 export type RatingWhereUniqueInput = {
-  course?: InputMaybe<CourseWhereUniqueInput>;
   id?: InputMaybe<Scalars['ID']['input']>;
 };
 
 export type RegistrationDocument = {
   __typename?: 'RegistrationDocument';
   createdAt?: Maybe<Scalars['DateTime']['output']>;
+  expirationDatetimeUtc?: Maybe<Scalars['DateTime']['output']>;
   id: Scalars['ID']['output'];
-  picture?: Maybe<ImageFieldOutput>;
+  isExpired?: Maybe<Scalars['Boolean']['output']>;
+  picture?: Maybe<File>;
   state?: Maybe<Scalars['String']['output']>;
   updatedAt?: Maybe<Scalars['DateTime']['output']>;
   user?: Maybe<User>;
@@ -3293,7 +3479,9 @@ export type RegistrationDocument = {
 
 export type RegistrationDocumentCreateInput = {
   createdAt?: InputMaybe<Scalars['DateTime']['input']>;
-  picture?: InputMaybe<ImageFieldInput>;
+  expirationDatetimeUtc?: InputMaybe<Scalars['DateTime']['input']>;
+  isExpired?: InputMaybe<Scalars['Boolean']['input']>;
+  picture?: InputMaybe<FileRelateToOneForCreateInput>;
   state?: InputMaybe<Scalars['String']['input']>;
   updatedAt?: InputMaybe<Scalars['DateTime']['input']>;
   user?: InputMaybe<UserRelateToOneForCreateInput>;
@@ -3301,7 +3489,9 @@ export type RegistrationDocumentCreateInput = {
 
 export type RegistrationDocumentOrderByInput = {
   createdAt?: InputMaybe<OrderDirection>;
+  expirationDatetimeUtc?: InputMaybe<OrderDirection>;
   id?: InputMaybe<OrderDirection>;
+  isExpired?: InputMaybe<OrderDirection>;
   state?: InputMaybe<OrderDirection>;
   updatedAt?: InputMaybe<OrderDirection>;
 };
@@ -3324,7 +3514,9 @@ export type RegistrationDocumentUpdateArgs = {
 
 export type RegistrationDocumentUpdateInput = {
   createdAt?: InputMaybe<Scalars['DateTime']['input']>;
-  picture?: InputMaybe<ImageFieldInput>;
+  expirationDatetimeUtc?: InputMaybe<Scalars['DateTime']['input']>;
+  isExpired?: InputMaybe<Scalars['Boolean']['input']>;
+  picture?: InputMaybe<FileRelateToOneForUpdateInput>;
   state?: InputMaybe<Scalars['String']['input']>;
   updatedAt?: InputMaybe<Scalars['DateTime']['input']>;
   user?: InputMaybe<UserRelateToOneForUpdateInput>;
@@ -3335,7 +3527,10 @@ export type RegistrationDocumentWhereInput = {
   NOT?: InputMaybe<Array<RegistrationDocumentWhereInput>>;
   OR?: InputMaybe<Array<RegistrationDocumentWhereInput>>;
   createdAt?: InputMaybe<DateTimeNullableFilter>;
+  expirationDatetimeUtc?: InputMaybe<DateTimeNullableFilter>;
   id?: InputMaybe<IdFilter>;
+  isExpired?: InputMaybe<BooleanFilter>;
+  picture?: InputMaybe<FileWhereInput>;
   state?: InputMaybe<StringNullableFilter>;
   updatedAt?: InputMaybe<DateTimeNullableFilter>;
   user?: InputMaybe<UserWhereInput>;
@@ -3506,9 +3701,11 @@ export type TicketWhereUniqueInput = {
 
 export type Trip = {
   __typename?: 'Trip';
+  activeCourse?: Maybe<Course>;
   availableDrivers?: Maybe<Array<Maybe<Driver>>>;
   courses?: Maybe<Array<Course>>;
   coursesCount?: Maybe<Scalars['Int']['output']>;
+  coursesHistory?: Maybe<Array<Maybe<Course>>>;
   createdAt?: Maybe<Scalars['DateTime']['output']>;
   distance?: Maybe<Scalars['Int']['output']>;
   duration?: Maybe<Scalars['Int']['output']>;
@@ -3670,7 +3867,7 @@ export type User = {
   affiliationCode?: Maybe<Scalars['String']['output']>;
   age?: Maybe<Scalars['Int']['output']>;
   anonymized?: Maybe<Scalars['Boolean']['output']>;
-  avatar?: Maybe<ImageFieldOutput>;
+  avatar?: Maybe<File>;
   averageRate?: Maybe<Scalars['Float']['output']>;
   balance?: Maybe<Scalars['Float']['output']>;
   bankAccount?: Maybe<UserBankAccountType>;
@@ -3679,6 +3876,8 @@ export type User = {
   certificate?: Maybe<Certificate>;
   coursesCount?: Maybe<Scalars['Int']['output']>;
   createdAt?: Maybe<Scalars['DateTime']['output']>;
+  deletedAt?: Maybe<Scalars['DateTime']['output']>;
+  deletionReason?: Maybe<Scalars['String']['output']>;
   driver?: Maybe<Driver>;
   driverCourses?: Maybe<Array<Course>>;
   driverCoursesCount?: Maybe<Scalars['Int']['output']>;
@@ -3934,10 +4133,12 @@ export type UserCreateInput = {
   affiliationCode?: InputMaybe<Scalars['String']['input']>;
   age?: InputMaybe<Scalars['Int']['input']>;
   anonymized?: InputMaybe<Scalars['Boolean']['input']>;
-  avatar?: InputMaybe<ImageFieldInput>;
+  avatar?: InputMaybe<FileRelateToOneForCreateInput>;
   birthdayDatetimeUtc?: InputMaybe<Scalars['DateTime']['input']>;
   certificate?: InputMaybe<CertificateRelateToOneForCreateInput>;
   createdAt?: InputMaybe<Scalars['DateTime']['input']>;
+  deletedAt?: InputMaybe<Scalars['DateTime']['input']>;
+  deletionReason?: InputMaybe<Scalars['String']['input']>;
   driver?: InputMaybe<DriverRelateToOneForCreateInput>;
   driverCourses?: InputMaybe<CourseRelateToManyForCreateInput>;
   drivingLicense?: InputMaybe<DrivingLicenseRelateToOneForCreateInput>;
@@ -3970,6 +4171,8 @@ export type UserOrderByInput = {
   anonymized?: InputMaybe<OrderDirection>;
   birthdayDatetimeUtc?: InputMaybe<OrderDirection>;
   createdAt?: InputMaybe<OrderDirection>;
+  deletedAt?: InputMaybe<OrderDirection>;
+  deletionReason?: InputMaybe<OrderDirection>;
   email?: InputMaybe<OrderDirection>;
   enabled?: InputMaybe<OrderDirection>;
   firstname?: InputMaybe<OrderDirection>;
@@ -4014,10 +4217,12 @@ export type UserUpdateInput = {
   affiliationCode?: InputMaybe<Scalars['String']['input']>;
   age?: InputMaybe<Scalars['Int']['input']>;
   anonymized?: InputMaybe<Scalars['Boolean']['input']>;
-  avatar?: InputMaybe<ImageFieldInput>;
+  avatar?: InputMaybe<FileRelateToOneForUpdateInput>;
   birthdayDatetimeUtc?: InputMaybe<Scalars['DateTime']['input']>;
   certificate?: InputMaybe<CertificateRelateToOneForUpdateInput>;
   createdAt?: InputMaybe<Scalars['DateTime']['input']>;
+  deletedAt?: InputMaybe<Scalars['DateTime']['input']>;
+  deletionReason?: InputMaybe<Scalars['String']['input']>;
   driver?: InputMaybe<DriverRelateToOneForUpdateInput>;
   driverCourses?: InputMaybe<CourseRelateToManyForUpdateInput>;
   drivingLicense?: InputMaybe<DrivingLicenseRelateToOneForUpdateInput>;
@@ -4054,9 +4259,12 @@ export type UserWhereInput = {
   affiliationCode?: InputMaybe<StringFilter>;
   age?: InputMaybe<IntNullableFilter>;
   anonymized?: InputMaybe<BooleanFilter>;
+  avatar?: InputMaybe<FileWhereInput>;
   birthdayDatetimeUtc?: InputMaybe<DateTimeNullableFilter>;
   certificate?: InputMaybe<CertificateWhereInput>;
   createdAt?: InputMaybe<DateTimeNullableFilter>;
+  deletedAt?: InputMaybe<DateTimeNullableFilter>;
+  deletionReason?: InputMaybe<StringFilter>;
   driver?: InputMaybe<DriverWhereInput>;
   driverCourses?: InputMaybe<CourseManyRelationFilter>;
   drivingLicense?: InputMaybe<DrivingLicenseWhereInput>;
@@ -4269,7 +4477,7 @@ export type GetUserQueryVariables = Exact<{
 }>;
 
 
-export type GetUserQuery = { __typename?: 'Query', user?: { __typename?: 'User', id: string, email?: string | null, firstname?: string | null, lastname?: string | null, type?: string | null, isAdmin?: boolean | null, enabled?: boolean | null, anonymized?: boolean | null, phoneNumber?: string | null, birthdayDatetimeUtc?: string | null, affiliationCode?: string | null, age?: number | null, averageRate?: number | null, coursesCount?: number | null, stripeCustomerId?: string | null, pushNotifications?: boolean | null, createdAt?: string | null, updatedAt?: string | null, ratingsCount?: number | null, avatar?: { __typename?: 'ImageFieldOutput', id: string, url: string } | null, drivingLicense?: { __typename?: 'DrivingLicense', id: string, state?: string | null, obtentionYear?: number | null, createdAt?: string | null, updatedAt?: string | null, picture?: { __typename?: 'ImageFieldOutput', id: string, url: string } | null } | null, insurance?: { __typename?: 'Insurance', id: string, state?: string | null, expirationDatetimeUtc?: string | null, isExpired?: boolean | null, createdAt?: string | null, updatedAt?: string | null, picture?: { __typename?: 'ImageFieldOutput', id: string, url: string } | null } | null, registrationDocument?: { __typename?: 'RegistrationDocument', id: string, state?: string | null, createdAt?: string | null, updatedAt?: string | null, picture?: { __typename?: 'ImageFieldOutput', id: string, url: string } | null } | null, certificate?: { __typename?: 'Certificate', id: string, state?: string | null, expirationDatetime?: string | null, registrationDatetime?: string | null, createdAt?: string | null, updatedAt?: string | null, picture?: { __typename?: 'ImageFieldOutput', id: string, url: string } | null } | null, vehicule?: { __typename?: 'Vehicule', id: string, brand?: string | null, model?: string | null, color?: string | null, registration?: string | null, country?: string | null, firstYear?: string | null } | null, ratings?: Array<{ __typename?: 'Rating', id: string, note?: number | null, message?: string | null, tags?: string | null, createdAt?: string | null, user?: { __typename?: 'User', id: string, firstname?: string | null, lastname?: string | null } | null }> | null } | null };
+export type GetUserQuery = { __typename?: 'Query', user?: { __typename?: 'User', id: string, email?: string | null, firstname?: string | null, lastname?: string | null, type?: string | null, isAdmin?: boolean | null, enabled?: boolean | null, anonymized?: boolean | null, phoneNumber?: string | null, birthdayDatetimeUtc?: string | null, affiliationCode?: string | null, age?: number | null, averageRate?: number | null, coursesCount?: number | null, stripeCustomerId?: string | null, pushNotifications?: boolean | null, createdAt?: string | null, updatedAt?: string | null, ratingsCount?: number | null, avatar?: { __typename?: 'File', id: string, uri?: string | null } | null, drivingLicense?: { __typename?: 'DrivingLicense', id: string, state?: string | null, obtentionYear?: number | null, createdAt?: string | null, updatedAt?: string | null, picture?: { __typename?: 'File', id: string, uri?: string | null } | null } | null, insurance?: { __typename?: 'Insurance', id: string, state?: string | null, expirationDatetimeUtc?: string | null, isExpired?: boolean | null, createdAt?: string | null, updatedAt?: string | null, picture?: { __typename?: 'File', id: string, uri?: string | null } | null } | null, registrationDocument?: { __typename?: 'RegistrationDocument', id: string, state?: string | null, createdAt?: string | null, updatedAt?: string | null, picture?: { __typename?: 'File', id: string, uri?: string | null } | null } | null, certificate?: { __typename?: 'Certificate', id: string, state?: string | null, expirationDatetime?: string | null, registrationDatetime?: string | null, createdAt?: string | null, updatedAt?: string | null, picture?: { __typename?: 'File', id: string, uri?: string | null } | null } | null, vehicule?: { __typename?: 'Vehicule', id: string, brand?: string | null, model?: string | null, color?: string | null, registration?: string | null, country?: string | null, firstYear?: string | null } | null, ratings?: Array<{ __typename?: 'Rating', id: string, note?: number | null, message?: string | null, tags?: string | null, createdAt?: string | null, user?: { __typename?: 'User', id: string, firstname?: string | null, lastname?: string | null } | null }> | null } | null };
 
 export type GetCoursesCountsQueryVariables = Exact<{ [key: string]: never; }>;
 
@@ -4754,7 +4962,7 @@ export const GetUserDocument = `
     updatedAt
     avatar {
       id
-      url
+      uri
     }
     drivingLicense {
       id
@@ -4762,7 +4970,7 @@ export const GetUserDocument = `
       obtentionYear
       picture {
         id
-        url
+        uri
       }
       createdAt
       updatedAt
@@ -4774,7 +4982,7 @@ export const GetUserDocument = `
       isExpired
       picture {
         id
-        url
+        uri
       }
       createdAt
       updatedAt
@@ -4784,7 +4992,7 @@ export const GetUserDocument = `
       state
       picture {
         id
-        url
+        uri
       }
       createdAt
       updatedAt
@@ -4796,7 +5004,7 @@ export const GetUserDocument = `
       registrationDatetime
       picture {
         id
-        url
+        uri
       }
       createdAt
       updatedAt

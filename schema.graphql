@@ -1264,6 +1264,7 @@ type Payment {
   stripeIntentId: String
   stripeTransferId: String
   paymentError: Boolean
+  transferError: Boolean
   user: User
   updatedAt: DateTime
   createdAt: DateTime
@@ -1289,6 +1290,7 @@ input PaymentWhereInput {
   stripeIntentId: StringNullableFilter
   stripeTransferId: StringNullableFilter
   paymentError: BooleanFilter
+  transferError: BooleanFilter
   user: UserWhereInput
   updatedAt: DateTimeNullableFilter
   createdAt: DateTimeNullableFilter
@@ -1303,6 +1305,7 @@ input PaymentOrderByInput {
   stripeIntentId: OrderDirection
   stripeTransferId: OrderDirection
   paymentError: OrderDirection
+  transferError: OrderDirection
   updatedAt: OrderDirection
   createdAt: OrderDirection
 }
@@ -1317,6 +1320,7 @@ input PaymentUpdateInput {
   stripeIntentId: String
   stripeTransferId: String
   paymentError: Boolean
+  transferError: Boolean
   user: UserRelateToOneForUpdateInput
   updatedAt: DateTime
   createdAt: DateTime
@@ -1337,6 +1341,7 @@ input PaymentCreateInput {
   stripeIntentId: String
   stripeTransferId: String
   paymentError: Boolean
+  transferError: Boolean
   user: UserRelateToOneForCreateInput
   updatedAt: DateTime
   createdAt: DateTime
