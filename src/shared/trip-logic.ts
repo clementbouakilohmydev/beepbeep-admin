@@ -14,7 +14,6 @@
 
 import {
   CANCEL_GRACE_MIN_MINUTES,
-  CANCEL_GRACE_PERCENT,
   CONTACT_AFTER_END_MINUTES,
   CONTACT_BEFORE_START_MINUTES,
   COURSE_DISPLAY_BUFFER_MINUTES,
@@ -209,9 +208,9 @@ export const canShowContactButton = (params: {
 
 /**
  * Bouton "Annuler la course" :
- * reste visible jusqu'à `start + max(CANCEL_GRACE_PERCENT × durée,
- * CANCEL_GRACE_MIN_MINUTES)` — laisse une marge après le départ théorique
- * pour les annulations de dernière minute (problème véhicule, etc.).
+ * reste visible jusqu'à `start + CANCEL_GRACE_MIN_MINUTES`. Règle "top chrono"
+ * (5 min après la prise en charge, indépendamment de la durée du trajet) —
+ * passé ce délai le driver est censé être en course.
  */
 export const canShowCancelButton = (params: {
   startDatetimeUtc?: string | null;
@@ -223,10 +222,7 @@ export const canShowCancelButton = (params: {
   // Pas de fenêtre = pas encore de start exploitable → on autorise
   // (ex : passenger qui veut supprimer son annonce instant non acceptée).
   if (!w) return true;
-  const grace = Math.max(
-    w.durationMs * CANCEL_GRACE_PERCENT,
-    CANCEL_GRACE_MIN_MINUTES * 60 * 1000
-  );
+  const grace = CANCEL_GRACE_MIN_MINUTES * 60 * 1000;
   return Date.now() <= w.startMs + grace;
 };
 

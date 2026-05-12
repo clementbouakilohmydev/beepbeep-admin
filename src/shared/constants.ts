@@ -151,9 +151,11 @@ export const CONTACT_BEFORE_START_MINUTES = 60;
 /** Bouton "Contacter" : encore visible jusqu'à N min après la fin estimée */
 export const CONTACT_AFTER_END_MINUTES = 15;
 
-/** Bouton "Annuler" : reste visible % de la durée après le début théorique */
-export const CANCEL_GRACE_PERCENT = 0.2;
-/** Plancher en minutes du même grace (si le trajet est très court) */
+/**
+ * Bouton "Annuler" : reste visible jusqu'à N minutes après la prise en charge,
+ * indépendamment de la durée du trajet (règle métier "top chrono" — passé ce
+ * délai le driver est censé être sur la route, plus d'annulation possible).
+ */
 export const CANCEL_GRACE_MIN_MINUTES = 5;
 
 /** Bouton "Course terminée" : devient visible après % de la durée écoulée */

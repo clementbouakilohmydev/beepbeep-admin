@@ -45,6 +45,7 @@ export const ErrorCode = {
   COURSE_ONLY_PASSENGER_CAN_REJECT: "course_only_passenger_can_reject",
   COURSE_ONLY_PASSENGER_CAN_TERMINATE: "course_only_passenger_can_terminate",
   COURSE_ALREADY_PAID_CANNOT_CANCEL: "course_already_paid_cannot_cancel",
+  COURSE_CANCEL_WINDOW_PASSED: "course_cancel_window_passed",
 
   // ─── Driver onboarding ───────────────────────────────────────────────
   DRIVER_ONLY_DRIVERS_CAN_CREATE_COURSE: "driver_only_drivers_can_create_course",
@@ -105,6 +106,8 @@ export const ErrorCodeMessages: Record<ErrorCodeValue, string> = {
     "Seul le passager peut clôturer une course",
   [ErrorCode.COURSE_ALREADY_PAID_CANNOT_CANCEL]:
     "Cette course est déjà payée et ne peut plus être annulée",
+  [ErrorCode.COURSE_CANCEL_WINDOW_PASSED]:
+    "La course ne peut plus être annulée passé 5 minutes après la prise en charge",
 
   // Driver onboarding
   [ErrorCode.DRIVER_ONLY_DRIVERS_CAN_CREATE_COURSE]:
