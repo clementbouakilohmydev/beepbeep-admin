@@ -24,6 +24,7 @@ import {
   canShowCancelButton,
   canShowContactButton,
   canShowEndCourseButton,
+  isCoursePastDisplayWindow,
   isTripActive,
   isTripExpired,
 } from "./trip-logic";
@@ -103,6 +104,13 @@ export type PassengerHomeState<T extends TripLike = TripLike> = {
  * aucune course n'est en cours. Cf passenger.tsx pré-1.7.4 où on
  * basculait vers l'annonce après une fenêtre temps : ce comportement
  * a été supprimé car incohérent avec `Mes trajets`.
+ *
+ * Fenêtre d'affichage : une course encore en state `accepted` mais
+ * dont la fin théorique est dépassée de plus d'1h (cf
+ * `COURSE_DISPLAY_BUFFER_MINUTES`) est masquée de la home — le cron
+ * back `terminateCourses` la basculera en `paid` sous 6h max. Sans
+ * ce filtre, une course non clôturée manuellement restait visible
+ * indéfiniment côté passenger (bug client mai 2026).
  */
 export function derivePassengerHomeState<T extends TripLike>(
   trips: readonly T[] | null | undefined,
@@ -111,7 +119,17 @@ export function derivePassengerHomeState<T extends TripLike>(
 
   const announcement =
     items.find((t) => (t.coursesCount || 0) === 0 && !isTripExpired(t)) ?? null;
-  const nextCourse = items.find((t) => isTripActive(t)) ?? null;
+  const nextCourse =
+    items.find(
+      (t) =>
+        isTripActive(t) &&
+        !isCoursePastDisplayWindow({
+          startDatetimeUtc: t.startDatetimeUtc,
+          durationMinutes: t.duration,
+          isInstant: t.isInstant,
+          courseCreatedAt: t.activeCourse?.createdAt,
+        }),
+    ) ?? null;
   const activeCourse =
     (nextCourse?.activeCourse as NonNullable<T["activeCourse"]> | null) ?? null;
 
