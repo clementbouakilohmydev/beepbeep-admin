@@ -13,7 +13,6 @@ import { StatCard } from "@/components/shared/stat-card"
 import {
   useGetCoursesCountsQuery,
   useGetCoursesCountsByPeriodQuery,
-  useGetCoursesForStatsQuery,
 } from "@/gql/generated"
 import { getDateBoundaries } from "@/lib/date"
 import { ErrorState } from "@/components/shared/error-state"
@@ -34,9 +33,6 @@ export function PerformancePage() {
       monthWhere: { createdAt: { gte: dateBoundaries.monthISO } },
       yearWhere: { createdAt: { gte: dateBoundaries.yearISO } },
     })
-
-  const { data: statsData, isLoading: statsLoading } =
-    useGetCoursesForStatsQuery({})
 
   if (isError && !statusLoading) {
     return <ErrorState onRetry={refetch} />
@@ -121,10 +117,7 @@ export function PerformancePage() {
         <h2 className="mb-3 text-lg font-semibold">
           Métriques (courses terminées)
         </h2>
-        <CoursesMetrics
-          courses={statsData?.courses}
-          isLoading={statsLoading}
-        />
+        <CoursesMetrics />
       </div>
 
       {/* Charts */}

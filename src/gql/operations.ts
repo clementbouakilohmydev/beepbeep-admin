@@ -181,19 +181,6 @@ export const GetUsersCounts = /* GraphQL */ `
   }
 `
 
-export const GetDriversAverageRating = /* GraphQL */ `
-  query GetDriversAverageRating {
-    users(
-      where: { type: { equals: "driver" }, isAdmin: { equals: false } }
-      orderBy: []
-      skip: 0
-    ) {
-      id
-      averageRate
-    }
-  }
-`
-
 export const GetUser = /* GraphQL */ `
   query GetUser($where: UserWhereUniqueInput!) {
     user(where: $where) {
@@ -315,56 +302,10 @@ export const GetCoursesCountsByPeriod = /* GraphQL */ `
   }
 `
 
-// TODO: Idéalement, ces métriques devraient être calculées côté back
-// via une route custom / un champ computed pour éviter de fetch toutes
-// les courses côté client.
-export const GetCoursesForStats = /* GraphQL */ `
-  query GetCoursesForStats {
-    courses(
-      where: { state: { equals: "paid" } }
-      orderBy: [{ createdAt: desc }]
-      take: 500
-      skip: 0
-    ) {
-      id
-      distance
-      duration
-      price
-      fees
-      createdAt
-      startDatetimeUtc
-      endDatetimeUtc
-    }
-  }
-`
-
-export const GetRecentUsers = /* GraphQL */ `
-  query GetRecentUsers($where: UserWhereInput!) {
-    users(
-      where: $where
-      orderBy: [{ createdAt: asc }]
-      take: 1000
-      skip: 0
-    ) {
-      id
-      createdAt
-    }
-  }
-`
-
-export const GetRecentCourses = /* GraphQL */ `
-  query GetRecentCourses($where: CourseWhereInput!) {
-    courses(
-      where: $where
-      orderBy: [{ createdAt: asc }]
-      take: 1000
-      skip: 0
-    ) {
-      id
-      createdAt
-    }
-  }
-`
+// Note : les anciennes queries GetCoursesForStats / GetRecentCourses /
+// GetRecentUsers / GetDriversAverageRating (fetch 500-1000 rows + calcul
+// client) ont été remplacées par les agrégats serveur de adminStats
+// (cf back/api/src/extensions/adminStats.ts) — Get*AdminStats*Query plus bas.
 
 export const UpdateUser = /* GraphQL */ `
   mutation UpdateUser($where: UserWhereUniqueInput!, $data: UserUpdateInput!) {
@@ -419,6 +360,76 @@ export const UpdateCertificate = /* GraphQL */ `
     updateCertificate(where: $where, data: $data) {
       id
       state
+    }
+  }
+`
+
+// ─── Admin stats (agrégations back) ───────────────────────────────────
+// Remplace les fetchs client-side de 500-1000 items (cf BACK_TODO.md).
+// Cf back/api/src/extensions/adminStats.ts pour le détail des résolveurs.
+
+export const GetAdminRevenueStats = /* GraphQL */ `
+  query GetAdminRevenueStats($from: DateTime, $to: DateTime) {
+    adminRevenueStats(from: $from, to: $to) {
+      revenue
+      fees
+      basket
+      count
+    }
+  }
+`
+
+export const GetAdminCoursesMetrics = /* GraphQL */ `
+  query GetAdminCoursesMetrics($from: DateTime, $to: DateTime) {
+    adminCoursesMetrics(from: $from, to: $to) {
+      averageDistance
+      averageDuration
+      averagePrice
+      averageAcceptanceTimeSeconds
+      count
+    }
+  }
+`
+
+export const GetAdminCoursesTrend = /* GraphQL */ `
+  query GetAdminCoursesTrend($days: Int!) {
+    adminCoursesTrend(days: $days) {
+      date
+      count
+    }
+  }
+`
+
+export const GetAdminUsersTrend = /* GraphQL */ `
+  query GetAdminUsersTrend($days: Int!) {
+    adminUsersTrend(days: $days) {
+      date
+      count
+    }
+  }
+`
+
+export const GetAdminDriversAverageRating = /* GraphQL */ `
+  query GetAdminDriversAverageRating {
+    adminDriversAverageRating
+  }
+`
+
+export const GetAdminPendingDocumentsCount = /* GraphQL */ `
+  query GetAdminPendingDocumentsCount {
+    adminPendingDocumentsCount
+  }
+`
+
+export const GetAdminDailyAggregates = /* GraphQL */ `
+  query GetAdminDailyAggregates($days: Int!) {
+    adminDailyAggregates(days: $days) {
+      date
+      count
+      revenue
+      fees
+      averagePrice
+      averageDistance
     }
   }
 `

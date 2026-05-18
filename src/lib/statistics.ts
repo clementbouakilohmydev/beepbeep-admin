@@ -1,112 +1,35 @@
-type CourseWithStats = {
-  distance?: number | null
-  duration?: number | null
-  price?: number | null
-  fees?: number | null
-  createdAt?: string | null
-  startDatetimeUtc?: string | null
+// ─── Formatters pour les agrégats serveur (cf adminStats côté back) ────
+// Acceptent un nombre brut (ou null) renvoyé par adminCoursesMetrics /
+// adminRevenueStats / adminDriversAverageRating et retournent la string
+// affichable. Les anciens compute*(courses[]) qui faisaient le calcul
+// côté client ont été supprimés (cf back/api/src/extensions/adminStats.ts).
+
+export function formatDistanceMeters(meters: number | null | undefined) {
+  if (meters == null || meters <= 0) return "—"
+  return `${(meters / 1000).toFixed(1)} km`
 }
 
-type CourseWithFinance = {
-  price?: number | null
-  fees?: number | null
-  createdAt?: string | null
-}
-
-export function computeRevenue(courses: CourseWithFinance[], since?: string) {
-  const filtered = since
-    ? courses.filter((c) => c.createdAt && c.createdAt >= since)
-    : courses
-  const total = filtered.reduce((sum, c) => sum + (c.price ?? 0), 0)
-  return total
-}
-
-export function computeFees(courses: CourseWithFinance[], since?: string) {
-  const filtered = since
-    ? courses.filter((c) => c.createdAt && c.createdAt >= since)
-    : courses
-  return filtered.reduce((sum, c) => sum + (c.fees ?? 0), 0)
-}
-
-export function computeAvgBasket(courses: CourseWithFinance[]) {
-  const valid = courses.filter((c) => c.price != null && c.price > 0)
-  if (!valid.length) return 0
-  return valid.reduce((sum, c) => sum + (c.price ?? 0), 0) / valid.length
-}
-
-export function computeAvgDistance(courses: CourseWithStats[]) {
-  const valid = courses.filter((c) => c.distance != null && c.distance > 0)
-  if (!valid.length) return "—"
-  const avg =
-    valid.reduce((sum, c) => sum + (c.distance ?? 0), 0) / valid.length
-  return `${(avg / 1000).toFixed(1)} km`
-}
-
-export function computeAvgAcceptanceTime(courses: CourseWithStats[]) {
-  const valid = courses.filter((c) => c.createdAt && c.startDatetimeUtc)
-  if (!valid.length) return "—"
-  let totalMs = 0
-  let count = 0
-  for (const c of valid) {
-    const diff =
-      new Date(c.startDatetimeUtc!).getTime() -
-      new Date(c.createdAt!).getTime()
-    if (diff > 0) {
-      totalMs += diff
-      count++
-    }
-  }
-  if (!count) return "—"
-  const avgMin = totalMs / count / 1000 / 60
-  if (avgMin < 1) return `${Math.round(avgMin * 60)}s`
-  if (avgMin < 60) return `${avgMin.toFixed(0)} min`
-  return `${(avgMin / 60).toFixed(1)}h`
-}
-
-export function computeAvgDuration(courses: CourseWithStats[]) {
-  const valid = courses.filter((c) => c.duration != null && c.duration > 0)
-  if (!valid.length) return "—"
-  const avg =
-    valid.reduce((sum, c) => sum + (c.duration ?? 0), 0) / valid.length
-  const mins = avg / 60
+export function formatDurationSeconds(seconds: number | null | undefined) {
+  if (seconds == null || seconds <= 0) return "—"
+  const mins = seconds / 60
   if (mins < 60) return `${mins.toFixed(0)} min`
   return `${(mins / 60).toFixed(1)}h`
 }
 
-export function computeAvgPrice(courses: CourseWithStats[]) {
-  const valid = courses.filter((c) => c.price != null && c.price > 0)
-  if (!valid.length) return "—"
-  const avg =
-    valid.reduce((sum, c) => sum + (c.price ?? 0), 0) / valid.length
-  return `${avg.toFixed(2)} €`
+export function formatAcceptanceTimeSeconds(seconds: number | null | undefined) {
+  if (seconds == null || seconds <= 0) return "—"
+  const mins = seconds / 60
+  if (mins < 1) return `${Math.round(mins * 60)}s`
+  if (mins < 60) return `${mins.toFixed(0)} min`
+  return `${(mins / 60).toFixed(1)}h`
 }
 
-export function computeAvgDriverRating(
-  users: Array<{ averageRate?: number | null }>
-) {
-  const drivers = users.filter(
-    (u) => u.averageRate != null && u.averageRate > 0
-  )
-  if (!drivers.length) return "—"
-  const avg =
-    drivers.reduce((sum, u) => sum + (u.averageRate ?? 0), 0) / drivers.length
-  return avg.toFixed(1)
+export function formatPriceEur(price: number | null | undefined) {
+  if (price == null || price <= 0) return "—"
+  return `${price.toFixed(2)} €`
 }
 
-export function computePendingDocsCount(
-  users: Array<Record<string, unknown>>
-) {
-  let count = 0
-  for (const user of users) {
-    for (const key of [
-      "drivingLicense",
-      "insurance",
-      "registrationDocument",
-      "certificate",
-    ]) {
-      const doc = user[key] as { state?: string | null } | null | undefined
-      if (doc?.state && doc.state !== "verified") count++
-    }
-  }
-  return count
+export function formatRating(rating: number | null | undefined) {
+  if (rating == null || rating <= 0) return "—"
+  return rating.toFixed(1)
 }

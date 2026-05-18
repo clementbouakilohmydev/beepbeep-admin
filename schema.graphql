@@ -2594,6 +2594,48 @@ type Query {
   echo(message: String!): String!
   getPendingCoursesCount(mode: String!, minusHours: Int! = 2): Int!
   tripPrice(startDatetimeUtc: DateTime!, node1: NodeInput!, node2: NodeInput!): TripDetailsType!
+
+  """
+  CA agrégé sur courses en state="paid" entre from..to (bornes incluses).
+  Si from/to absents → toutes les courses paid.
+  """
+  adminRevenueStats(from: DateTime, to: DateTime): AdminRevenueStats!
+
+  """
+  Métriques moyennes des courses terminées (state="paid") sur la fenêtre.
+  averageAcceptanceTimeSeconds = avg(startDatetimeUtc - createdAt).
+  """
+  adminCoursesMetrics(from: DateTime, to: DateTime): AdminCoursesMetrics!
+
+  """
+  Nombre de courses créées par jour sur les N derniers jours (default 30).
+  Compte TOUTES les courses (tous states) — vue volume d'activité.
+  """
+  adminCoursesTrend(days: Int! = 30): [AdminTrendPoint!]!
+
+  """Nombre d'inscriptions par jour sur les N derniers jours (default 30)."""
+  adminUsersTrend(days: Int! = 30): [AdminTrendPoint!]!
+
+  """
+  Moyenne des notes drivers (User.driver.averageRate via Rating). Calcul
+  sur les ratings reçus par les drivers, pondéré par nombre de notes.
+  """
+  adminDriversAverageRating: Float
+
+  """
+  Nombre de documents (DrivingLicense + Insurance + Certificate +
+  RegistrationDocument) en attente de validation (state ∈ pending/processing).
+  """
+  adminPendingDocumentsCount: Int!
+
+  """
+  Agrégats par jour sur les N derniers jours (default 30). Pour chaque
+  jour : count (courses paid créées ce jour), revenue (sum price),
+  fees (sum fees), averagePrice (avg basket), averageDistance (avg en m).
+  Single query qui sert les 3 charts finance/perf (revenue trend, panier
+  moyen, distance moyenne) sans tirer 500 rows côté client.
+  """
+  adminDailyAggregates(days: Int! = 30): [AdminDailyAggregate!]!
 }
 
 union AuthenticatedItem = User
@@ -2781,4 +2823,33 @@ type PayType {
   stripePaymentIntentSecret: String
   stripeCustomerSessionClientSecret: String
   stripeCustomerId: String
+}
+
+type AdminRevenueStats {
+  revenue: Float!
+  fees: Float!
+  basket: Float!
+  count: Int!
+}
+
+type AdminCoursesMetrics {
+  averageDistance: Float
+  averageDuration: Float
+  averagePrice: Float
+  averageAcceptanceTimeSeconds: Float
+  count: Int!
+}
+
+type AdminTrendPoint {
+  date: String!
+  count: Int!
+}
+
+type AdminDailyAggregate {
+  date: String!
+  count: Int!
+  revenue: Float!
+  fees: Float!
+  averagePrice: Float
+  averageDistance: Float
 }

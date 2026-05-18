@@ -14,21 +14,20 @@ import {
 import {
   useGetTicketsCountsQuery,
   useGetUsersCountsQuery,
-  useGetDriversAverageRatingQuery,
-  useGetUsersQuery,
   useGetCoursesCountsQuery,
   useGetCoursesCountsByPeriodQuery,
-  useGetCoursesForStatsQuery,
+  useGetAdminCoursesMetricsQuery,
+  useGetAdminDriversAverageRatingQuery,
+  useGetAdminPendingDocumentsCountQuery,
 } from "@/gql/generated"
 import { getDateWheres, getDateBoundaries } from "@/lib/date"
 import { StatCard } from "@/components/shared/stat-card"
 import { SectionHeader } from "@/components/shared/section-header"
 import { Separator } from "@/components/ui/separator"
 import {
-  computeAvgDriverRating,
-  computePendingDocsCount,
-  computeAvgDistance,
-  computeAvgAcceptanceTime,
+  formatDistanceMeters,
+  formatAcceptanceTimeSeconds,
+  formatRating,
 } from "@/lib/statistics"
 import { RegistrationChart } from "@/components/dashboard/registration-chart"
 import { CoursesChart } from "@/components/dashboard/courses-chart"
@@ -50,22 +49,17 @@ export function DashboardPage() {
   const { data: usersData, isLoading: usersLoading } =
     useGetUsersCountsQuery(dateWheres)
 
-  const { data: driversData, isLoading: driversLoading } =
-    useGetDriversAverageRatingQuery({})
+  const { data: driversRatingData, isLoading: driversRatingLoading } =
+    useGetAdminDriversAverageRatingQuery({})
 
-  const averageDriverRating = computeAvgDriverRating(driversData?.users ?? [])
-
-  const { data: driversListData, isLoading: driversListLoading } =
-    useGetUsersQuery({
-      where: { type: { equals: "driver" }, isAdmin: { equals: false } },
-      orderBy: [{ createdAt: "desc" as const }],
-      take: 200,
-      skip: 0,
-    })
-
-  const pendingDocsCount = computePendingDocsCount(
-    (driversListData?.users as Array<Record<string, unknown>>) ?? []
+  const averageDriverRating = formatRating(
+    driversRatingData?.adminDriversAverageRating
   )
+
+  const { data: pendingDocsData, isLoading: pendingDocsLoading } =
+    useGetAdminPendingDocumentsCountQuery({})
+
+  const pendingDocsCount = pendingDocsData?.adminPendingDocumentsCount ?? 0
 
   const { data: coursesCountsData, isLoading: coursesCountsLoading } =
     useGetCoursesCountsQuery({})
@@ -79,12 +73,14 @@ export function DashboardPage() {
       yearWhere: { createdAt: { gte: dateBoundaries.yearISO } },
     })
 
-  const { data: coursesStatsData, isLoading: coursesStatsLoading } =
-    useGetCoursesForStatsQuery({})
+  const { data: coursesMetricsData, isLoading: coursesMetricsLoading } =
+    useGetAdminCoursesMetricsQuery({})
 
-  const avgDistance = computeAvgDistance(coursesStatsData?.courses ?? [])
-  const avgAcceptanceTime = computeAvgAcceptanceTime(
-    coursesStatsData?.courses ?? []
+  const avgDistance = formatDistanceMeters(
+    coursesMetricsData?.adminCoursesMetrics.averageDistance
+  )
+  const avgAcceptanceTime = formatAcceptanceTimeSeconds(
+    coursesMetricsData?.adminCoursesMetrics.averageAcceptanceTimeSeconds
   )
 
   if (isError && !ticketsLoading) {
@@ -109,7 +105,7 @@ export function DashboardPage() {
           icon={FileTextIcon}
           iconClassName="text-yellow-600"
           to="/documents"
-          isLoading={driversListLoading}
+          isLoading={pendingDocsLoading}
         />
         <StatCard
           title="Tickets traités"
@@ -123,7 +119,7 @@ export function DashboardPage() {
           value={averageDriverRating}
           icon={StarIcon}
           iconClassName="text-yellow-500"
-          isLoading={driversLoading}
+          isLoading={driversRatingLoading}
         />
       </div>
 
@@ -219,14 +215,14 @@ export function DashboardPage() {
             value={avgDistance}
             icon={RouteIcon}
             iconClassName="text-blue-500"
-            isLoading={coursesStatsLoading}
+            isLoading={coursesMetricsLoading}
           />
           <StatCard
             title="Temps d'acceptation"
             value={avgAcceptanceTime}
             icon={TimerIcon}
             iconClassName="text-yellow-500"
-            isLoading={coursesStatsLoading}
+            isLoading={coursesMetricsLoading}
           />
         </div>
 

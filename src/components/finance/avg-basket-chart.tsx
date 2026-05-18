@@ -1,17 +1,17 @@
 import { AreaChartCard } from "@/components/shared/area-chart-card"
-import { useGetCoursesForStatsQuery } from "@/gql/generated"
-import { avgByDay } from "@/lib/chart"
+import { useGetAdminDailyAggregatesQuery } from "@/gql/generated"
+import { mapDailyAggregatesToChartData } from "@/lib/chart"
 import { CHART_DAYS } from "@/lib/constants"
 
 export function AvgBasketChart() {
-  const { data, isLoading } = useGetCoursesForStatsQuery({})
-
-  const chartData = data?.courses
-    ? avgByDay(
-        data.courses.map((c) => ({ createdAt: c.createdAt, value: c.price })),
-        CHART_DAYS
-      )
-    : []
+  const { data, isLoading } = useGetAdminDailyAggregatesQuery({
+    days: CHART_DAYS,
+  })
+  const chartData = mapDailyAggregatesToChartData(
+    data?.adminDailyAggregates,
+    CHART_DAYS,
+    "averagePrice"
+  )
 
   return (
     <AreaChartCard

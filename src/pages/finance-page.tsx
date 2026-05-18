@@ -12,29 +12,54 @@ import {
 import { Card, CardContent } from "@/components/ui"
 import { StatCard } from "@/components/shared/stat-card"
 import { ErrorState } from "@/components/shared/error-state"
-import { useGetCoursesForStatsQuery } from "@/gql/generated"
+import { useGetAdminRevenueStatsQuery } from "@/gql/generated"
 import { getDateBoundaries } from "@/lib/date"
 import { formatCurrency } from "@/lib/format"
-import { computeRevenue, computeFees, computeAvgBasket } from "@/lib/statistics"
 import { RevenueChart, AvgBasketChart } from "@/components/finance"
 
 export function FinancePage() {
-  const { data: statsData, isLoading: statsLoading, isError, refetch } =
-    useGetCoursesForStatsQuery({})
-
-  const courses = statsData?.courses ?? []
   const boundaries = getDateBoundaries()
 
-  const revenueToday = computeRevenue(courses, boundaries.todayISO)
-  const revenueWeek = computeRevenue(courses, boundaries.weekISO)
-  const revenueMonth = computeRevenue(courses, boundaries.monthISO)
-  const revenueYear = computeRevenue(courses, boundaries.yearISO)
-  const revenueTotal = computeRevenue(courses)
+  // CA agrégé serveur — 5 appels parallèles (un par fenêtre temporelle).
+  // Chaque appel = 1 SUM/AVG/COUNT sur Course.state="paid" → léger même à
+  // l'échelle (vs ancien fetch de 500 rows + recalcul JS).
+  const todayQ = useGetAdminRevenueStatsQuery({ from: boundaries.todayISO })
+  const weekQ = useGetAdminRevenueStatsQuery({ from: boundaries.weekISO })
+  const monthQ = useGetAdminRevenueStatsQuery({ from: boundaries.monthISO })
+  const yearQ = useGetAdminRevenueStatsQuery({ from: boundaries.yearISO })
+  const totalQ = useGetAdminRevenueStatsQuery({})
 
-  const feesTotal = computeFees(courses)
-  const avgBasket = computeAvgBasket(courses)
+  const isLoading =
+    todayQ.isLoading ||
+    weekQ.isLoading ||
+    monthQ.isLoading ||
+    yearQ.isLoading ||
+    totalQ.isLoading
 
-  if (isError && !statsLoading) {
+  const isError =
+    todayQ.isError ||
+    weekQ.isError ||
+    monthQ.isError ||
+    yearQ.isError ||
+    totalQ.isError
+
+  const refetch = () => {
+    todayQ.refetch()
+    weekQ.refetch()
+    monthQ.refetch()
+    yearQ.refetch()
+    totalQ.refetch()
+  }
+
+  const revenueToday = todayQ.data?.adminRevenueStats.revenue ?? 0
+  const revenueWeek = weekQ.data?.adminRevenueStats.revenue ?? 0
+  const revenueMonth = monthQ.data?.adminRevenueStats.revenue ?? 0
+  const revenueYear = yearQ.data?.adminRevenueStats.revenue ?? 0
+  const revenueTotal = totalQ.data?.adminRevenueStats.revenue ?? 0
+  const feesTotal = totalQ.data?.adminRevenueStats.fees ?? 0
+  const avgBasket = totalQ.data?.adminRevenueStats.basket ?? 0
+
+  if (isError && !isLoading) {
     return <ErrorState onRetry={refetch} />
   }
 
@@ -45,45 +70,41 @@ export function FinancePage() {
         <h2 className="mb-3 text-lg font-semibold">
           Chiffre d'affaires (courses terminées)
         </h2>
-        <p className="mb-3 text-xs text-muted-foreground">
-          Basé sur les 500 dernières courses terminées. Pour des données
-          exhaustives, une agrégation côté serveur est nécessaire.
-        </p>
         <div className="grid grid-cols-2 gap-3 sm:gap-4 lg:grid-cols-5">
           <StatCard
             title="Aujourd'hui"
             value={formatCurrency(revenueToday)}
             icon={CalendarIcon}
             iconClassName="text-green-500"
-            isLoading={statsLoading}
+            isLoading={todayQ.isLoading}
           />
           <StatCard
             title="Cette semaine"
             value={formatCurrency(revenueWeek)}
             icon={CalendarDaysIcon}
             iconClassName="text-green-500"
-            isLoading={statsLoading}
+            isLoading={weekQ.isLoading}
           />
           <StatCard
             title="Ce mois"
             value={formatCurrency(revenueMonth)}
             icon={CalendarRangeIcon}
             iconClassName="text-green-500"
-            isLoading={statsLoading}
+            isLoading={monthQ.isLoading}
           />
           <StatCard
             title="Cette année"
             value={formatCurrency(revenueYear)}
             icon={HashIcon}
             iconClassName="text-green-500"
-            isLoading={statsLoading}
+            isLoading={yearQ.isLoading}
           />
           <StatCard
             title="Total"
             value={formatCurrency(revenueTotal)}
             icon={TrendingUpIcon}
             iconClassName="text-green-500"
-            isLoading={statsLoading}
+            isLoading={totalQ.isLoading}
           />
         </div>
       </div>
@@ -103,7 +124,7 @@ export function FinancePage() {
             value={formatCurrency(avgBasket)}
             icon={ShoppingCartIcon}
             iconClassName="text-blue-500"
-            isLoading={statsLoading}
+            isLoading={totalQ.isLoading}
             subtitle="Par course terminée"
           />
           <StatCard
@@ -111,16 +132,16 @@ export function FinancePage() {
             value={formatCurrency(feesTotal)}
             icon={BanknoteIcon}
             iconClassName="text-purple-500"
-            isLoading={statsLoading}
-            subtitle="Fees sur les 500 dernières courses"
+            isLoading={totalQ.isLoading}
+            subtitle="Cumul des fees plateforme"
           />
           <StatCard
             title="CA net (hors commissions)"
             value={formatCurrency(revenueTotal - feesTotal)}
             icon={TrendingUpIcon}
             iconClassName="text-green-500"
-            isLoading={statsLoading}
-            subtitle="Total - commissions"
+            isLoading={totalQ.isLoading}
+            subtitle="Total − commissions"
           />
         </div>
       </div>

@@ -1,17 +1,13 @@
 import { AreaChartCard } from "@/components/shared/area-chart-card"
-import { useGetRecentCoursesQuery } from "@/gql/generated"
-import { groupByDay } from "@/lib/chart"
+import { useGetAdminCoursesTrendQuery } from "@/gql/generated"
+import { mapTrendToChartData } from "@/lib/chart"
 import { CHART_DAYS } from "@/lib/constants"
 
 export function CoursesTrendChart() {
-  const since = new Date()
-  since.setDate(since.getDate() - (CHART_DAYS - 1))
-
-  const { data, isLoading } = useGetRecentCoursesQuery({
-    where: { createdAt: { gte: since.toISOString() } },
+  const { data, isLoading } = useGetAdminCoursesTrendQuery({
+    days: CHART_DAYS,
   })
-
-  const chartData = data?.courses ? groupByDay(data.courses, CHART_DAYS) : []
+  const chartData = mapTrendToChartData(data?.adminCoursesTrend, CHART_DAYS)
 
   return (
     <AreaChartCard

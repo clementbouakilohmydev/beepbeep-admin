@@ -116,6 +116,39 @@ export type AddressWhereUniqueInput = {
   id?: InputMaybe<Scalars['ID']['input']>;
 };
 
+export type AdminCoursesMetrics = {
+  __typename?: 'AdminCoursesMetrics';
+  averageAcceptanceTimeSeconds?: Maybe<Scalars['Float']['output']>;
+  averageDistance?: Maybe<Scalars['Float']['output']>;
+  averageDuration?: Maybe<Scalars['Float']['output']>;
+  averagePrice?: Maybe<Scalars['Float']['output']>;
+  count: Scalars['Int']['output'];
+};
+
+export type AdminDailyAggregate = {
+  __typename?: 'AdminDailyAggregate';
+  averageDistance?: Maybe<Scalars['Float']['output']>;
+  averagePrice?: Maybe<Scalars['Float']['output']>;
+  count: Scalars['Int']['output'];
+  date: Scalars['String']['output'];
+  fees: Scalars['Float']['output'];
+  revenue: Scalars['Float']['output'];
+};
+
+export type AdminRevenueStats = {
+  __typename?: 'AdminRevenueStats';
+  basket: Scalars['Float']['output'];
+  count: Scalars['Int']['output'];
+  fees: Scalars['Float']['output'];
+  revenue: Scalars['Float']['output'];
+};
+
+export type AdminTrendPoint = {
+  __typename?: 'AdminTrendPoint';
+  count: Scalars['Int']['output'];
+  date: Scalars['String']['output'];
+};
+
 export type Affiliation = {
   __typename?: 'Affiliation';
   code?: Maybe<Scalars['String']['output']>;
@@ -2803,6 +2836,41 @@ export type Query = {
   address?: Maybe<Address>;
   addresses?: Maybe<Array<Address>>;
   addressesCount?: Maybe<Scalars['Int']['output']>;
+  /**
+   * Métriques moyennes des courses terminées (state="paid") sur la fenêtre.
+   * averageAcceptanceTimeSeconds = avg(startDatetimeUtc - createdAt).
+   */
+  adminCoursesMetrics: AdminCoursesMetrics;
+  /**
+   * Nombre de courses créées par jour sur les N derniers jours (default 30).
+   * Compte TOUTES les courses (tous states) — vue volume d'activité.
+   */
+  adminCoursesTrend: Array<AdminTrendPoint>;
+  /**
+   * Agrégats par jour sur les N derniers jours (default 30). Pour chaque
+   * jour : count (courses paid créées ce jour), revenue (sum price),
+   * fees (sum fees), averagePrice (avg basket), averageDistance (avg en m).
+   * Single query qui sert les 3 charts finance/perf (revenue trend, panier
+   * moyen, distance moyenne) sans tirer 500 rows côté client.
+   */
+  adminDailyAggregates: Array<AdminDailyAggregate>;
+  /**
+   * Moyenne des notes drivers (User.driver.averageRate via Rating). Calcul
+   * sur les ratings reçus par les drivers, pondéré par nombre de notes.
+   */
+  adminDriversAverageRating?: Maybe<Scalars['Float']['output']>;
+  /**
+   * Nombre de documents (DrivingLicense + Insurance + Certificate +
+   * RegistrationDocument) en attente de validation (state ∈ pending/processing).
+   */
+  adminPendingDocumentsCount: Scalars['Int']['output'];
+  /**
+   * CA agrégé sur courses en state="paid" entre from..to (bornes incluses).
+   * Si from/to absents → toutes les courses paid.
+   */
+  adminRevenueStats: AdminRevenueStats;
+  /** Nombre d'inscriptions par jour sur les N derniers jours (default 30). */
+  adminUsersTrend: Array<AdminTrendPoint>;
   affiliation?: Maybe<Affiliation>;
   affiliations?: Maybe<Array<Affiliation>>;
   affiliationsCount?: Maybe<Scalars['Int']['output']>;
@@ -2899,6 +2967,33 @@ export type QueryAddressesArgs = {
 
 export type QueryAddressesCountArgs = {
   where?: AddressWhereInput;
+};
+
+
+export type QueryAdminCoursesMetricsArgs = {
+  from?: InputMaybe<Scalars['DateTime']['input']>;
+  to?: InputMaybe<Scalars['DateTime']['input']>;
+};
+
+
+export type QueryAdminCoursesTrendArgs = {
+  days?: Scalars['Int']['input'];
+};
+
+
+export type QueryAdminDailyAggregatesArgs = {
+  days?: Scalars['Int']['input'];
+};
+
+
+export type QueryAdminRevenueStatsArgs = {
+  from?: InputMaybe<Scalars['DateTime']['input']>;
+  to?: InputMaybe<Scalars['DateTime']['input']>;
+};
+
+
+export type QueryAdminUsersTrendArgs = {
+  days?: Scalars['Int']['input'];
 };
 
 
@@ -4467,11 +4562,6 @@ export type GetUsersCountsQueryVariables = Exact<{
 
 export type GetUsersCountsQuery = { __typename?: 'Query', total?: number | null, today?: number | null, week?: number | null, month?: number | null, passengers?: number | null, drivers?: number | null, active?: number | null, blocked?: number | null };
 
-export type GetDriversAverageRatingQueryVariables = Exact<{ [key: string]: never; }>;
-
-
-export type GetDriversAverageRatingQuery = { __typename?: 'Query', users?: Array<{ __typename?: 'User', id: string, averageRate?: number | null }> | null };
-
 export type GetUserQueryVariables = Exact<{
   where: UserWhereUniqueInput;
 }>;
@@ -4493,25 +4583,6 @@ export type GetCoursesCountsByPeriodQueryVariables = Exact<{
 
 
 export type GetCoursesCountsByPeriodQuery = { __typename?: 'Query', total?: number | null, today?: number | null, week?: number | null, month?: number | null, year?: number | null };
-
-export type GetCoursesForStatsQueryVariables = Exact<{ [key: string]: never; }>;
-
-
-export type GetCoursesForStatsQuery = { __typename?: 'Query', courses?: Array<{ __typename?: 'Course', id: string, distance?: number | null, duration?: number | null, price?: number | null, fees?: number | null, createdAt?: string | null, startDatetimeUtc?: string | null, endDatetimeUtc?: string | null }> | null };
-
-export type GetRecentUsersQueryVariables = Exact<{
-  where: UserWhereInput;
-}>;
-
-
-export type GetRecentUsersQuery = { __typename?: 'Query', users?: Array<{ __typename?: 'User', id: string, createdAt?: string | null }> | null };
-
-export type GetRecentCoursesQueryVariables = Exact<{
-  where: CourseWhereInput;
-}>;
-
-
-export type GetRecentCoursesQuery = { __typename?: 'Query', courses?: Array<{ __typename?: 'Course', id: string, createdAt?: string | null }> | null };
 
 export type UpdateUserMutationVariables = Exact<{
   where: UserWhereUniqueInput;
@@ -4552,6 +4623,53 @@ export type UpdateCertificateMutationVariables = Exact<{
 
 
 export type UpdateCertificateMutation = { __typename?: 'Mutation', updateCertificate?: { __typename?: 'Certificate', id: string, state?: string | null } | null };
+
+export type GetAdminRevenueStatsQueryVariables = Exact<{
+  from?: InputMaybe<Scalars['DateTime']['input']>;
+  to?: InputMaybe<Scalars['DateTime']['input']>;
+}>;
+
+
+export type GetAdminRevenueStatsQuery = { __typename?: 'Query', adminRevenueStats: { __typename?: 'AdminRevenueStats', revenue: number, fees: number, basket: number, count: number } };
+
+export type GetAdminCoursesMetricsQueryVariables = Exact<{
+  from?: InputMaybe<Scalars['DateTime']['input']>;
+  to?: InputMaybe<Scalars['DateTime']['input']>;
+}>;
+
+
+export type GetAdminCoursesMetricsQuery = { __typename?: 'Query', adminCoursesMetrics: { __typename?: 'AdminCoursesMetrics', averageDistance?: number | null, averageDuration?: number | null, averagePrice?: number | null, averageAcceptanceTimeSeconds?: number | null, count: number } };
+
+export type GetAdminCoursesTrendQueryVariables = Exact<{
+  days: Scalars['Int']['input'];
+}>;
+
+
+export type GetAdminCoursesTrendQuery = { __typename?: 'Query', adminCoursesTrend: Array<{ __typename?: 'AdminTrendPoint', date: string, count: number }> };
+
+export type GetAdminUsersTrendQueryVariables = Exact<{
+  days: Scalars['Int']['input'];
+}>;
+
+
+export type GetAdminUsersTrendQuery = { __typename?: 'Query', adminUsersTrend: Array<{ __typename?: 'AdminTrendPoint', date: string, count: number }> };
+
+export type GetAdminDriversAverageRatingQueryVariables = Exact<{ [key: string]: never; }>;
+
+
+export type GetAdminDriversAverageRatingQuery = { __typename?: 'Query', adminDriversAverageRating?: number | null };
+
+export type GetAdminPendingDocumentsCountQueryVariables = Exact<{ [key: string]: never; }>;
+
+
+export type GetAdminPendingDocumentsCountQuery = { __typename?: 'Query', adminPendingDocumentsCount: number };
+
+export type GetAdminDailyAggregatesQueryVariables = Exact<{
+  days: Scalars['Int']['input'];
+}>;
+
+
+export type GetAdminDailyAggregatesQuery = { __typename?: 'Query', adminDailyAggregates: Array<{ __typename?: 'AdminDailyAggregate', date: string, count: number, revenue: number, fees: number, averagePrice?: number | null, averageDistance?: number | null }> };
 
 
 
@@ -4905,40 +5023,6 @@ useGetUsersCountsQuery.getKey = (variables: GetUsersCountsQueryVariables) => ['G
 
 useGetUsersCountsQuery.fetcher = (variables: GetUsersCountsQueryVariables, options?: RequestInit['headers']) => graphqlClient<GetUsersCountsQuery, GetUsersCountsQueryVariables>(GetUsersCountsDocument, variables, options);
 
-export const GetDriversAverageRatingDocument = `
-    query GetDriversAverageRating {
-  users(
-    where: {type: {equals: "driver"}, isAdmin: {equals: false}}
-    orderBy: []
-    skip: 0
-  ) {
-    id
-    averageRate
-  }
-}
-    `;
-
-export const useGetDriversAverageRatingQuery = <
-      TData = GetDriversAverageRatingQuery,
-      TError = unknown
-    >(
-      variables?: GetDriversAverageRatingQueryVariables,
-      options?: Omit<UseQueryOptions<GetDriversAverageRatingQuery, TError, TData>, 'queryKey'> & { queryKey?: UseQueryOptions<GetDriversAverageRatingQuery, TError, TData>['queryKey'] }
-    ) => {
-    
-    return useQuery<GetDriversAverageRatingQuery, TError, TData>(
-      {
-    queryKey: variables === undefined ? ['GetDriversAverageRating'] : ['GetDriversAverageRating', variables],
-    queryFn: graphqlClient<GetDriversAverageRatingQuery, GetDriversAverageRatingQueryVariables>(GetDriversAverageRatingDocument, variables),
-    ...options
-  }
-    )};
-
-useGetDriversAverageRatingQuery.getKey = (variables?: GetDriversAverageRatingQueryVariables) => variables === undefined ? ['GetDriversAverageRating'] : ['GetDriversAverageRating', variables];
-
-
-useGetDriversAverageRatingQuery.fetcher = (variables?: GetDriversAverageRatingQueryVariables, options?: RequestInit['headers']) => graphqlClient<GetDriversAverageRatingQuery, GetDriversAverageRatingQueryVariables>(GetDriversAverageRatingDocument, variables, options);
-
 export const GetUserDocument = `
     query GetUser($where: UserWhereUniqueInput!) {
   user(where: $where) {
@@ -5117,107 +5201,6 @@ useGetCoursesCountsByPeriodQuery.getKey = (variables: GetCoursesCountsByPeriodQu
 
 useGetCoursesCountsByPeriodQuery.fetcher = (variables: GetCoursesCountsByPeriodQueryVariables, options?: RequestInit['headers']) => graphqlClient<GetCoursesCountsByPeriodQuery, GetCoursesCountsByPeriodQueryVariables>(GetCoursesCountsByPeriodDocument, variables, options);
 
-export const GetCoursesForStatsDocument = `
-    query GetCoursesForStats {
-  courses(
-    where: {state: {equals: "paid"}}
-    orderBy: [{createdAt: desc}]
-    take: 500
-    skip: 0
-  ) {
-    id
-    distance
-    duration
-    price
-    fees
-    createdAt
-    startDatetimeUtc
-    endDatetimeUtc
-  }
-}
-    `;
-
-export const useGetCoursesForStatsQuery = <
-      TData = GetCoursesForStatsQuery,
-      TError = unknown
-    >(
-      variables?: GetCoursesForStatsQueryVariables,
-      options?: Omit<UseQueryOptions<GetCoursesForStatsQuery, TError, TData>, 'queryKey'> & { queryKey?: UseQueryOptions<GetCoursesForStatsQuery, TError, TData>['queryKey'] }
-    ) => {
-    
-    return useQuery<GetCoursesForStatsQuery, TError, TData>(
-      {
-    queryKey: variables === undefined ? ['GetCoursesForStats'] : ['GetCoursesForStats', variables],
-    queryFn: graphqlClient<GetCoursesForStatsQuery, GetCoursesForStatsQueryVariables>(GetCoursesForStatsDocument, variables),
-    ...options
-  }
-    )};
-
-useGetCoursesForStatsQuery.getKey = (variables?: GetCoursesForStatsQueryVariables) => variables === undefined ? ['GetCoursesForStats'] : ['GetCoursesForStats', variables];
-
-
-useGetCoursesForStatsQuery.fetcher = (variables?: GetCoursesForStatsQueryVariables, options?: RequestInit['headers']) => graphqlClient<GetCoursesForStatsQuery, GetCoursesForStatsQueryVariables>(GetCoursesForStatsDocument, variables, options);
-
-export const GetRecentUsersDocument = `
-    query GetRecentUsers($where: UserWhereInput!) {
-  users(where: $where, orderBy: [{createdAt: asc}], take: 1000, skip: 0) {
-    id
-    createdAt
-  }
-}
-    `;
-
-export const useGetRecentUsersQuery = <
-      TData = GetRecentUsersQuery,
-      TError = unknown
-    >(
-      variables: GetRecentUsersQueryVariables,
-      options?: Omit<UseQueryOptions<GetRecentUsersQuery, TError, TData>, 'queryKey'> & { queryKey?: UseQueryOptions<GetRecentUsersQuery, TError, TData>['queryKey'] }
-    ) => {
-    
-    return useQuery<GetRecentUsersQuery, TError, TData>(
-      {
-    queryKey: ['GetRecentUsers', variables],
-    queryFn: graphqlClient<GetRecentUsersQuery, GetRecentUsersQueryVariables>(GetRecentUsersDocument, variables),
-    ...options
-  }
-    )};
-
-useGetRecentUsersQuery.getKey = (variables: GetRecentUsersQueryVariables) => ['GetRecentUsers', variables];
-
-
-useGetRecentUsersQuery.fetcher = (variables: GetRecentUsersQueryVariables, options?: RequestInit['headers']) => graphqlClient<GetRecentUsersQuery, GetRecentUsersQueryVariables>(GetRecentUsersDocument, variables, options);
-
-export const GetRecentCoursesDocument = `
-    query GetRecentCourses($where: CourseWhereInput!) {
-  courses(where: $where, orderBy: [{createdAt: asc}], take: 1000, skip: 0) {
-    id
-    createdAt
-  }
-}
-    `;
-
-export const useGetRecentCoursesQuery = <
-      TData = GetRecentCoursesQuery,
-      TError = unknown
-    >(
-      variables: GetRecentCoursesQueryVariables,
-      options?: Omit<UseQueryOptions<GetRecentCoursesQuery, TError, TData>, 'queryKey'> & { queryKey?: UseQueryOptions<GetRecentCoursesQuery, TError, TData>['queryKey'] }
-    ) => {
-    
-    return useQuery<GetRecentCoursesQuery, TError, TData>(
-      {
-    queryKey: ['GetRecentCourses', variables],
-    queryFn: graphqlClient<GetRecentCoursesQuery, GetRecentCoursesQueryVariables>(GetRecentCoursesDocument, variables),
-    ...options
-  }
-    )};
-
-useGetRecentCoursesQuery.getKey = (variables: GetRecentCoursesQueryVariables) => ['GetRecentCourses', variables];
-
-
-useGetRecentCoursesQuery.fetcher = (variables: GetRecentCoursesQueryVariables, options?: RequestInit['headers']) => graphqlClient<GetRecentCoursesQuery, GetRecentCoursesQueryVariables>(GetRecentCoursesDocument, variables, options);
-
 export const UpdateUserDocument = `
     mutation UpdateUser($where: UserWhereUniqueInput!, $data: UserUpdateInput!) {
   updateUser(where: $where, data: $data) {
@@ -5342,3 +5325,216 @@ export const useUpdateCertificateMutation = <
 
 
 useUpdateCertificateMutation.fetcher = (variables: UpdateCertificateMutationVariables, options?: RequestInit['headers']) => graphqlClient<UpdateCertificateMutation, UpdateCertificateMutationVariables>(UpdateCertificateDocument, variables, options);
+
+export const GetAdminRevenueStatsDocument = `
+    query GetAdminRevenueStats($from: DateTime, $to: DateTime) {
+  adminRevenueStats(from: $from, to: $to) {
+    revenue
+    fees
+    basket
+    count
+  }
+}
+    `;
+
+export const useGetAdminRevenueStatsQuery = <
+      TData = GetAdminRevenueStatsQuery,
+      TError = unknown
+    >(
+      variables?: GetAdminRevenueStatsQueryVariables,
+      options?: Omit<UseQueryOptions<GetAdminRevenueStatsQuery, TError, TData>, 'queryKey'> & { queryKey?: UseQueryOptions<GetAdminRevenueStatsQuery, TError, TData>['queryKey'] }
+    ) => {
+    
+    return useQuery<GetAdminRevenueStatsQuery, TError, TData>(
+      {
+    queryKey: variables === undefined ? ['GetAdminRevenueStats'] : ['GetAdminRevenueStats', variables],
+    queryFn: graphqlClient<GetAdminRevenueStatsQuery, GetAdminRevenueStatsQueryVariables>(GetAdminRevenueStatsDocument, variables),
+    ...options
+  }
+    )};
+
+useGetAdminRevenueStatsQuery.getKey = (variables?: GetAdminRevenueStatsQueryVariables) => variables === undefined ? ['GetAdminRevenueStats'] : ['GetAdminRevenueStats', variables];
+
+
+useGetAdminRevenueStatsQuery.fetcher = (variables?: GetAdminRevenueStatsQueryVariables, options?: RequestInit['headers']) => graphqlClient<GetAdminRevenueStatsQuery, GetAdminRevenueStatsQueryVariables>(GetAdminRevenueStatsDocument, variables, options);
+
+export const GetAdminCoursesMetricsDocument = `
+    query GetAdminCoursesMetrics($from: DateTime, $to: DateTime) {
+  adminCoursesMetrics(from: $from, to: $to) {
+    averageDistance
+    averageDuration
+    averagePrice
+    averageAcceptanceTimeSeconds
+    count
+  }
+}
+    `;
+
+export const useGetAdminCoursesMetricsQuery = <
+      TData = GetAdminCoursesMetricsQuery,
+      TError = unknown
+    >(
+      variables?: GetAdminCoursesMetricsQueryVariables,
+      options?: Omit<UseQueryOptions<GetAdminCoursesMetricsQuery, TError, TData>, 'queryKey'> & { queryKey?: UseQueryOptions<GetAdminCoursesMetricsQuery, TError, TData>['queryKey'] }
+    ) => {
+    
+    return useQuery<GetAdminCoursesMetricsQuery, TError, TData>(
+      {
+    queryKey: variables === undefined ? ['GetAdminCoursesMetrics'] : ['GetAdminCoursesMetrics', variables],
+    queryFn: graphqlClient<GetAdminCoursesMetricsQuery, GetAdminCoursesMetricsQueryVariables>(GetAdminCoursesMetricsDocument, variables),
+    ...options
+  }
+    )};
+
+useGetAdminCoursesMetricsQuery.getKey = (variables?: GetAdminCoursesMetricsQueryVariables) => variables === undefined ? ['GetAdminCoursesMetrics'] : ['GetAdminCoursesMetrics', variables];
+
+
+useGetAdminCoursesMetricsQuery.fetcher = (variables?: GetAdminCoursesMetricsQueryVariables, options?: RequestInit['headers']) => graphqlClient<GetAdminCoursesMetricsQuery, GetAdminCoursesMetricsQueryVariables>(GetAdminCoursesMetricsDocument, variables, options);
+
+export const GetAdminCoursesTrendDocument = `
+    query GetAdminCoursesTrend($days: Int!) {
+  adminCoursesTrend(days: $days) {
+    date
+    count
+  }
+}
+    `;
+
+export const useGetAdminCoursesTrendQuery = <
+      TData = GetAdminCoursesTrendQuery,
+      TError = unknown
+    >(
+      variables: GetAdminCoursesTrendQueryVariables,
+      options?: Omit<UseQueryOptions<GetAdminCoursesTrendQuery, TError, TData>, 'queryKey'> & { queryKey?: UseQueryOptions<GetAdminCoursesTrendQuery, TError, TData>['queryKey'] }
+    ) => {
+    
+    return useQuery<GetAdminCoursesTrendQuery, TError, TData>(
+      {
+    queryKey: ['GetAdminCoursesTrend', variables],
+    queryFn: graphqlClient<GetAdminCoursesTrendQuery, GetAdminCoursesTrendQueryVariables>(GetAdminCoursesTrendDocument, variables),
+    ...options
+  }
+    )};
+
+useGetAdminCoursesTrendQuery.getKey = (variables: GetAdminCoursesTrendQueryVariables) => ['GetAdminCoursesTrend', variables];
+
+
+useGetAdminCoursesTrendQuery.fetcher = (variables: GetAdminCoursesTrendQueryVariables, options?: RequestInit['headers']) => graphqlClient<GetAdminCoursesTrendQuery, GetAdminCoursesTrendQueryVariables>(GetAdminCoursesTrendDocument, variables, options);
+
+export const GetAdminUsersTrendDocument = `
+    query GetAdminUsersTrend($days: Int!) {
+  adminUsersTrend(days: $days) {
+    date
+    count
+  }
+}
+    `;
+
+export const useGetAdminUsersTrendQuery = <
+      TData = GetAdminUsersTrendQuery,
+      TError = unknown
+    >(
+      variables: GetAdminUsersTrendQueryVariables,
+      options?: Omit<UseQueryOptions<GetAdminUsersTrendQuery, TError, TData>, 'queryKey'> & { queryKey?: UseQueryOptions<GetAdminUsersTrendQuery, TError, TData>['queryKey'] }
+    ) => {
+    
+    return useQuery<GetAdminUsersTrendQuery, TError, TData>(
+      {
+    queryKey: ['GetAdminUsersTrend', variables],
+    queryFn: graphqlClient<GetAdminUsersTrendQuery, GetAdminUsersTrendQueryVariables>(GetAdminUsersTrendDocument, variables),
+    ...options
+  }
+    )};
+
+useGetAdminUsersTrendQuery.getKey = (variables: GetAdminUsersTrendQueryVariables) => ['GetAdminUsersTrend', variables];
+
+
+useGetAdminUsersTrendQuery.fetcher = (variables: GetAdminUsersTrendQueryVariables, options?: RequestInit['headers']) => graphqlClient<GetAdminUsersTrendQuery, GetAdminUsersTrendQueryVariables>(GetAdminUsersTrendDocument, variables, options);
+
+export const GetAdminDriversAverageRatingDocument = `
+    query GetAdminDriversAverageRating {
+  adminDriversAverageRating
+}
+    `;
+
+export const useGetAdminDriversAverageRatingQuery = <
+      TData = GetAdminDriversAverageRatingQuery,
+      TError = unknown
+    >(
+      variables?: GetAdminDriversAverageRatingQueryVariables,
+      options?: Omit<UseQueryOptions<GetAdminDriversAverageRatingQuery, TError, TData>, 'queryKey'> & { queryKey?: UseQueryOptions<GetAdminDriversAverageRatingQuery, TError, TData>['queryKey'] }
+    ) => {
+    
+    return useQuery<GetAdminDriversAverageRatingQuery, TError, TData>(
+      {
+    queryKey: variables === undefined ? ['GetAdminDriversAverageRating'] : ['GetAdminDriversAverageRating', variables],
+    queryFn: graphqlClient<GetAdminDriversAverageRatingQuery, GetAdminDriversAverageRatingQueryVariables>(GetAdminDriversAverageRatingDocument, variables),
+    ...options
+  }
+    )};
+
+useGetAdminDriversAverageRatingQuery.getKey = (variables?: GetAdminDriversAverageRatingQueryVariables) => variables === undefined ? ['GetAdminDriversAverageRating'] : ['GetAdminDriversAverageRating', variables];
+
+
+useGetAdminDriversAverageRatingQuery.fetcher = (variables?: GetAdminDriversAverageRatingQueryVariables, options?: RequestInit['headers']) => graphqlClient<GetAdminDriversAverageRatingQuery, GetAdminDriversAverageRatingQueryVariables>(GetAdminDriversAverageRatingDocument, variables, options);
+
+export const GetAdminPendingDocumentsCountDocument = `
+    query GetAdminPendingDocumentsCount {
+  adminPendingDocumentsCount
+}
+    `;
+
+export const useGetAdminPendingDocumentsCountQuery = <
+      TData = GetAdminPendingDocumentsCountQuery,
+      TError = unknown
+    >(
+      variables?: GetAdminPendingDocumentsCountQueryVariables,
+      options?: Omit<UseQueryOptions<GetAdminPendingDocumentsCountQuery, TError, TData>, 'queryKey'> & { queryKey?: UseQueryOptions<GetAdminPendingDocumentsCountQuery, TError, TData>['queryKey'] }
+    ) => {
+    
+    return useQuery<GetAdminPendingDocumentsCountQuery, TError, TData>(
+      {
+    queryKey: variables === undefined ? ['GetAdminPendingDocumentsCount'] : ['GetAdminPendingDocumentsCount', variables],
+    queryFn: graphqlClient<GetAdminPendingDocumentsCountQuery, GetAdminPendingDocumentsCountQueryVariables>(GetAdminPendingDocumentsCountDocument, variables),
+    ...options
+  }
+    )};
+
+useGetAdminPendingDocumentsCountQuery.getKey = (variables?: GetAdminPendingDocumentsCountQueryVariables) => variables === undefined ? ['GetAdminPendingDocumentsCount'] : ['GetAdminPendingDocumentsCount', variables];
+
+
+useGetAdminPendingDocumentsCountQuery.fetcher = (variables?: GetAdminPendingDocumentsCountQueryVariables, options?: RequestInit['headers']) => graphqlClient<GetAdminPendingDocumentsCountQuery, GetAdminPendingDocumentsCountQueryVariables>(GetAdminPendingDocumentsCountDocument, variables, options);
+
+export const GetAdminDailyAggregatesDocument = `
+    query GetAdminDailyAggregates($days: Int!) {
+  adminDailyAggregates(days: $days) {
+    date
+    count
+    revenue
+    fees
+    averagePrice
+    averageDistance
+  }
+}
+    `;
+
+export const useGetAdminDailyAggregatesQuery = <
+      TData = GetAdminDailyAggregatesQuery,
+      TError = unknown
+    >(
+      variables: GetAdminDailyAggregatesQueryVariables,
+      options?: Omit<UseQueryOptions<GetAdminDailyAggregatesQuery, TError, TData>, 'queryKey'> & { queryKey?: UseQueryOptions<GetAdminDailyAggregatesQuery, TError, TData>['queryKey'] }
+    ) => {
+    
+    return useQuery<GetAdminDailyAggregatesQuery, TError, TData>(
+      {
+    queryKey: ['GetAdminDailyAggregates', variables],
+    queryFn: graphqlClient<GetAdminDailyAggregatesQuery, GetAdminDailyAggregatesQueryVariables>(GetAdminDailyAggregatesDocument, variables),
+    ...options
+  }
+    )};
+
+useGetAdminDailyAggregatesQuery.getKey = (variables: GetAdminDailyAggregatesQueryVariables) => ['GetAdminDailyAggregates', variables];
+
+
+useGetAdminDailyAggregatesQuery.fetcher = (variables: GetAdminDailyAggregatesQueryVariables, options?: RequestInit['headers']) => graphqlClient<GetAdminDailyAggregatesQuery, GetAdminDailyAggregatesQueryVariables>(GetAdminDailyAggregatesDocument, variables, options);
