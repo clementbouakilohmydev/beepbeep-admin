@@ -37,17 +37,28 @@ import { TicketsPieChart } from "@/components/dashboard/tickets-pie-chart"
 import { TicketsTrendChart } from "@/components/dashboard/tickets-trend-chart"
 import { ErrorState } from "@/components/shared/error-state"
 
+// Polling 30s sur les KPIs qui bougent quotidiennement (tickets,
+// documents pending, courses counts, users counts). Le dashboard est un
+// outil ops → on veut voir les nouveaux tickets / docs apparaître sans
+// reload manuel. Cf BACK_TODO doc #14.
+const DASHBOARD_REFETCH_INTERVAL_MS = 30_000
+
 export function DashboardPage() {
   const {
     data: ticketsData,
     isLoading: ticketsLoading,
     isError,
     refetch,
-  } = useGetTicketsCountsQuery({})
+  } = useGetTicketsCountsQuery(
+    {},
+    { refetchInterval: DASHBOARD_REFETCH_INTERVAL_MS },
+  )
 
   const dateWheres = getDateWheres()
   const { data: usersData, isLoading: usersLoading } =
-    useGetUsersCountsQuery(dateWheres)
+    useGetUsersCountsQuery(dateWheres, {
+      refetchInterval: DASHBOARD_REFETCH_INTERVAL_MS,
+    })
 
   const { data: driversRatingData, isLoading: driversRatingLoading } =
     useGetAdminDriversAverageRatingQuery({})
@@ -57,21 +68,30 @@ export function DashboardPage() {
   )
 
   const { data: pendingDocsData, isLoading: pendingDocsLoading } =
-    useGetAdminPendingDocumentsCountQuery({})
+    useGetAdminPendingDocumentsCountQuery(
+      {},
+      { refetchInterval: DASHBOARD_REFETCH_INTERVAL_MS },
+    )
 
   const pendingDocsCount = pendingDocsData?.adminPendingDocumentsCount ?? 0
 
   const { data: coursesCountsData, isLoading: coursesCountsLoading } =
-    useGetCoursesCountsQuery({})
+    useGetCoursesCountsQuery(
+      {},
+      { refetchInterval: DASHBOARD_REFETCH_INTERVAL_MS },
+    )
 
   const dateBoundaries = getDateBoundaries()
   const { data: coursesByPeriodData, isLoading: coursesByPeriodLoading } =
-    useGetCoursesCountsByPeriodQuery({
-      todayWhere: { createdAt: { gte: dateBoundaries.todayISO } },
-      weekWhere: { createdAt: { gte: dateBoundaries.weekISO } },
-      monthWhere: { createdAt: { gte: dateBoundaries.monthISO } },
-      yearWhere: { createdAt: { gte: dateBoundaries.yearISO } },
-    })
+    useGetCoursesCountsByPeriodQuery(
+      {
+        todayWhere: { createdAt: { gte: dateBoundaries.todayISO } },
+        weekWhere: { createdAt: { gte: dateBoundaries.weekISO } },
+        monthWhere: { createdAt: { gte: dateBoundaries.monthISO } },
+        yearWhere: { createdAt: { gte: dateBoundaries.yearISO } },
+      },
+      { refetchInterval: DASHBOARD_REFETCH_INTERVAL_MS },
+    )
 
   const { data: coursesMetricsData, isLoading: coursesMetricsLoading } =
     useGetAdminCoursesMetricsQuery({})

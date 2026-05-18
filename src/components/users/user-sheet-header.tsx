@@ -1,4 +1,6 @@
+import { useState } from "react"
 import {
+  MailIcon,
   ShieldBanIcon,
   ShieldCheckIcon,
 } from "lucide-react"
@@ -21,6 +23,8 @@ import {
   AlertDialogTitle,
   AlertDialogTrigger,
 } from "@/components/ui/alert-dialog"
+import { SendMessageDialog } from "@/components/dialogs/send-message-dialog"
+import { getUserDisplay } from "@/lib/format"
 import { UserTypeBadge } from "./user-type-badge"
 import { UserStatusBadge } from "./user-status-badge"
 
@@ -35,6 +39,7 @@ export function UserSheetHeader({
   updateUser,
   isUpdatingUser,
 }: UserSheetHeaderProps) {
+  const [emailOpen, setEmailOpen] = useState(false)
   return (
     <SheetHeader>
       <div className="flex items-start gap-3">
@@ -61,7 +66,17 @@ export function UserSheetHeader({
           </div>
         </div>
       </div>
-      <div className="pt-2">
+      <div className="flex flex-wrap gap-2 pt-2">
+        {user.email && (
+          <Button
+            variant="outline"
+            onClick={() => setEmailOpen(true)}
+            className="w-full sm:w-auto"
+          >
+            <MailIcon className="mr-2 size-4" />
+            Envoyer un email
+          </Button>
+        )}
         <AlertDialog>
           <AlertDialogTrigger asChild>
             <Button
@@ -111,6 +126,14 @@ export function UserSheetHeader({
           </AlertDialogContent>
         </AlertDialog>
       </div>
+      {user.email && (
+        <SendMessageDialog
+          open={emailOpen}
+          onOpenChange={setEmailOpen}
+          userEmail={user.email}
+          userName={getUserDisplay(user)}
+        />
+      )}
     </SheetHeader>
   )
 }
