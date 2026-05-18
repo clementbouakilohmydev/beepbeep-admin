@@ -35,6 +35,7 @@ import {
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog"
 import { TicketStatusBadge } from "./ticket-status-badge"
+import { TicketThread } from "./ticket-thread"
 import { SendMessageDialog } from "@/components/dialogs/send-message-dialog"
 
 type TicketDetailSheetProps = {
@@ -106,7 +107,7 @@ export function TicketDetailSheet({
                     onClick={() => setMessageOpen(true)}
                   >
                     <MailIcon className="mr-1.5 size-3.5" />
-                    Envoyer un message
+                    Envoyer un email
                   </Button>
                 )}
               </div>
@@ -136,6 +137,9 @@ export function TicketDetailSheet({
                   </div>
                 </div>
               </section>
+
+              {/* Conversation persistée */}
+              <TicketThread ticket={ticket} />
 
               {/* User info */}
               <section>

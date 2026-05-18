@@ -2144,6 +2144,8 @@ type Ticket {
   object: TicketObject
   description: String
   user: User
+  messages(where: TicketMessageWhereInput! = {}, orderBy: [TicketMessageOrderByInput!]! = [], take: Int, skip: Int! = 0, cursor: TicketMessageWhereUniqueInput): [TicketMessage!]
+  messagesCount(where: TicketMessageWhereInput! = {}): Int
   updatedAt: DateTime
   createdAt: DateTime
 }
@@ -2161,8 +2163,15 @@ input TicketWhereInput {
   object: TicketObjectWhereInput
   description: StringFilter
   user: UserWhereInput
+  messages: TicketMessageManyRelationFilter
   updatedAt: DateTimeNullableFilter
   createdAt: DateTimeNullableFilter
+}
+
+input TicketMessageManyRelationFilter {
+  every: TicketMessageWhereInput
+  some: TicketMessageWhereInput
+  none: TicketMessageWhereInput
 }
 
 input TicketOrderByInput {
@@ -2178,6 +2187,7 @@ input TicketUpdateInput {
   object: TicketObjectRelateToOneForUpdateInput
   description: String
   user: UserRelateToOneForUpdateInput
+  messages: TicketMessageRelateToManyForUpdateInput
   updatedAt: DateTime
   createdAt: DateTime
 }
@@ -2186,6 +2196,13 @@ input TicketObjectRelateToOneForUpdateInput {
   create: TicketObjectCreateInput
   connect: TicketObjectWhereUniqueInput
   disconnect: Boolean
+}
+
+input TicketMessageRelateToManyForUpdateInput {
+  disconnect: [TicketMessageWhereUniqueInput!]
+  set: [TicketMessageWhereUniqueInput!]
+  create: [TicketMessageCreateInput!]
+  connect: [TicketMessageWhereUniqueInput!]
 }
 
 input TicketUpdateArgs {
@@ -2198,6 +2215,7 @@ input TicketCreateInput {
   object: TicketObjectRelateToOneForCreateInput
   description: String
   user: UserRelateToOneForCreateInput
+  messages: TicketMessageRelateToManyForCreateInput
   updatedAt: DateTime
   createdAt: DateTime
 }
@@ -2205,6 +2223,75 @@ input TicketCreateInput {
 input TicketObjectRelateToOneForCreateInput {
   create: TicketObjectCreateInput
   connect: TicketObjectWhereUniqueInput
+}
+
+input TicketMessageRelateToManyForCreateInput {
+  create: [TicketMessageCreateInput!]
+  connect: [TicketMessageWhereUniqueInput!]
+}
+
+type TicketMessage {
+  id: ID!
+  content: String
+  ticket: Ticket
+  author: User
+  updatedAt: DateTime
+  createdAt: DateTime
+}
+
+input TicketMessageWhereUniqueInput {
+  id: ID
+}
+
+input TicketMessageWhereInput {
+  AND: [TicketMessageWhereInput!]
+  OR: [TicketMessageWhereInput!]
+  NOT: [TicketMessageWhereInput!]
+  id: IDFilter
+  content: StringFilter
+  ticket: TicketWhereInput
+  author: UserWhereInput
+  updatedAt: DateTimeNullableFilter
+  createdAt: DateTimeNullableFilter
+}
+
+input TicketMessageOrderByInput {
+  id: OrderDirection
+  content: OrderDirection
+  updatedAt: OrderDirection
+  createdAt: OrderDirection
+}
+
+input TicketMessageUpdateInput {
+  content: String
+  ticket: TicketRelateToOneForUpdateInput
+  author: UserRelateToOneForUpdateInput
+  updatedAt: DateTime
+  createdAt: DateTime
+}
+
+input TicketRelateToOneForUpdateInput {
+  create: TicketCreateInput
+  connect: TicketWhereUniqueInput
+  disconnect: Boolean
+}
+
+input TicketMessageUpdateArgs {
+  where: TicketMessageWhereUniqueInput!
+  data: TicketMessageUpdateInput!
+}
+
+input TicketMessageCreateInput {
+  content: String
+  ticket: TicketRelateToOneForCreateInput
+  author: UserRelateToOneForCreateInput
+  updatedAt: DateTime
+  createdAt: DateTime
+}
+
+input TicketRelateToOneForCreateInput {
+  create: TicketCreateInput
+  connect: TicketWhereUniqueInput
 }
 
 type TicketObject {
@@ -2456,6 +2543,12 @@ type Mutation {
   updateTickets(data: [TicketUpdateArgs!]!): [Ticket]
   deleteTicket(where: TicketWhereUniqueInput!): Ticket
   deleteTickets(where: [TicketWhereUniqueInput!]!): [Ticket]
+  createTicketMessage(data: TicketMessageCreateInput!): TicketMessage
+  createTicketMessages(data: [TicketMessageCreateInput!]!): [TicketMessage]
+  updateTicketMessage(where: TicketMessageWhereUniqueInput!, data: TicketMessageUpdateInput!): TicketMessage
+  updateTicketMessages(data: [TicketMessageUpdateArgs!]!): [TicketMessage]
+  deleteTicketMessage(where: TicketMessageWhereUniqueInput!): TicketMessage
+  deleteTicketMessages(where: [TicketMessageWhereUniqueInput!]!): [TicketMessage]
   createTicketObject(data: TicketObjectCreateInput!): TicketObject
   createTicketObjects(data: [TicketObjectCreateInput!]!): [TicketObject]
   updateTicketObject(where: TicketObjectWhereUniqueInput!, data: TicketObjectUpdateInput!): TicketObject
@@ -2583,6 +2676,9 @@ type Query {
   ticket(where: TicketWhereUniqueInput!): Ticket
   tickets(where: TicketWhereInput! = {}, orderBy: [TicketOrderByInput!]! = [], take: Int, skip: Int! = 0, cursor: TicketWhereUniqueInput): [Ticket!]
   ticketsCount(where: TicketWhereInput! = {}): Int
+  ticketMessage(where: TicketMessageWhereUniqueInput!): TicketMessage
+  ticketMessages(where: TicketMessageWhereInput! = {}, orderBy: [TicketMessageOrderByInput!]! = [], take: Int, skip: Int! = 0, cursor: TicketMessageWhereUniqueInput): [TicketMessage!]
+  ticketMessagesCount(where: TicketMessageWhereInput! = {}): Int
   ticketObject(where: TicketObjectWhereUniqueInput!): TicketObject
   ticketObjects(where: TicketObjectWhereInput! = {}, orderBy: [TicketObjectOrderByInput!]! = [], take: Int, skip: Int! = 0, cursor: TicketObjectWhereUniqueInput): [TicketObject!]
   ticketObjectsCount(where: TicketObjectWhereInput! = {}): Int

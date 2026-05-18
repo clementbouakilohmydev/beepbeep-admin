@@ -138,6 +138,18 @@ export const GetTicket = /* GraphQL */ `
         lastname
         phoneNumber
       }
+      messages(orderBy: [{ createdAt: asc }]) {
+        id
+        content
+        createdAt
+        author {
+          id
+          firstname
+          lastname
+          email
+          isAdmin
+        }
+      }
       createdAt
       updatedAt
     }
@@ -152,6 +164,23 @@ export const UpdateTicket = /* GraphQL */ `
     updateTicket(where: $where, data: $data) {
       id
       solved
+    }
+  }
+`
+
+export const CreateTicketMessage = /* GraphQL */ `
+  mutation CreateTicketMessage($data: TicketMessageCreateInput!) {
+    createTicketMessage(data: $data) {
+      id
+      content
+      createdAt
+      author {
+        id
+        firstname
+        lastname
+        email
+        isAdmin
+      }
     }
   }
 `

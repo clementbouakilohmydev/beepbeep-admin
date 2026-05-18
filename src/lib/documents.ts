@@ -12,21 +12,24 @@ export type FlatDocument = {
   createdAt: string | null | undefined
 }
 
+// Structural shape that the function only relies on. On évite l'index
+// signature : la query GetUsersWithDocuments renvoie aussi `isAdmin: boolean`
+// etc., types incompatibles avec une index signature stricte sur "doc | string".
+type DocOnUser = {
+  id: string
+  state?: string | null
+  picture?: { uri?: string | null } | null
+  createdAt?: string | null
+}
 type UserWithDocuments = {
   id: string
   firstname?: string | null
   lastname?: string | null
   email?: string | null
-  [key: string]:
-    | {
-        id: string
-        state?: string | null
-        picture?: { uri: string } | null
-        createdAt?: string | null
-      }
-    | string
-    | null
-    | undefined
+  drivingLicense?: DocOnUser | null
+  insurance?: DocOnUser | null
+  registrationDocument?: DocOnUser | null
+  certificate?: DocOnUser | null
 }
 
 export function flattenUserDocuments(
@@ -39,16 +42,7 @@ export function flattenUserDocuments(
   for (const user of users) {
     const name = getUserDisplay(user)
     for (const type of DOCUMENT_TYPES) {
-      const doc = user[type] as
-        | {
-            id: string
-            state?: string | null
-            picture?: { uri: string } | null
-            createdAt?: string | null
-          }
-        | null
-        | undefined
-
+      const doc = user[type]
       if (doc) {
         docs.push({
           userId: user.id,

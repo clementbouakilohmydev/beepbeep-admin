@@ -9,7 +9,11 @@ import { Card, CardContent, CardHeader, CardTitle, Skeleton } from "@/components
 
 type AreaChartCardProps = {
   title: string
-  data: Array<{ date: string; value: number }>
+  // Recharts lookup la valeur via `dataKey` à l'exec → on accepte une row
+  // avec une `date` + n'importe quelles colonnes numériques (count, value,
+  // revenue…). Pendant côté GraphQL des shapes très variées sur les
+  // adminStats trends.
+  data: ReadonlyArray<Record<string, string | number>>
   dataKey?: string
   color: string
   configLabel: string

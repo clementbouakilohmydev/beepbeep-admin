@@ -2,10 +2,10 @@ import { createContext } from "react"
 
 export type AuthUser = {
   id: string
-  email: string | null
-  firstname: string | null
-  lastname: string | null
-  isAdmin: boolean | null
+  email?: string | null
+  firstname?: string | null
+  lastname?: string | null
+  isAdmin?: boolean | null
 }
 
 export type AuthContextType = {

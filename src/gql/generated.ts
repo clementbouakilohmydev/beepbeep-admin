@@ -1397,6 +1397,8 @@ export type Mutation = {
   createRegistrationDocument?: Maybe<RegistrationDocument>;
   createRegistrationDocuments?: Maybe<Array<Maybe<RegistrationDocument>>>;
   createTicket?: Maybe<Ticket>;
+  createTicketMessage?: Maybe<TicketMessage>;
+  createTicketMessages?: Maybe<Array<Maybe<TicketMessage>>>;
   createTicketObject?: Maybe<TicketObject>;
   createTicketObjects?: Maybe<Array<Maybe<TicketObject>>>;
   createTickets?: Maybe<Array<Maybe<Ticket>>>;
@@ -1457,6 +1459,8 @@ export type Mutation = {
   deleteRegistrationDocument?: Maybe<RegistrationDocument>;
   deleteRegistrationDocuments?: Maybe<Array<Maybe<RegistrationDocument>>>;
   deleteTicket?: Maybe<Ticket>;
+  deleteTicketMessage?: Maybe<TicketMessage>;
+  deleteTicketMessages?: Maybe<Array<Maybe<TicketMessage>>>;
   deleteTicketObject?: Maybe<TicketObject>;
   deleteTicketObjects?: Maybe<Array<Maybe<TicketObject>>>;
   deleteTickets?: Maybe<Array<Maybe<Ticket>>>;
@@ -1520,6 +1524,8 @@ export type Mutation = {
   updateRegistrationDocument?: Maybe<RegistrationDocument>;
   updateRegistrationDocuments?: Maybe<Array<Maybe<RegistrationDocument>>>;
   updateTicket?: Maybe<Ticket>;
+  updateTicketMessage?: Maybe<TicketMessage>;
+  updateTicketMessages?: Maybe<Array<Maybe<TicketMessage>>>;
   updateTicketObject?: Maybe<TicketObject>;
   updateTicketObjects?: Maybe<Array<Maybe<TicketObject>>>;
   updateTickets?: Maybe<Array<Maybe<Ticket>>>;
@@ -1751,6 +1757,16 @@ export type MutationCreateRegistrationDocumentsArgs = {
 
 export type MutationCreateTicketArgs = {
   data: TicketCreateInput;
+};
+
+
+export type MutationCreateTicketMessageArgs = {
+  data: TicketMessageCreateInput;
+};
+
+
+export type MutationCreateTicketMessagesArgs = {
+  data: Array<TicketMessageCreateInput>;
 };
 
 
@@ -2012,6 +2028,16 @@ export type MutationDeleteRegistrationDocumentsArgs = {
 
 export type MutationDeleteTicketArgs = {
   where: TicketWhereUniqueInput;
+};
+
+
+export type MutationDeleteTicketMessageArgs = {
+  where: TicketMessageWhereUniqueInput;
+};
+
+
+export type MutationDeleteTicketMessagesArgs = {
+  where: Array<TicketMessageWhereUniqueInput>;
 };
 
 
@@ -2309,6 +2335,17 @@ export type MutationUpdateRegistrationDocumentsArgs = {
 export type MutationUpdateTicketArgs = {
   data: TicketUpdateInput;
   where: TicketWhereUniqueInput;
+};
+
+
+export type MutationUpdateTicketMessageArgs = {
+  data: TicketMessageUpdateInput;
+  where: TicketMessageWhereUniqueInput;
+};
+
+
+export type MutationUpdateTicketMessagesArgs = {
+  data: Array<TicketMessageUpdateArgs>;
 };
 
 
@@ -2930,6 +2967,9 @@ export type Query = {
   registrationDocuments?: Maybe<Array<RegistrationDocument>>;
   registrationDocumentsCount?: Maybe<Scalars['Int']['output']>;
   ticket?: Maybe<Ticket>;
+  ticketMessage?: Maybe<TicketMessage>;
+  ticketMessages?: Maybe<Array<TicketMessage>>;
+  ticketMessagesCount?: Maybe<Scalars['Int']['output']>;
   ticketObject?: Maybe<TicketObject>;
   ticketObjects?: Maybe<Array<TicketObject>>;
   ticketObjectsCount?: Maybe<Scalars['Int']['output']>;
@@ -3355,6 +3395,25 @@ export type QueryTicketArgs = {
 };
 
 
+export type QueryTicketMessageArgs = {
+  where: TicketMessageWhereUniqueInput;
+};
+
+
+export type QueryTicketMessagesArgs = {
+  cursor?: InputMaybe<TicketMessageWhereUniqueInput>;
+  orderBy?: Array<TicketMessageOrderByInput>;
+  skip?: Scalars['Int']['input'];
+  take?: InputMaybe<Scalars['Int']['input']>;
+  where?: TicketMessageWhereInput;
+};
+
+
+export type QueryTicketMessagesCountArgs = {
+  where?: TicketMessageWhereInput;
+};
+
+
 export type QueryTicketObjectArgs = {
   where: TicketObjectWhereUniqueInput;
 };
@@ -3683,19 +3742,108 @@ export type Ticket = {
   createdAt?: Maybe<Scalars['DateTime']['output']>;
   description?: Maybe<Scalars['String']['output']>;
   id: Scalars['ID']['output'];
+  messages?: Maybe<Array<TicketMessage>>;
+  messagesCount?: Maybe<Scalars['Int']['output']>;
   object?: Maybe<TicketObject>;
   solved?: Maybe<Scalars['Boolean']['output']>;
   updatedAt?: Maybe<Scalars['DateTime']['output']>;
   user?: Maybe<User>;
 };
 
+
+export type TicketMessagesArgs = {
+  cursor?: InputMaybe<TicketMessageWhereUniqueInput>;
+  orderBy?: Array<TicketMessageOrderByInput>;
+  skip?: Scalars['Int']['input'];
+  take?: InputMaybe<Scalars['Int']['input']>;
+  where?: TicketMessageWhereInput;
+};
+
+
+export type TicketMessagesCountArgs = {
+  where?: TicketMessageWhereInput;
+};
+
 export type TicketCreateInput = {
   createdAt?: InputMaybe<Scalars['DateTime']['input']>;
   description?: InputMaybe<Scalars['String']['input']>;
+  messages?: InputMaybe<TicketMessageRelateToManyForCreateInput>;
   object?: InputMaybe<TicketObjectRelateToOneForCreateInput>;
   solved?: InputMaybe<Scalars['Boolean']['input']>;
   updatedAt?: InputMaybe<Scalars['DateTime']['input']>;
   user?: InputMaybe<UserRelateToOneForCreateInput>;
+};
+
+export type TicketMessage = {
+  __typename?: 'TicketMessage';
+  author?: Maybe<User>;
+  content?: Maybe<Scalars['String']['output']>;
+  createdAt?: Maybe<Scalars['DateTime']['output']>;
+  id: Scalars['ID']['output'];
+  ticket?: Maybe<Ticket>;
+  updatedAt?: Maybe<Scalars['DateTime']['output']>;
+};
+
+export type TicketMessageCreateInput = {
+  author?: InputMaybe<UserRelateToOneForCreateInput>;
+  content?: InputMaybe<Scalars['String']['input']>;
+  createdAt?: InputMaybe<Scalars['DateTime']['input']>;
+  ticket?: InputMaybe<TicketRelateToOneForCreateInput>;
+  updatedAt?: InputMaybe<Scalars['DateTime']['input']>;
+};
+
+export type TicketMessageManyRelationFilter = {
+  every?: InputMaybe<TicketMessageWhereInput>;
+  none?: InputMaybe<TicketMessageWhereInput>;
+  some?: InputMaybe<TicketMessageWhereInput>;
+};
+
+export type TicketMessageOrderByInput = {
+  content?: InputMaybe<OrderDirection>;
+  createdAt?: InputMaybe<OrderDirection>;
+  id?: InputMaybe<OrderDirection>;
+  updatedAt?: InputMaybe<OrderDirection>;
+};
+
+export type TicketMessageRelateToManyForCreateInput = {
+  connect?: InputMaybe<Array<TicketMessageWhereUniqueInput>>;
+  create?: InputMaybe<Array<TicketMessageCreateInput>>;
+};
+
+export type TicketMessageRelateToManyForUpdateInput = {
+  connect?: InputMaybe<Array<TicketMessageWhereUniqueInput>>;
+  create?: InputMaybe<Array<TicketMessageCreateInput>>;
+  disconnect?: InputMaybe<Array<TicketMessageWhereUniqueInput>>;
+  set?: InputMaybe<Array<TicketMessageWhereUniqueInput>>;
+};
+
+export type TicketMessageUpdateArgs = {
+  data: TicketMessageUpdateInput;
+  where: TicketMessageWhereUniqueInput;
+};
+
+export type TicketMessageUpdateInput = {
+  author?: InputMaybe<UserRelateToOneForUpdateInput>;
+  content?: InputMaybe<Scalars['String']['input']>;
+  createdAt?: InputMaybe<Scalars['DateTime']['input']>;
+  ticket?: InputMaybe<TicketRelateToOneForUpdateInput>;
+  updatedAt?: InputMaybe<Scalars['DateTime']['input']>;
+};
+
+export type TicketMessageWhereInput = {
+  AND?: InputMaybe<Array<TicketMessageWhereInput>>;
+  NOT?: InputMaybe<Array<TicketMessageWhereInput>>;
+  OR?: InputMaybe<Array<TicketMessageWhereInput>>;
+  author?: InputMaybe<UserWhereInput>;
+  content?: InputMaybe<StringFilter>;
+  createdAt?: InputMaybe<DateTimeNullableFilter>;
+  id?: InputMaybe<IdFilter>;
+  ticket?: InputMaybe<TicketWhereInput>;
+  updatedAt?: InputMaybe<DateTimeNullableFilter>;
+};
+
+export type TicketMessageWhereUniqueInput = {
+  id?: InputMaybe<Scalars['ID']['input']>;
 };
 
 export type TicketObject = {
@@ -3763,6 +3911,17 @@ export type TicketOrderByInput = {
   updatedAt?: InputMaybe<OrderDirection>;
 };
 
+export type TicketRelateToOneForCreateInput = {
+  connect?: InputMaybe<TicketWhereUniqueInput>;
+  create?: InputMaybe<TicketCreateInput>;
+};
+
+export type TicketRelateToOneForUpdateInput = {
+  connect?: InputMaybe<TicketWhereUniqueInput>;
+  create?: InputMaybe<TicketCreateInput>;
+  disconnect?: InputMaybe<Scalars['Boolean']['input']>;
+};
+
 export type TicketUpdateArgs = {
   data: TicketUpdateInput;
   where: TicketWhereUniqueInput;
@@ -3771,6 +3930,7 @@ export type TicketUpdateArgs = {
 export type TicketUpdateInput = {
   createdAt?: InputMaybe<Scalars['DateTime']['input']>;
   description?: InputMaybe<Scalars['String']['input']>;
+  messages?: InputMaybe<TicketMessageRelateToManyForUpdateInput>;
   object?: InputMaybe<TicketObjectRelateToOneForUpdateInput>;
   solved?: InputMaybe<Scalars['Boolean']['input']>;
   updatedAt?: InputMaybe<Scalars['DateTime']['input']>;
@@ -3784,6 +3944,7 @@ export type TicketWhereInput = {
   createdAt?: InputMaybe<DateTimeNullableFilter>;
   description?: InputMaybe<StringFilter>;
   id?: InputMaybe<IdFilter>;
+  messages?: InputMaybe<TicketMessageManyRelationFilter>;
   object?: InputMaybe<TicketObjectWhereInput>;
   solved?: InputMaybe<BooleanFilter>;
   updatedAt?: InputMaybe<DateTimeNullableFilter>;
@@ -4543,7 +4704,7 @@ export type GetTicketQueryVariables = Exact<{
 }>;
 
 
-export type GetTicketQuery = { __typename?: 'Query', ticket?: { __typename?: 'Ticket', id: string, solved?: boolean | null, description?: string | null, createdAt?: string | null, updatedAt?: string | null, object?: { __typename?: 'TicketObject', id: string, object?: string | null } | null, user?: { __typename?: 'User', id: string, email?: string | null, firstname?: string | null, lastname?: string | null, phoneNumber?: string | null } | null } | null };
+export type GetTicketQuery = { __typename?: 'Query', ticket?: { __typename?: 'Ticket', id: string, solved?: boolean | null, description?: string | null, createdAt?: string | null, updatedAt?: string | null, object?: { __typename?: 'TicketObject', id: string, object?: string | null } | null, user?: { __typename?: 'User', id: string, email?: string | null, firstname?: string | null, lastname?: string | null, phoneNumber?: string | null } | null, messages?: Array<{ __typename?: 'TicketMessage', id: string, content?: string | null, createdAt?: string | null, author?: { __typename?: 'User', id: string, firstname?: string | null, lastname?: string | null, email?: string | null, isAdmin?: boolean | null } | null }> | null } | null };
 
 export type UpdateTicketMutationVariables = Exact<{
   where: TicketWhereUniqueInput;
@@ -4552,6 +4713,13 @@ export type UpdateTicketMutationVariables = Exact<{
 
 
 export type UpdateTicketMutation = { __typename?: 'Mutation', updateTicket?: { __typename?: 'Ticket', id: string, solved?: boolean | null } | null };
+
+export type CreateTicketMessageMutationVariables = Exact<{
+  data: TicketMessageCreateInput;
+}>;
+
+
+export type CreateTicketMessageMutation = { __typename?: 'Mutation', createTicketMessage?: { __typename?: 'TicketMessage', id: string, content?: string | null, createdAt?: string | null, author?: { __typename?: 'User', id: string, firstname?: string | null, lastname?: string | null, email?: string | null, isAdmin?: boolean | null } | null } | null };
 
 export type GetUsersCountsQueryVariables = Exact<{
   todayWhere: UserWhereInput;
@@ -4935,6 +5103,18 @@ export const GetTicketDocument = `
       lastname
       phoneNumber
     }
+    messages(orderBy: [{createdAt: asc}]) {
+      id
+      content
+      createdAt
+      author {
+        id
+        firstname
+        lastname
+        email
+        isAdmin
+      }
+    }
     createdAt
     updatedAt
   }
@@ -4986,6 +5166,39 @@ export const useUpdateTicketMutation = <
 
 
 useUpdateTicketMutation.fetcher = (variables: UpdateTicketMutationVariables, options?: RequestInit['headers']) => graphqlClient<UpdateTicketMutation, UpdateTicketMutationVariables>(UpdateTicketDocument, variables, options);
+
+export const CreateTicketMessageDocument = `
+    mutation CreateTicketMessage($data: TicketMessageCreateInput!) {
+  createTicketMessage(data: $data) {
+    id
+    content
+    createdAt
+    author {
+      id
+      firstname
+      lastname
+      email
+      isAdmin
+    }
+  }
+}
+    `;
+
+export const useCreateTicketMessageMutation = <
+      TError = unknown,
+      TContext = unknown
+    >(options?: UseMutationOptions<CreateTicketMessageMutation, TError, CreateTicketMessageMutationVariables, TContext>) => {
+    
+    return useMutation<CreateTicketMessageMutation, TError, CreateTicketMessageMutationVariables, TContext>(
+      {
+    mutationKey: ['CreateTicketMessage'],
+    mutationFn: (variables?: CreateTicketMessageMutationVariables) => graphqlClient<CreateTicketMessageMutation, CreateTicketMessageMutationVariables>(CreateTicketMessageDocument, variables)(),
+    ...options
+  }
+    )};
+
+
+useCreateTicketMessageMutation.fetcher = (variables: CreateTicketMessageMutationVariables, options?: RequestInit['headers']) => graphqlClient<CreateTicketMessageMutation, CreateTicketMessageMutationVariables>(CreateTicketMessageDocument, variables, options);
 
 export const GetUsersCountsDocument = `
     query GetUsersCounts($todayWhere: UserWhereInput!, $weekWhere: UserWhereInput!, $monthWhere: UserWhereInput!) {

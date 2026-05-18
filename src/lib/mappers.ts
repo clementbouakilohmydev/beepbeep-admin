@@ -11,7 +11,7 @@ export type MappedUser = Omit<RawUser, "avatar"> & {
 export function mapUser(raw: RawUser): MappedUser {
   return {
     ...raw,
-    avatarUrl: raw.avatar?.url ?? null,
+    avatarUrl: raw.avatar?.uri ?? null,
   }
 }
 
