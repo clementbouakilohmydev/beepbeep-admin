@@ -3,45 +3,55 @@ import { useNavigate } from "react-router-dom"
 import { keepPreviousData } from "@tanstack/react-query"
 import type { ColumnDef } from "@tanstack/react-table"
 import { ExternalLinkIcon } from "lucide-react"
-import { useGetUsersQuery } from "@/gql/generated"
+import {
+  useGetAdminDocumentsQuery,
+  type AdminDocumentState,
+  type GetAdminDocumentsQuery,
+} from "@/gql/generated"
 import { useUpdateDocument } from "@/hooks"
 import { Button } from "@/components/ui"
 import { DocumentStateBadge } from "@/components/users"
-import { formatDate } from "@/lib/format"
+import { formatDate, getUserDisplay } from "@/lib/format"
 import { Dialog, DialogContent, DialogTitle } from "@/components/ui/dialog"
-import { DOCUMENT_LABELS } from "@/lib/constants"
-import { type FlatDocument, flattenUserDocuments, filterDocuments } from "@/lib/documents"
+import { DOCUMENT_LABELS, PAGE_SIZE, type DocumentType } from "@/lib/constants"
 import { ErrorState } from "@/components/shared/error-state"
 import { DataTable } from "@/components/shared/data-table"
+import { PaginationSection } from "@/components/shared/pagination-section"
 
-type DocFilter = "all" | "pending" | "processing" | "todo" | "verified"
+type DocFilter = "all" | AdminDocumentState
+type AdminDocument = NonNullable<
+  GetAdminDocumentsQuery["adminDocuments"]
+>["items"][number]
 
 const DOC_FILTERS: { value: DocFilter; label: string }[] = [
   { value: "all", label: "Tous" },
   { value: "pending", label: "En attente" },
   { value: "processing", label: "En cours" },
-  { value: "todo", label: "À faire" },
   { value: "verified", label: "Vérifié" },
+  { value: "rejected", label: "Rejeté" },
 ]
 
 export function DocumentsPage() {
   const navigate = useNavigate()
   const [filter, setFilter] = useState<DocFilter>("all")
+  const [page, setPage] = useState(1)
   const [previewDoc, setPreviewDoc] = useState<{
     open: boolean
     title: string
     url: string
   }>({ open: false, title: "", url: "" })
 
-  const { data, isLoading, isError, refetch } = useGetUsersQuery(
-    {
-      where: { type: { equals: "driver" }, isAdmin: { equals: false } },
-      orderBy: [{ createdAt: "desc" as const }],
-      take: 200,
-      skip: 0,
-    },
-    { placeholderData: keepPreviousData }
-  )
+  // Query paginée serveur (cf adminStats côté back). Avant : fetch des 200
+  // derniers drivers + flatten 4 docs en JS → tronqué et lourd.
+  const { data, isLoading, isError, refetch, isPlaceholderData } =
+    useGetAdminDocumentsQuery(
+      {
+        state: filter === "all" ? null : filter,
+        take: PAGE_SIZE,
+        skip: (page - 1) * PAGE_SIZE,
+      },
+      { placeholderData: keepPreviousData }
+    )
 
   const dl = useUpdateDocument("drivingLicense")
   const ins = useUpdateDocument("insurance")
@@ -58,41 +68,46 @@ export function DocumentsPage() {
   const isValidating =
     dl.isPending || ins.isPending || rd.isPending || cert.isPending
 
-  const documents = flattenUserDocuments(data?.users)
-  const filteredDocuments = filterDocuments(documents, filter)
+  const documents = data?.adminDocuments.items ?? []
+  const totalCount = data?.adminDocuments.total ?? 0
+  const totalPages = Math.max(1, Math.ceil(totalCount / PAGE_SIZE))
 
-  const pendingCount = documents.filter((d) => d.state === "pending").length
-  const processingCount = documents.filter(
-    (d) => d.state === "processing"
-  ).length
-  const todoCount = documents.filter((d) => d.state === "todo").length
+  const handleFilterChange = (next: DocFilter) => {
+    setFilter(next)
+    setPage(1)
+  }
 
-  const columns: ColumnDef<FlatDocument, unknown>[] = [
+  const columns: ColumnDef<AdminDocument, unknown>[] = [
     {
-      accessorKey: "userName",
+      accessorKey: "user",
       header: "Conducteur",
-      cell: ({ row }) => (
-        <button
-          type="button"
-          onClick={() => navigate(`/users?userId=${row.original.userId}`)}
-          className="text-left font-medium hover:underline"
-        >
-          {row.original.userName}
-        </button>
-      ),
+      cell: ({ row }) => {
+        const userId = row.original.user?.id
+        const name = row.original.user ? getUserDisplay(row.original.user) : "—"
+        if (!userId) return <span>{name}</span>
+        return (
+          <button
+            type="button"
+            onClick={() => navigate(`/users?userId=${userId}`)}
+            className="text-left font-medium hover:underline"
+          >
+            {name}
+          </button>
+        )
+      },
     },
     {
       accessorKey: "userEmail",
       header: "Email",
-      cell: ({ row }) => row.original.userEmail ?? "—",
+      cell: ({ row }) => row.original.user?.email ?? "—",
       meta: { cellClassName: "text-muted-foreground" },
     },
     {
-      accessorKey: "docType",
+      accessorKey: "type",
       header: "Document",
       cell: ({ row }) => (
         <span className="font-medium">
-          {DOCUMENT_LABELS[row.original.docType]}
+          {DOCUMENT_LABELS[row.original.type as DocumentType]}
         </span>
       ),
     },
@@ -113,16 +128,19 @@ export function DocumentsPage() {
       meta: { headerClassName: "text-right", stopPropagation: true },
       cell: ({ row }) => {
         const doc = row.original
+        const docType = doc.type as DocumentType
+        const userName = doc.user ? getUserDisplay(doc.user) : "—"
+        const pictureUrl = doc.picture?.uri ?? null
         return (
           <div className="flex justify-end gap-1">
-            {doc.pictureUrl && (
+            {pictureUrl && (
               <Button
                 variant="ghost"
                 onClick={() =>
                   setPreviewDoc({
                     open: true,
-                    title: `${doc.userName} — ${DOCUMENT_LABELS[doc.docType]}`,
-                    url: doc.pictureUrl!,
+                    title: `${userName} — ${DOCUMENT_LABELS[docType]}`,
+                    url: pictureUrl,
                   })
                 }
               >
@@ -132,16 +150,16 @@ export function DocumentsPage() {
             )}
             {doc.state !== "verified" && (
               <Button
-                onClick={() => hookMap[doc.docType].validate(doc.docId)}
+                onClick={() => hookMap[docType].validate(doc.id)}
                 disabled={isValidating}
               >
                 Valider
               </Button>
             )}
-            {doc.state !== "verified" && doc.state !== "todo" && (
+            {doc.state !== "verified" && (
               <Button
                 variant="outline"
-                onClick={() => hookMap[doc.docType].reject(doc.docId)}
+                onClick={() => hookMap[docType].reject(doc.id)}
                 disabled={isValidating}
                 className="text-destructive hover:text-destructive"
               >
@@ -161,36 +179,32 @@ export function DocumentsPage() {
   return (
     <div className="space-y-6">
       <div className="flex flex-wrap gap-2">
-        {DOC_FILTERS.map((f) => {
-          let count: number | undefined
-          if (f.value === "all")
-            count = pendingCount + processingCount + todoCount
-          if (f.value === "pending") count = pendingCount
-          if (f.value === "processing") count = processingCount
-          if (f.value === "todo") count = todoCount
-
-          return (
-            <Button
-              key={f.value}
-              variant={filter === f.value ? "default" : "outline"}
-
-              onClick={() => setFilter(f.value)}
-            >
-              {f.label}
-              {count != null && (
-                <span className="ml-1.5 text-xs opacity-70">({count})</span>
-              )}
-            </Button>
-          )
-        })}
+        {DOC_FILTERS.map((f) => (
+          <Button
+            key={f.value}
+            variant={filter === f.value ? "default" : "outline"}
+            onClick={() => handleFilterChange(f.value)}
+          >
+            {f.label}
+          </Button>
+        ))}
       </div>
 
       <DataTable
         columns={columns}
-        data={filteredDocuments}
+        data={documents}
         isLoading={isLoading}
-        skeletonCount={5}
+        isStale={isPlaceholderData}
+        skeletonCount={PAGE_SIZE}
         emptyMessage="Aucun document à traiter"
+      />
+
+      <PaginationSection
+        page={page}
+        totalPages={totalPages}
+        totalCount={totalCount}
+        itemName="document"
+        onPageChange={setPage}
       />
 
       <Dialog

@@ -135,6 +135,49 @@ export type AdminDailyAggregate = {
   revenue: Scalars['Float']['output'];
 };
 
+export type AdminDocument = {
+  __typename?: 'AdminDocument';
+  createdAt?: Maybe<Scalars['DateTime']['output']>;
+  id: Scalars['ID']['output'];
+  picture?: Maybe<AdminDocumentPicture>;
+  state?: Maybe<Scalars['String']['output']>;
+  type: AdminDocumentType;
+  updatedAt?: Maybe<Scalars['DateTime']['output']>;
+  user?: Maybe<AdminDocumentUser>;
+};
+
+export type AdminDocumentPicture = {
+  __typename?: 'AdminDocumentPicture';
+  id: Scalars['ID']['output'];
+  uri?: Maybe<Scalars['String']['output']>;
+};
+
+export type AdminDocumentState =
+  | 'pending'
+  | 'processing'
+  | 'rejected'
+  | 'verified';
+
+export type AdminDocumentType =
+  | 'certificate'
+  | 'drivingLicense'
+  | 'insurance'
+  | 'registrationDocument';
+
+export type AdminDocumentUser = {
+  __typename?: 'AdminDocumentUser';
+  email?: Maybe<Scalars['String']['output']>;
+  firstname?: Maybe<Scalars['String']['output']>;
+  id: Scalars['ID']['output'];
+  lastname?: Maybe<Scalars['String']['output']>;
+};
+
+export type AdminDocumentsPage = {
+  __typename?: 'AdminDocumentsPage';
+  items: Array<AdminDocument>;
+  total: Scalars['Int']['output'];
+};
+
 export type AdminRevenueStats = {
   __typename?: 'AdminRevenueStats';
   basket: Scalars['Float']['output'];
@@ -2892,6 +2935,13 @@ export type Query = {
    */
   adminDailyAggregates: Array<AdminDailyAggregate>;
   /**
+   * Liste paginée des documents conducteurs (4 types confondus). Filtres
+   * optionnels par type/state. Pendant côté serveur de l'ancien fetch
+   * front qui chargeait 200 drivers et flatten 4 docs/driver — ne scalait
+   * pas au-delà.
+   */
+  adminDocuments: AdminDocumentsPage;
+  /**
    * Moyenne des notes drivers (User.driver.averageRate via Rating). Calcul
    * sur les ratings reçus par les drivers, pondéré par nombre de notes.
    */
@@ -3025,6 +3075,14 @@ export type QueryAdminCoursesTrendArgs = {
 
 export type QueryAdminDailyAggregatesArgs = {
   days?: Scalars['Int']['input'];
+};
+
+
+export type QueryAdminDocumentsArgs = {
+  skip?: Scalars['Int']['input'];
+  state?: InputMaybe<AdminDocumentState>;
+  take?: Scalars['Int']['input'];
+  type?: InputMaybe<AdminDocumentType>;
 };
 
 
@@ -4846,6 +4904,16 @@ export type GetAdminPendingDocumentsCountQueryVariables = Exact<{ [key: string]:
 
 export type GetAdminPendingDocumentsCountQuery = { __typename?: 'Query', adminPendingDocumentsCount: number };
 
+export type GetAdminDocumentsQueryVariables = Exact<{
+  type?: InputMaybe<AdminDocumentType>;
+  state?: InputMaybe<AdminDocumentState>;
+  take: Scalars['Int']['input'];
+  skip: Scalars['Int']['input'];
+}>;
+
+
+export type GetAdminDocumentsQuery = { __typename?: 'Query', adminDocuments: { __typename?: 'AdminDocumentsPage', total: number, items: Array<{ __typename?: 'AdminDocument', id: string, type: AdminDocumentType, state?: string | null, createdAt?: string | null, updatedAt?: string | null, user?: { __typename?: 'AdminDocumentUser', id: string, firstname?: string | null, lastname?: string | null, email?: string | null } | null, picture?: { __typename?: 'AdminDocumentPicture', id: string, uri?: string | null } | null }> } };
+
 export type GetAdminDailyAggregatesQueryVariables = Exact<{
   days: Scalars['Int']['input'];
 }>;
@@ -5761,6 +5829,52 @@ useGetAdminPendingDocumentsCountQuery.getKey = (variables?: GetAdminPendingDocum
 
 
 useGetAdminPendingDocumentsCountQuery.fetcher = (variables?: GetAdminPendingDocumentsCountQueryVariables, options?: RequestInit['headers']) => graphqlClient<GetAdminPendingDocumentsCountQuery, GetAdminPendingDocumentsCountQueryVariables>(GetAdminPendingDocumentsCountDocument, variables, options);
+
+export const GetAdminDocumentsDocument = `
+    query GetAdminDocuments($type: AdminDocumentType, $state: AdminDocumentState, $take: Int!, $skip: Int!) {
+  adminDocuments(type: $type, state: $state, take: $take, skip: $skip) {
+    total
+    items {
+      id
+      type
+      state
+      createdAt
+      updatedAt
+      user {
+        id
+        firstname
+        lastname
+        email
+      }
+      picture {
+        id
+        uri
+      }
+    }
+  }
+}
+    `;
+
+export const useGetAdminDocumentsQuery = <
+      TData = GetAdminDocumentsQuery,
+      TError = unknown
+    >(
+      variables: GetAdminDocumentsQueryVariables,
+      options?: Omit<UseQueryOptions<GetAdminDocumentsQuery, TError, TData>, 'queryKey'> & { queryKey?: UseQueryOptions<GetAdminDocumentsQuery, TError, TData>['queryKey'] }
+    ) => {
+    
+    return useQuery<GetAdminDocumentsQuery, TError, TData>(
+      {
+    queryKey: ['GetAdminDocuments', variables],
+    queryFn: graphqlClient<GetAdminDocumentsQuery, GetAdminDocumentsQueryVariables>(GetAdminDocumentsDocument, variables),
+    ...options
+  }
+    )};
+
+useGetAdminDocumentsQuery.getKey = (variables: GetAdminDocumentsQueryVariables) => ['GetAdminDocuments', variables];
+
+
+useGetAdminDocumentsQuery.fetcher = (variables: GetAdminDocumentsQueryVariables, options?: RequestInit['headers']) => graphqlClient<GetAdminDocumentsQuery, GetAdminDocumentsQueryVariables>(GetAdminDocumentsDocument, variables, options);
 
 export const GetAdminDailyAggregatesDocument = `
     query GetAdminDailyAggregates($days: Int!) {

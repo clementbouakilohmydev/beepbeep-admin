@@ -2737,6 +2737,14 @@ type Query {
   moyen, distance moyenne) sans tirer 500 rows côté client.
   """
   adminDailyAggregates(days: Int! = 30): [AdminDailyAggregate!]!
+
+  """
+  Liste paginée des documents conducteurs (4 types confondus). Filtres
+  optionnels par type/state. Pendant côté serveur de l'ancien fetch
+  front qui chargeait 200 drivers et flatten 4 docs/driver — ne scalait
+  pas au-delà.
+  """
+  adminDocuments(type: AdminDocumentType, state: AdminDocumentState, take: Int! = 50, skip: Int! = 0): AdminDocumentsPage!
 }
 
 union AuthenticatedItem = User
@@ -2953,4 +2961,45 @@ type AdminDailyAggregate {
   fees: Float!
   averagePrice: Float
   averageDistance: Float
+}
+
+enum AdminDocumentType {
+  drivingLicense
+  insurance
+  certificate
+  registrationDocument
+}
+
+enum AdminDocumentState {
+  pending
+  processing
+  verified
+  rejected
+}
+
+type AdminDocumentUser {
+  id: ID!
+  firstname: String
+  lastname: String
+  email: String
+}
+
+type AdminDocumentPicture {
+  id: ID!
+  uri: String
+}
+
+type AdminDocument {
+  id: ID!
+  type: AdminDocumentType!
+  state: String
+  user: AdminDocumentUser
+  picture: AdminDocumentPicture
+  createdAt: DateTime
+  updatedAt: DateTime
+}
+
+type AdminDocumentsPage {
+  items: [AdminDocument!]!
+  total: Int!
 }

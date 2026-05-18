@@ -459,6 +459,36 @@ export const GetAdminPendingDocumentsCount = /* GraphQL */ `
   }
 `
 
+export const GetAdminDocuments = /* GraphQL */ `
+  query GetAdminDocuments(
+    $type: AdminDocumentType
+    $state: AdminDocumentState
+    $take: Int!
+    $skip: Int!
+  ) {
+    adminDocuments(type: $type, state: $state, take: $take, skip: $skip) {
+      total
+      items {
+        id
+        type
+        state
+        createdAt
+        updatedAt
+        user {
+          id
+          firstname
+          lastname
+          email
+        }
+        picture {
+          id
+          uri
+        }
+      }
+    }
+  }
+`
+
 export const GetAdminDailyAggregates = /* GraphQL */ `
   query GetAdminDailyAggregates($days: Int!) {
     adminDailyAggregates(days: $days) {
