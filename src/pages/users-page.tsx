@@ -4,6 +4,7 @@ import {
   UsersTable,
   UserStatsCards,
   UserDetailSheet,
+  UsersExportButton,
 } from "@/components/users"
 import {
   parseTypeFilter,
@@ -125,15 +126,23 @@ export function UsersPage() {
     <div className="space-y-6">
       <UserStatsCards counts={countsData} isLoading={countsLoading} />
 
-      <UserFilters
-        typeFilter={typeFilter}
-        onTypeFilterChange={handleTypeFilterChange}
-        statusFilter={statusFilter}
-        onStatusFilterChange={handleStatusFilterChange}
-        search={search}
-        onSearchChange={handleSearchChange}
-        counts={countsData}
-      />
+      <div className="flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
+        <div className="flex-1">
+          <UserFilters
+            typeFilter={typeFilter}
+            onTypeFilterChange={handleTypeFilterChange}
+            statusFilter={statusFilter}
+            onStatusFilterChange={handleStatusFilterChange}
+            search={search}
+            onSearchChange={handleSearchChange}
+            counts={countsData}
+          />
+        </div>
+        <UsersExportButton
+          whereClause={whereClause}
+          orderBy={ORDER_BY_NEWEST}
+        />
+      </div>
 
       <UsersTable
         users={data?.users}

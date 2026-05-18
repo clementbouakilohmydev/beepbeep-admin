@@ -1,64 +1,63 @@
 # TODO — beeepbeep-admin
 
-## Backend requis (API indisponible pour le moment)
+> Maj 2026-05-18 : grosse passe sur les KPIs (migration vers adminStats
+> côté back), thread tickets persisté, export CSV users, fix du bug
+> picture/avatar `.url` → `.uri`. Voir BACK_TODO.md pour le restant côté
+> serveur.
 
-### Courses — Vérification des états
+## Restant
 
-- [ ] Vérifier les valeurs réelles de `state` des courses (`pending`, `in_progress`, `completed`, `cancelled`) quand l'API sera de nouveau opérationnelle
-- [ ] Ajuster les filtres dans `GetCoursesCounts` (`src/gql/operations.ts`) si les valeurs diffèrent
+### Tickets
 
-### Courses — Métriques à migrer côté back
-
-- [ ] **Distance moyenne par course** — Actuellement calculée côté client (fetch des 500 dernières courses). Créer une route custom / champ computed côté back (`src/gql/operations.ts`, `src/pages/dashboard-page.tsx`)
-- [ ] **Temps moyen d'acceptation d'une course** — Idem, calculé côté client. Migrer vers une route back dédiée
-- [ ] **Note moyenne des conducteurs** — Actuellement calculée côté client. Idéalement exposer un champ agrégé côté back (`src/pages/dashboard-page.tsx`)
-
-### Revenus
-
-- [ ] **CA** (jour / semaine / mois / année) — Nécessite une route back ou un champ agrégé sur les paiements
-- [ ] **Panier moyen d'une course** — Idem, nécessite agrégation côté back
-
-## Externe (hors scope back)
-
-- [ ] **Nombre de téléchargements de l'app** — À récupérer via AppStoreConnect / Google Play Console (pas d'API interne)
-
-## Fait ✅
-
-### Dashboard
-
-- [x] Cards tickets (à traiter / traités)
-- [x] Cards utilisateurs inscriptions (jour / semaine / mois / total)
-- [x] Cards passagers / conducteurs / note moyenne conducteurs
-- [x] Card documents à valider (lien vers `/documents`)
-- [x] Cards courses par statut (en cours / en attente / terminées / annulées)
-- [x] Cards courses par période (jour / semaine / mois / année / total)
-- [x] Distance moyenne par course (calcul client-side en attendant le back)
-- [x] Temps moyen d'acceptation (calcul client-side en attendant le back)
-
-### Utilisateurs
-
-- [x] Page `/users` avec tableau, filtres (tous / passagers / conducteurs), recherche, pagination
-- [x] Colonne "Documents" dans le tableau avec indicateur documents en attente pour les conducteurs
-- [x] Page `/users/:id` — détail utilisateur complet (infos, avatar, véhicule, documents, avis)
-- [x] Blocage / déblocage utilisateur avec confirmation
-- [x] Validation / rejet des documents conducteur avec preview image
-- [x] Sidebar : item "Utilisateurs"
+- [ ] Notifier le user (email + push) quand l'admin poste un message
+      dans le thread (cf BACK_TODO #1)
+- [ ] Pouvoir attacher une pièce jointe à un message (image / pdf)
 
 ### Documents
 
-- [x] Page `/documents` — liste tous les documents conducteurs avec filtres par état
-- [x] Actions : valider, rejeter, prévisualiser l'image
-- [x] Sidebar : item "Documents"
+- [ ] Migrer `documents-page.tsx` vers une query `adminDocuments`
+      paginée serveur (cf BACK_TODO #2) — actuellement tronqué aux
+      200 derniers drivers
+- [ ] Diff visuel entre un document fraîchement reuploadé et l'ancien
+      (utile quand un driver renvoie une pièce après rejet)
 
-### DRY / Refactoring
+### Utilisateurs
 
-- [x] `getDateWheres()` extrait dans `src/lib/date.ts` (supprimé duplication dashboard / users)
-- [x] `getDateBoundaries()` ajouté pour les courses (avec `yearISO`)
-- [x] `UserStatusBadge` — composant réutilisable (supprimé duplication table / détail)
-- [x] `useUpdateDocument` hook — factorise les 4 mutations documents identiques
-- [x] Popover barrel export ajouté dans `src/components/ui/index.ts`
+- [x] Export CSV (avec respect des filtres affichés) ✅ 2026-05-18
+- [ ] Vue d'historique des actions admin sur un user (blocage,
+      validation/rejet de doc) — nécessite un audit log côté back
+- [ ] Pouvoir envoyer un email transactionnel custom depuis la fiche
+      user (différent du ticket — par ex. relance documents manquants)
 
-### Routing & Navigation
+### Stores
 
-- [x] Routes : `/users`, `/users/:id`, `/documents`
-- [x] Sidebar : Dashboard, Tickets, Utilisateurs, Documents
+- [ ] Téléchargements iOS / Android (cf BACK_TODO #3)
+
+### Tech
+
+- [ ] Code-splitting : le bundle dépasse 500 kB (recharts + react-router
+      + tanstack-table). Split par route via React.lazy + Suspense.
+- [ ] Multi-roles admin (support / analytics / ops / super-admin) —
+      actuellement tout admin a tous les droits
+
+---
+
+## Fait ✅
+
+### 2026-05-18 (passe KPIs + tickets thread)
+
+- [x] Extension back `adminStats` : 7 queries agrégées (revenue, metrics,
+      trends, daily, pending docs, drivers rating)
+- [x] Dashboard, finance, performance, charts migrés vers adminStats
+- [x] Suppression des fetchs client de 500-1000 rows + helpers
+      `compute*(courses[])` devenus morts
+- [x] Nouveau model Keystone `TicketMessage` (thread support persisté)
+      + migration SQL + UI admin (`TicketThread` dans ticket-detail-sheet)
+- [x] Bug `picture?.url`/`avatar?.url` → `.uri` (back expose `File.uri`)
+- [x] Export CSV utilisateurs (filtres respectés, UTF-8 BOM pour Excel)
+- [x] `typecheck` script fixé en `tsc -b` (sinon vide à cause des
+      project references racine)
+
+### Antérieur (cf git log)
+
+Voir `git log --oneline --grep="feat\|fix"` pour le détail.
