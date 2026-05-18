@@ -10,11 +10,8 @@ import {
 } from "@/components/ui"
 import { DocumentStateBadge } from "./document-state-badge"
 import { formatDate } from "@/lib/format"
-import {
-  Dialog,
-  DialogContent,
-  DialogTitle,
-} from "@/components/ui/dialog"
+import { withSessionToken } from "@/lib/file-url"
+import { Dialog, DialogContent, DialogTitle } from "@/components/ui/dialog"
 
 type DocumentCardProps = {
   title: string
@@ -40,6 +37,9 @@ export function DocumentCard({
   onReject,
 }: DocumentCardProps) {
   const [previewOpen, setPreviewOpen] = useState(false)
+  // Le back protège /api/files/:id par auth Bearer → on injecte le token
+  // en query param pour que <img> puisse charger l'image (cf lib/file-url.ts).
+  const tokenizedUrl = withSessionToken(pictureUrl)
 
   return (
     <>
@@ -56,7 +56,7 @@ export function DocumentCard({
               className="group relative block w-full overflow-hidden rounded-md border"
             >
               <img
-                src={pictureUrl}
+                src={tokenizedUrl ?? pictureUrl}
                 alt={title}
                 className="h-40 w-full object-cover transition-transform group-hover:scale-105"
               />
@@ -81,7 +81,6 @@ export function DocumentCard({
             <div className="flex gap-2">
               {onValidate && (
                 <Button
-
                   onClick={onValidate}
                   disabled={isValidating}
                   className="flex-1"
@@ -92,7 +91,6 @@ export function DocumentCard({
               )}
               {onReject && (
                 <Button
-
                   variant="outline"
                   onClick={onReject}
                   disabled={isValidating}
@@ -118,7 +116,7 @@ export function DocumentCard({
           <DialogTitle>{title}</DialogTitle>
           {pictureUrl && (
             <img
-              src={pictureUrl}
+              src={tokenizedUrl ?? pictureUrl}
               alt={title}
               className="w-full rounded-md"
             />

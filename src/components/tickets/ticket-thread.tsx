@@ -1,8 +1,15 @@
 import { useRef, useState } from "react"
-import { PaperclipIcon, SendIcon, ShieldIcon, UserIcon, XIcon } from "lucide-react"
+import {
+  PaperclipIcon,
+  SendIcon,
+  ShieldIcon,
+  UserIcon,
+  XIcon,
+} from "lucide-react"
 import type { MappedTicket } from "@/lib/mappers"
 import { useCreateTicketMessage } from "@/hooks"
 import { formatDate, getUserDisplay } from "@/lib/format"
+import { withSessionToken } from "@/lib/file-url"
 import { Button } from "@/components/ui/button"
 import { Spinner } from "@/components/ui/spinner"
 import { cn } from "@/lib/utils"
@@ -53,7 +60,7 @@ export function TicketThread({ ticket }: TicketThreadProps) {
         ) : (
           messages.map((m) => {
             const isAdminMsg = m?.author?.isAdmin === true
-            const attUri = m?.attachment?.uri
+            const attUri = withSessionToken(m?.attachment?.uri) ?? null
             const attMime = m?.attachment?.mimetype ?? ""
             const isImage = attMime.startsWith("image/")
             return (
@@ -61,9 +68,7 @@ export function TicketThread({ ticket }: TicketThreadProps) {
                 key={m?.id}
                 className={cn(
                   "rounded-lg border p-3",
-                  isAdminMsg
-                    ? "border-primary/30 bg-primary/5"
-                    : "bg-muted/40"
+                  isAdminMsg ? "border-primary/30 bg-primary/5" : "bg-muted/40"
                 )}
               >
                 <div className="mb-1.5 flex items-center justify-between gap-2 text-xs text-muted-foreground">
@@ -79,14 +84,14 @@ export function TicketThread({ ticket }: TicketThreadProps) {
                         : "Utilisateur supprimé"}
                     </span>
                     {isAdminMsg && (
-                      <span className="rounded-full bg-primary/15 px-1.5 py-0.5 text-[10px] font-semibold uppercase text-primary">
+                      <span className="rounded-full bg-primary/15 px-1.5 py-0.5 text-[10px] font-semibold text-primary uppercase">
                         Support
                       </span>
                     )}
                   </div>
                   <span>{m?.createdAt && formatDate(m.createdAt)}</span>
                 </div>
-                <p className="whitespace-pre-wrap text-sm">{m?.content}</p>
+                <p className="text-sm whitespace-pre-wrap">{m?.content}</p>
                 {attUri && (
                   <div className="mt-2">
                     {isImage ? (
@@ -127,7 +132,7 @@ export function TicketThread({ ticket }: TicketThreadProps) {
           value={content}
           onChange={(e) => setContent(e.target.value)}
           rows={3}
-          className="w-full resize-none rounded-md border bg-background px-3 py-2 text-sm ring-offset-background placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+          className="w-full resize-none rounded-md border bg-background px-3 py-2 text-sm ring-offset-background placeholder:text-muted-foreground focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none"
         />
         <div className="flex items-center justify-between gap-2">
           <div className="flex items-center gap-2">
@@ -149,7 +154,9 @@ export function TicketThread({ ticket }: TicketThreadProps) {
             </Button>
             {attachment && (
               <span className="flex items-center gap-1 text-xs text-muted-foreground">
-                <span className="max-w-[180px] truncate">{attachment.name}</span>
+                <span className="max-w-[180px] truncate">
+                  {attachment.name}
+                </span>
                 <button
                   type="button"
                   onClick={() => setAttachment(null)}
@@ -163,9 +170,7 @@ export function TicketThread({ ticket }: TicketThreadProps) {
           </div>
           <Button
             type="submit"
-            disabled={
-              isPending || (content.trim().length === 0 && !attachment)
-            }
+            disabled={isPending || (content.trim().length === 0 && !attachment)}
           >
             {isPending ? <Spinner /> : <SendIcon className="mr-1.5 size-3.5" />}
             Envoyer

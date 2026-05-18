@@ -1,9 +1,5 @@
 import { useState } from "react"
-import {
-  MailIcon,
-  ShieldBanIcon,
-  ShieldCheckIcon,
-} from "lucide-react"
+import { MailIcon, ShieldBanIcon, ShieldCheckIcon } from "lucide-react"
 import type { UpdateUserMutationVariables } from "@/gql/generated"
 import type { MappedUser } from "@/lib/mappers"
 import { Button } from "@/components/ui"
@@ -25,6 +21,7 @@ import {
 } from "@/components/ui/alert-dialog"
 import { SendMessageDialog } from "@/components/dialogs/send-message-dialog"
 import { getUserDisplay } from "@/lib/format"
+import { withSessionToken } from "@/lib/file-url"
 import { UserTypeBadge } from "./user-type-badge"
 import { UserStatusBadge } from "./user-status-badge"
 
@@ -45,7 +42,7 @@ export function UserSheetHeader({
       <div className="flex items-start gap-3">
         {user.avatarUrl ? (
           <img
-            src={user.avatarUrl}
+            src={withSessionToken(user.avatarUrl) ?? user.avatarUrl}
             alt="Avatar"
             className="size-12 rounded-full object-cover"
           />
@@ -81,7 +78,6 @@ export function UserSheetHeader({
           <AlertDialogTrigger asChild>
             <Button
               variant={user.enabled ? "outline" : "default"}
-
               disabled={isUpdatingUser}
               className="w-full sm:w-auto"
             >
@@ -101,8 +97,7 @@ export function UserSheetHeader({
           <AlertDialogContent>
             <AlertDialogHeader>
               <AlertDialogTitle>
-                {user.enabled ? "Bloquer" : "Débloquer"} cet
-                utilisateur ?
+                {user.enabled ? "Bloquer" : "Débloquer"} cet utilisateur ?
               </AlertDialogTitle>
               <AlertDialogDescription>
                 {user.enabled

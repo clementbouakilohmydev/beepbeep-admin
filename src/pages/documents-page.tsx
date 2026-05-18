@@ -17,6 +17,7 @@ import { DOCUMENT_LABELS, PAGE_SIZE, type DocumentType } from "@/lib/constants"
 import { ErrorState } from "@/components/shared/error-state"
 import { DataTable } from "@/components/shared/data-table"
 import { PaginationSection } from "@/components/shared/pagination-section"
+import { withSessionToken } from "@/lib/file-url"
 
 type DocFilter = "all" | AdminDocumentState
 type AdminDocument = NonNullable<
@@ -226,7 +227,10 @@ export function DocumentsPage() {
                   Précédent (rejeté)
                 </figcaption>
                 <img
-                  src={previewDoc.previousUrl}
+                  src={
+                    withSessionToken(previewDoc.previousUrl) ??
+                    previewDoc.previousUrl
+                  }
                   alt="Document précédent"
                   className="w-full rounded-md border border-destructive/40"
                 />
@@ -236,7 +240,7 @@ export function DocumentsPage() {
                   Nouveau (en attente)
                 </figcaption>
                 <img
-                  src={previewDoc.url}
+                  src={withSessionToken(previewDoc.url) ?? previewDoc.url}
                   alt={previewDoc.title}
                   className="w-full rounded-md border border-primary/40"
                 />
@@ -245,7 +249,7 @@ export function DocumentsPage() {
           ) : (
             previewDoc.url && (
               <img
-                src={previewDoc.url}
+                src={withSessionToken(previewDoc.url) ?? previewDoc.url}
                 alt={previewDoc.title}
                 className="w-full rounded-md"
               />
