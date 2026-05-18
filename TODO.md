@@ -1,63 +1,84 @@
 # TODO — beeepbeep-admin
 
-> Maj 2026-05-18 : grosse passe sur les KPIs (migration vers adminStats
-> côté back), thread tickets persisté, export CSV users, fix du bug
-> picture/avatar `.url` → `.uri`. Voir BACK_TODO.md pour le restant côté
-> serveur.
+> Maj 2026-05-18 (passe 2) : 12 items prioritaires de la liste 1/2/3/4/
+> 7/8/9/10/11/14/16/17 traités en autonomie. Reste les items P5/6/12/
+> 13/15 (multi-roles, push web admin, Sentry, tests E2E, downloads
+> stores) listés en bas.
 
 ## Restant
 
-### Tickets
+### Auth / sécurité
 
-- [ ] Notifier le user (email + push) quand l'admin poste un message
-      dans le thread (cf BACK_TODO #1)
-- [ ] Pouvoir attacher une pièce jointe à un message (image / pdf)
+- [ ] **Multi-roles admin** (#6) — actuellement tout admin a tous les
+      droits. Ajouter un enum `role` (support/analytics/ops/super_admin)
+      ou `permissions: [String]` sur User, refactorer accesses.ts.
+- [ ] **Sentry / monitoring d'erreurs** (#15) — admin + mobile + back.
+      Setup DSN env vars + wrapper d'erreurs.
 
-### Documents
+### UX
 
-- [ ] Migrer `documents-page.tsx` vers une query `adminDocuments`
-      paginée serveur (cf BACK_TODO #2) — actuellement tronqué aux
-      200 derniers drivers
-- [ ] Diff visuel entre un document fraîchement reuploadé et l'ancien
-      (utile quand un driver renvoie une pièce après rejet)
+- [ ] **Notifications push admin web** (#12) — quand un nouveau ticket
+      arrive, push web → notif système. Web Push API + Service Worker.
+- [ ] **Tests E2E Playwright** (#13) — au minimum smoke test
+      "login → dashboard charge sans erreur".
+- [ ] **Téléchargements iOS / Android** (#5) — App Store Connect API +
+      Google Play Console API. Voir BACK_TODO.
 
-### Utilisateurs
+### Mobile (V2)
 
-- [x] Export CSV (avec respect des filtres affichés) ✅ 2026-05-18
-- [ ] Vue d'historique des actions admin sur un user (blocage,
-      validation/rejet de doc) — nécessite un audit log côté back
-- [ ] Pouvoir envoyer un email transactionnel custom depuis la fiche
-      user (différent du ticket — par ex. relance documents manquants)
-
-### Stores
-
-- [ ] Téléchargements iOS / Android (cf BACK_TODO #3)
-
-### Tech
-
-- [ ] Code-splitting : le bundle dépasse 500 kB (recharts + react-router
-      + tanstack-table). Split par route via React.lazy + Suspense.
-- [ ] Multi-roles admin (support / analytics / ops / super-admin) —
-      actuellement tout admin a tous les droits
+- [ ] Pièces jointes côté user sur TicketMessage (mobile picker
+      expo-image-picker → POST /ks/api/files → connect.id).
+- [ ] Push notif quand le user répond dans son thread → admin web.
 
 ---
 
 ## Fait ✅
 
-### 2026-05-18 (passe KPIs + tickets thread)
+### 2026-05-18 (passe 2 — items 1/2/3/4/7/8/9/10/11/14/16/17)
 
-- [x] Extension back `adminStats` : 7 queries agrégées (revenue, metrics,
-      trends, daily, pending docs, drivers rating)
+- [x] **#1** Email Mailjet sur réponse ticket (template
+      `emails/ticket-reply` + sendTicketReply email + wiring dans
+      TicketMessage.afterOperation, push ET email en parallèle)
+- [x] **#2** `adminDocuments(type?, state?, take, skip)` côté back +
+      `documents-page` admin paginée serveur (suppression du fetch 200
+      drivers + flatten JS, code mort `lib/documents.ts` supprimé)
+- [x] **#3** Migration TicketMessage en prod : `start:deploy` script
+      back applique auto au prochain rebuild (aucune action manuelle)
+- [x] **#4** Écrans mobile `/dashboard/profile/tickets` (liste + thread
+      détail + form reply) + lien profil + ticket_reply route mise à
+      jour pour pointer vers /tickets/[id]
+- [x] **#7** Code-splitting admin via React.lazy + Suspense (7 pages
+      lourdes lazy-loaded, bundle main 1198 → 939 kB / -22%)
+- [x] **#8** Audit log : nouveau model `AdminLog` + utilitaire
+      `logAdminAction` + hooks afterOperation sur 4 documents + User
+      (enabled toggle) + Ticket (solved toggle) + TicketMessage (admin
+      reply). Append-only, lecture admin-only
+- [x] **#9** Pièces jointes optionnelles sur TicketMessage (back:
+      attachment field + migration; admin: upload helper + form picker + display image inline/PDF link)
+- [x] **#10** Diff visuel docs : `previousPicture` snapshot sur les 4
+      doc models quand re-upload post-rejet; preview modale admin en
+      grille 2-cols (ancien rejeté vs nouveau en attente)
+- [x] **#11** Email custom depuis fiche user : bouton "Envoyer un
+      email" dans `user-sheet-header` qui réutilise `SendMessageDialog`
+- [x] **#14** Polling 30s sur les KPIs dashboard mouvants (tickets
+      counts, users counts, pending docs, courses counts, courses by
+      period)
+- [x] **#16** Pre-commit hook husky + lint-staged sur admin et mobile
+      (eslint --fix + prettier sur admin, eslint --fix sur mobile)
+- [x] **#17** Endpoint `/ks/api/health` non-auth qui ping la DB (200
+      ok / 503 dégradé + uptime) pour Uptime Robot / sonde Docker
+
+### 2026-05-18 (passe 1 — KPIs + tickets V1)
+
+- [x] Extension back `adminStats` : 7 queries agrégées
 - [x] Dashboard, finance, performance, charts migrés vers adminStats
-- [x] Suppression des fetchs client de 500-1000 rows + helpers
-      `compute*(courses[])` devenus morts
-- [x] Nouveau model Keystone `TicketMessage` (thread support persisté)
-      + migration SQL + UI admin (`TicketThread` dans ticket-detail-sheet)
-- [x] Bug `picture?.url`/`avatar?.url` → `.uri` (back expose `File.uri`)
-- [x] Export CSV utilisateurs (filtres respectés, UTF-8 BOM pour Excel)
-- [x] `typecheck` script fixé en `tsc -b` (sinon vide à cause des
-      project references racine)
+- [x] Modèle `TicketMessage` + UI thread admin
+- [x] Push notif `ticket_reply` au user
+- [x] Bugs `picture/avatar?.url` → `.uri`
+- [x] CSV export utilisateurs
+- [x] `typecheck` script fixé (tsc -b)
 
-### Antérieur (cf git log)
+### Antérieur
 
-Voir `git log --oneline --grep="feat\|fix"` pour le détail.
+Voir git log pour le détail des passes V1 (dashboard, users, documents
+basique, tickets V0 email-only).
