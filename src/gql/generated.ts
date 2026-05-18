@@ -178,6 +178,64 @@ export type AdminDocumentsPage = {
   total: Scalars['Int']['output'];
 };
 
+export type AdminLog = {
+  __typename?: 'AdminLog';
+  action?: Maybe<Scalars['String']['output']>;
+  admin?: Maybe<User>;
+  createdAt?: Maybe<Scalars['DateTime']['output']>;
+  id: Scalars['ID']['output'];
+  metadata?: Maybe<Scalars['JSON']['output']>;
+  targetId?: Maybe<Scalars['String']['output']>;
+  targetType?: Maybe<Scalars['String']['output']>;
+};
+
+export type AdminLogCreateInput = {
+  action?: InputMaybe<Scalars['String']['input']>;
+  admin?: InputMaybe<UserRelateToOneForCreateInput>;
+  createdAt?: InputMaybe<Scalars['DateTime']['input']>;
+  metadata?: InputMaybe<Scalars['JSON']['input']>;
+  targetId?: InputMaybe<Scalars['String']['input']>;
+  targetType?: InputMaybe<Scalars['String']['input']>;
+};
+
+export type AdminLogOrderByInput = {
+  action?: InputMaybe<OrderDirection>;
+  createdAt?: InputMaybe<OrderDirection>;
+  id?: InputMaybe<OrderDirection>;
+  targetId?: InputMaybe<OrderDirection>;
+  targetType?: InputMaybe<OrderDirection>;
+};
+
+export type AdminLogUpdateArgs = {
+  data: AdminLogUpdateInput;
+  where: AdminLogWhereUniqueInput;
+};
+
+export type AdminLogUpdateInput = {
+  action?: InputMaybe<Scalars['String']['input']>;
+  admin?: InputMaybe<UserRelateToOneForUpdateInput>;
+  createdAt?: InputMaybe<Scalars['DateTime']['input']>;
+  metadata?: InputMaybe<Scalars['JSON']['input']>;
+  targetId?: InputMaybe<Scalars['String']['input']>;
+  targetType?: InputMaybe<Scalars['String']['input']>;
+};
+
+export type AdminLogWhereInput = {
+  AND?: InputMaybe<Array<AdminLogWhereInput>>;
+  NOT?: InputMaybe<Array<AdminLogWhereInput>>;
+  OR?: InputMaybe<Array<AdminLogWhereInput>>;
+  action?: InputMaybe<StringFilter>;
+  admin?: InputMaybe<UserWhereInput>;
+  createdAt?: InputMaybe<DateTimeNullableFilter>;
+  id?: InputMaybe<IdFilter>;
+  targetId?: InputMaybe<StringFilter>;
+  targetType?: InputMaybe<StringFilter>;
+};
+
+export type AdminLogWhereUniqueInput = {
+  id?: InputMaybe<Scalars['ID']['input']>;
+};
+
 export type AdminRevenueStats = {
   __typename?: 'AdminRevenueStats';
   basket: Scalars['Float']['output'];
@@ -1404,6 +1462,8 @@ export type Mutation = {
   clearPushTokens?: Maybe<ClearPushTokensType>;
   createAddress?: Maybe<Address>;
   createAddresses?: Maybe<Array<Maybe<Address>>>;
+  createAdminLog?: Maybe<AdminLog>;
+  createAdminLogs?: Maybe<Array<Maybe<AdminLog>>>;
   createAffiliation?: Maybe<Affiliation>;
   createAffiliations?: Maybe<Array<Maybe<Affiliation>>>;
   createCertificate?: Maybe<Certificate>;
@@ -1456,6 +1516,8 @@ export type Mutation = {
   createequipments?: Maybe<Array<Maybe<Equipment>>>;
   deleteAddress?: Maybe<Address>;
   deleteAddresses?: Maybe<Array<Maybe<Address>>>;
+  deleteAdminLog?: Maybe<AdminLog>;
+  deleteAdminLogs?: Maybe<Array<Maybe<AdminLog>>>;
   deleteAffiliation?: Maybe<Affiliation>;
   deleteAffiliations?: Maybe<Array<Maybe<Affiliation>>>;
   deleteCard: Scalars['Boolean']['output'];
@@ -1530,6 +1592,8 @@ export type Mutation = {
   terminateCourse?: Maybe<Scalars['Boolean']['output']>;
   updateAddress?: Maybe<Address>;
   updateAddresses?: Maybe<Array<Maybe<Address>>>;
+  updateAdminLog?: Maybe<AdminLog>;
+  updateAdminLogs?: Maybe<Array<Maybe<AdminLog>>>;
   updateAffiliation?: Maybe<Affiliation>;
   updateAffiliations?: Maybe<Array<Maybe<Affiliation>>>;
   updateCertificate?: Maybe<Certificate>;
@@ -1620,6 +1684,16 @@ export type MutationCreateAddressArgs = {
 
 export type MutationCreateAddressesArgs = {
   data: Array<AddressCreateInput>;
+};
+
+
+export type MutationCreateAdminLogArgs = {
+  data: AdminLogCreateInput;
+};
+
+
+export type MutationCreateAdminLogsArgs = {
+  data: Array<AdminLogCreateInput>;
 };
 
 
@@ -1880,6 +1954,16 @@ export type MutationDeleteAddressArgs = {
 
 export type MutationDeleteAddressesArgs = {
   where: Array<AddressWhereUniqueInput>;
+};
+
+
+export type MutationDeleteAdminLogArgs = {
+  where: AdminLogWhereUniqueInput;
+};
+
+
+export type MutationDeleteAdminLogsArgs = {
+  where: Array<AdminLogWhereUniqueInput>;
 };
 
 
@@ -2173,6 +2257,17 @@ export type MutationUpdateAddressArgs = {
 
 export type MutationUpdateAddressesArgs = {
   data: Array<AddressUpdateArgs>;
+};
+
+
+export type MutationUpdateAdminLogArgs = {
+  data: AdminLogUpdateInput;
+  where: AdminLogWhereUniqueInput;
+};
+
+
+export type MutationUpdateAdminLogsArgs = {
+  data: Array<AdminLogUpdateArgs>;
 };
 
 
@@ -2946,6 +3041,9 @@ export type Query = {
    * sur les ratings reçus par les drivers, pondéré par nombre de notes.
    */
   adminDriversAverageRating?: Maybe<Scalars['Float']['output']>;
+  adminLog?: Maybe<AdminLog>;
+  adminLogs?: Maybe<Array<AdminLog>>;
+  adminLogsCount?: Maybe<Scalars['Int']['output']>;
   /**
    * Nombre de documents (DrivingLicense + Insurance + Certificate +
    * RegistrationDocument) en attente de validation (state ∈ pending/processing).
@@ -3083,6 +3181,25 @@ export type QueryAdminDocumentsArgs = {
   state?: InputMaybe<AdminDocumentState>;
   take?: Scalars['Int']['input'];
   type?: InputMaybe<AdminDocumentType>;
+};
+
+
+export type QueryAdminLogArgs = {
+  where: AdminLogWhereUniqueInput;
+};
+
+
+export type QueryAdminLogsArgs = {
+  cursor?: InputMaybe<AdminLogWhereUniqueInput>;
+  orderBy?: Array<AdminLogOrderByInput>;
+  skip?: Scalars['Int']['input'];
+  take?: InputMaybe<Scalars['Int']['input']>;
+  where?: AdminLogWhereInput;
+};
+
+
+export type QueryAdminLogsCountArgs = {
+  where?: AdminLogWhereInput;
 };
 
 
@@ -3841,6 +3958,7 @@ export type TicketCreateInput = {
 
 export type TicketMessage = {
   __typename?: 'TicketMessage';
+  attachment?: Maybe<File>;
   author?: Maybe<User>;
   content?: Maybe<Scalars['String']['output']>;
   createdAt?: Maybe<Scalars['DateTime']['output']>;
@@ -3850,6 +3968,7 @@ export type TicketMessage = {
 };
 
 export type TicketMessageCreateInput = {
+  attachment?: InputMaybe<FileRelateToOneForCreateInput>;
   author?: InputMaybe<UserRelateToOneForCreateInput>;
   content?: InputMaybe<Scalars['String']['input']>;
   createdAt?: InputMaybe<Scalars['DateTime']['input']>;
@@ -3888,6 +4007,7 @@ export type TicketMessageUpdateArgs = {
 };
 
 export type TicketMessageUpdateInput = {
+  attachment?: InputMaybe<FileRelateToOneForUpdateInput>;
   author?: InputMaybe<UserRelateToOneForUpdateInput>;
   content?: InputMaybe<Scalars['String']['input']>;
   createdAt?: InputMaybe<Scalars['DateTime']['input']>;
@@ -3899,6 +4019,7 @@ export type TicketMessageWhereInput = {
   AND?: InputMaybe<Array<TicketMessageWhereInput>>;
   NOT?: InputMaybe<Array<TicketMessageWhereInput>>;
   OR?: InputMaybe<Array<TicketMessageWhereInput>>;
+  attachment?: InputMaybe<FileWhereInput>;
   author?: InputMaybe<UserWhereInput>;
   content?: InputMaybe<StringFilter>;
   createdAt?: InputMaybe<DateTimeNullableFilter>;
@@ -4769,7 +4890,7 @@ export type GetTicketQueryVariables = Exact<{
 }>;
 
 
-export type GetTicketQuery = { __typename?: 'Query', ticket?: { __typename?: 'Ticket', id: string, solved?: boolean | null, description?: string | null, createdAt?: string | null, updatedAt?: string | null, object?: { __typename?: 'TicketObject', id: string, object?: string | null } | null, user?: { __typename?: 'User', id: string, email?: string | null, firstname?: string | null, lastname?: string | null, phoneNumber?: string | null } | null, messages?: Array<{ __typename?: 'TicketMessage', id: string, content?: string | null, createdAt?: string | null, author?: { __typename?: 'User', id: string, firstname?: string | null, lastname?: string | null, email?: string | null, isAdmin?: boolean | null } | null }> | null } | null };
+export type GetTicketQuery = { __typename?: 'Query', ticket?: { __typename?: 'Ticket', id: string, solved?: boolean | null, description?: string | null, createdAt?: string | null, updatedAt?: string | null, object?: { __typename?: 'TicketObject', id: string, object?: string | null } | null, user?: { __typename?: 'User', id: string, email?: string | null, firstname?: string | null, lastname?: string | null, phoneNumber?: string | null } | null, messages?: Array<{ __typename?: 'TicketMessage', id: string, content?: string | null, createdAt?: string | null, author?: { __typename?: 'User', id: string, firstname?: string | null, lastname?: string | null, email?: string | null, isAdmin?: boolean | null } | null, attachment?: { __typename?: 'File', id: string, uri?: string | null, mimetype?: string | null } | null }> | null } | null };
 
 export type UpdateTicketMutationVariables = Exact<{
   where: TicketWhereUniqueInput;
@@ -4784,7 +4905,7 @@ export type CreateTicketMessageMutationVariables = Exact<{
 }>;
 
 
-export type CreateTicketMessageMutation = { __typename?: 'Mutation', createTicketMessage?: { __typename?: 'TicketMessage', id: string, content?: string | null, createdAt?: string | null, author?: { __typename?: 'User', id: string, firstname?: string | null, lastname?: string | null, email?: string | null, isAdmin?: boolean | null } | null } | null };
+export type CreateTicketMessageMutation = { __typename?: 'Mutation', createTicketMessage?: { __typename?: 'TicketMessage', id: string, content?: string | null, createdAt?: string | null, author?: { __typename?: 'User', id: string, firstname?: string | null, lastname?: string | null, email?: string | null, isAdmin?: boolean | null } | null, attachment?: { __typename?: 'File', id: string, uri?: string | null, mimetype?: string | null } | null } | null };
 
 export type GetUsersCountsQueryVariables = Exact<{
   todayWhere: UserWhereInput;
@@ -5196,6 +5317,11 @@ export const GetTicketDocument = `
         email
         isAdmin
       }
+      attachment {
+        id
+        uri
+        mimetype
+      }
     }
     createdAt
     updatedAt
@@ -5261,6 +5387,11 @@ export const CreateTicketMessageDocument = `
       lastname
       email
       isAdmin
+    }
+    attachment {
+      id
+      uri
+      mimetype
     }
   }
 }

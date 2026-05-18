@@ -149,6 +149,11 @@ export const GetTicket = /* GraphQL */ `
           email
           isAdmin
         }
+        attachment {
+          id
+          uri
+          mimetype
+        }
       }
       createdAt
       updatedAt
@@ -180,6 +185,11 @@ export const CreateTicketMessage = /* GraphQL */ `
         lastname
         email
         isAdmin
+      }
+      attachment {
+        id
+        uri
+        mimetype
       }
     }
   }
