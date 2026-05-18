@@ -11,7 +11,8 @@
     "typecheck": "tsc -b",
     "preview": "vite preview",
     "codegen": "graphql-codegen --config codegen.ts && node scripts/fix-codegen.mjs",
-    "sync-shared": "node ../scripts/sync-shared.mjs"
+    "sync-shared": "node ../scripts/sync-shared.mjs",
+    "prepare": "husky"
   },
   "dependencies": {
     "@fontsource-variable/geist": "^5.2.8",
@@ -54,10 +55,20 @@
     "eslint-plugin-react-refresh": "^0.4.24",
     "globals": "^16.5.0",
     "graphql": "^16.13.1",
+    "husky": "^9.1.7",
+    "lint-staged": "^16.4.0",
     "prettier": "^3.8.1",
     "prettier-plugin-tailwindcss": "^0.7.2",
     "typescript": "~5.9.3",
     "typescript-eslint": "^8.46.4",
     "vite": "^7.2.4"
+  },
+  "lint-staged": {
+    "*.{ts,tsx}": [
+      "eslint --fix"
+    ],
+    "*.{ts,tsx,css,md,json}": [
+      "prettier --write"
+    ]
   }
 }
