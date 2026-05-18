@@ -438,6 +438,15 @@ export const GetAdminUsersTrend = /* GraphQL */ `
   }
 `
 
+export const GetAdminTicketsTrend = /* GraphQL */ `
+  query GetAdminTicketsTrend($days: Int!) {
+    adminTicketsTrend(days: $days) {
+      date
+      count
+    }
+  }
+`
+
 export const GetAdminDriversAverageRating = /* GraphQL */ `
   query GetAdminDriversAverageRating {
     adminDriversAverageRating

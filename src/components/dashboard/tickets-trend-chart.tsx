@@ -1,20 +1,13 @@
 import { AreaChartCard } from "@/components/shared/area-chart-card"
-import { useGetTicketsQuery } from "@/gql/generated"
-import { groupByDay } from "@/lib/chart"
+import { useGetAdminTicketsTrendQuery } from "@/gql/generated"
+import { mapTrendToChartData } from "@/lib/chart"
 import { CHART_DAYS } from "@/lib/constants"
 
 export function TicketsTrendChart() {
-  const since = new Date()
-  since.setDate(since.getDate() - (CHART_DAYS - 1))
-
-  const { data, isLoading } = useGetTicketsQuery({
-    where: { createdAt: { gte: since.toISOString() } },
-    orderBy: [{ createdAt: "asc" as const }],
-    take: 1000,
-    skip: 0,
+  const { data, isLoading } = useGetAdminTicketsTrendQuery({
+    days: CHART_DAYS,
   })
-
-  const chartData = data?.tickets ? groupByDay(data.tickets, CHART_DAYS) : []
+  const chartData = mapTrendToChartData(data?.adminTicketsTrend, CHART_DAYS)
 
   return (
     <AreaChartCard

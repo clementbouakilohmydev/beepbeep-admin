@@ -2906,6 +2906,8 @@ export type Query = {
    * Si from/to absents → toutes les courses paid.
    */
   adminRevenueStats: AdminRevenueStats;
+  /** Nombre de tickets créés par jour sur les N derniers jours (default 30). */
+  adminTicketsTrend: Array<AdminTrendPoint>;
   /** Nombre d'inscriptions par jour sur les N derniers jours (default 30). */
   adminUsersTrend: Array<AdminTrendPoint>;
   affiliation?: Maybe<Affiliation>;
@@ -3029,6 +3031,11 @@ export type QueryAdminDailyAggregatesArgs = {
 export type QueryAdminRevenueStatsArgs = {
   from?: InputMaybe<Scalars['DateTime']['input']>;
   to?: InputMaybe<Scalars['DateTime']['input']>;
+};
+
+
+export type QueryAdminTicketsTrendArgs = {
+  days?: Scalars['Int']['input'];
 };
 
 
@@ -4822,6 +4829,13 @@ export type GetAdminUsersTrendQueryVariables = Exact<{
 
 export type GetAdminUsersTrendQuery = { __typename?: 'Query', adminUsersTrend: Array<{ __typename?: 'AdminTrendPoint', date: string, count: number }> };
 
+export type GetAdminTicketsTrendQueryVariables = Exact<{
+  days: Scalars['Int']['input'];
+}>;
+
+
+export type GetAdminTicketsTrendQuery = { __typename?: 'Query', adminTicketsTrend: Array<{ __typename?: 'AdminTrendPoint', date: string, count: number }> };
+
 export type GetAdminDriversAverageRatingQueryVariables = Exact<{ [key: string]: never; }>;
 
 
@@ -5663,6 +5677,36 @@ useGetAdminUsersTrendQuery.getKey = (variables: GetAdminUsersTrendQueryVariables
 
 
 useGetAdminUsersTrendQuery.fetcher = (variables: GetAdminUsersTrendQueryVariables, options?: RequestInit['headers']) => graphqlClient<GetAdminUsersTrendQuery, GetAdminUsersTrendQueryVariables>(GetAdminUsersTrendDocument, variables, options);
+
+export const GetAdminTicketsTrendDocument = `
+    query GetAdminTicketsTrend($days: Int!) {
+  adminTicketsTrend(days: $days) {
+    date
+    count
+  }
+}
+    `;
+
+export const useGetAdminTicketsTrendQuery = <
+      TData = GetAdminTicketsTrendQuery,
+      TError = unknown
+    >(
+      variables: GetAdminTicketsTrendQueryVariables,
+      options?: Omit<UseQueryOptions<GetAdminTicketsTrendQuery, TError, TData>, 'queryKey'> & { queryKey?: UseQueryOptions<GetAdminTicketsTrendQuery, TError, TData>['queryKey'] }
+    ) => {
+    
+    return useQuery<GetAdminTicketsTrendQuery, TError, TData>(
+      {
+    queryKey: ['GetAdminTicketsTrend', variables],
+    queryFn: graphqlClient<GetAdminTicketsTrendQuery, GetAdminTicketsTrendQueryVariables>(GetAdminTicketsTrendDocument, variables),
+    ...options
+  }
+    )};
+
+useGetAdminTicketsTrendQuery.getKey = (variables: GetAdminTicketsTrendQueryVariables) => ['GetAdminTicketsTrend', variables];
+
+
+useGetAdminTicketsTrendQuery.fetcher = (variables: GetAdminTicketsTrendQueryVariables, options?: RequestInit['headers']) => graphqlClient<GetAdminTicketsTrendQuery, GetAdminTicketsTrendQueryVariables>(GetAdminTicketsTrendDocument, variables, options);
 
 export const GetAdminDriversAverageRatingDocument = `
     query GetAdminDriversAverageRating {

@@ -2713,6 +2713,11 @@ type Query {
   adminUsersTrend(days: Int! = 30): [AdminTrendPoint!]!
 
   """
+  Nombre de tickets créés par jour sur les N derniers jours (default 30).
+  """
+  adminTicketsTrend(days: Int! = 30): [AdminTrendPoint!]!
+
+  """
   Moyenne des notes drivers (User.driver.averageRate via Rating). Calcul
   sur les ratings reçus par les drivers, pondéré par nombre de notes.
   """
