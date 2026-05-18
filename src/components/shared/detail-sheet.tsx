@@ -1,8 +1,5 @@
 import type { ReactNode } from "react"
-import {
-  Sheet,
-  SheetContent,
-} from "@/components/ui/sheet"
+import { Sheet, SheetContent } from "@/components/ui/sheet"
 
 type DetailSheetProps = {
   open: boolean
@@ -15,7 +12,9 @@ export function DetailSheet({ open, onClose, children }: DetailSheetProps) {
     <Sheet open={open} onOpenChange={(o) => !o && onClose()}>
       <SheetContent
         side="right"
-        className="!w-full overflow-y-auto sm:!w-[40%]"
+        // 100% sur mobile, 50% du viewport sur ≥sm. !max-w-none neutralise
+        // le max-w-sm hérité du SheetContent shadcn (qui sinon capait à ~24rem).
+        className="!w-full overflow-y-auto sm:!w-1/2 sm:!max-w-none"
       >
         {children}
       </SheetContent>
