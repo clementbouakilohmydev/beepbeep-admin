@@ -140,6 +140,8 @@ export type AdminDocument = {
   createdAt?: Maybe<Scalars['DateTime']['output']>;
   id: Scalars['ID']['output'];
   picture?: Maybe<AdminDocumentPicture>;
+  /** Photo précédente (avant re-upload post-rejet) — null sinon. */
+  previousPicture?: Maybe<AdminDocumentPicture>;
   state?: Maybe<Scalars['String']['output']>;
   type: AdminDocumentType;
   updatedAt?: Maybe<Scalars['DateTime']['output']>;
@@ -347,6 +349,7 @@ export type Certificate = {
   expirationDatetime?: Maybe<Scalars['DateTime']['output']>;
   id: Scalars['ID']['output'];
   picture?: Maybe<File>;
+  previousPicture?: Maybe<File>;
   registrationDatetime?: Maybe<Scalars['DateTime']['output']>;
   state?: Maybe<Scalars['String']['output']>;
   updatedAt?: Maybe<Scalars['DateTime']['output']>;
@@ -357,6 +360,7 @@ export type CertificateCreateInput = {
   createdAt?: InputMaybe<Scalars['DateTime']['input']>;
   expirationDatetime?: InputMaybe<Scalars['DateTime']['input']>;
   picture?: InputMaybe<FileRelateToOneForCreateInput>;
+  previousPicture?: InputMaybe<FileRelateToOneForCreateInput>;
   registrationDatetime?: InputMaybe<Scalars['DateTime']['input']>;
   state?: InputMaybe<Scalars['String']['input']>;
   updatedAt?: InputMaybe<Scalars['DateTime']['input']>;
@@ -392,6 +396,7 @@ export type CertificateUpdateInput = {
   createdAt?: InputMaybe<Scalars['DateTime']['input']>;
   expirationDatetime?: InputMaybe<Scalars['DateTime']['input']>;
   picture?: InputMaybe<FileRelateToOneForUpdateInput>;
+  previousPicture?: InputMaybe<FileRelateToOneForUpdateInput>;
   registrationDatetime?: InputMaybe<Scalars['DateTime']['input']>;
   state?: InputMaybe<Scalars['String']['input']>;
   updatedAt?: InputMaybe<Scalars['DateTime']['input']>;
@@ -406,6 +411,7 @@ export type CertificateWhereInput = {
   expirationDatetime?: InputMaybe<DateTimeNullableFilter>;
   id?: InputMaybe<IdFilter>;
   picture?: InputMaybe<FileWhereInput>;
+  previousPicture?: InputMaybe<FileWhereInput>;
   registrationDatetime?: InputMaybe<DateTimeNullableFilter>;
   state?: InputMaybe<StringNullableFilter>;
   updatedAt?: InputMaybe<DateTimeNullableFilter>;
@@ -852,6 +858,7 @@ export type DrivingLicense = {
   isExpired?: Maybe<Scalars['Boolean']['output']>;
   obtentionYear?: Maybe<Scalars['Int']['output']>;
   picture?: Maybe<File>;
+  previousPicture?: Maybe<File>;
   state?: Maybe<Scalars['String']['output']>;
   updatedAt?: Maybe<Scalars['DateTime']['output']>;
   user?: Maybe<User>;
@@ -863,6 +870,7 @@ export type DrivingLicenseCreateInput = {
   isExpired?: InputMaybe<Scalars['Boolean']['input']>;
   obtentionYear?: InputMaybe<Scalars['Int']['input']>;
   picture?: InputMaybe<FileRelateToOneForCreateInput>;
+  previousPicture?: InputMaybe<FileRelateToOneForCreateInput>;
   state?: InputMaybe<Scalars['String']['input']>;
   updatedAt?: InputMaybe<Scalars['DateTime']['input']>;
   user?: InputMaybe<UserRelateToOneForCreateInput>;
@@ -900,6 +908,7 @@ export type DrivingLicenseUpdateInput = {
   isExpired?: InputMaybe<Scalars['Boolean']['input']>;
   obtentionYear?: InputMaybe<Scalars['Int']['input']>;
   picture?: InputMaybe<FileRelateToOneForUpdateInput>;
+  previousPicture?: InputMaybe<FileRelateToOneForUpdateInput>;
   state?: InputMaybe<Scalars['String']['input']>;
   updatedAt?: InputMaybe<Scalars['DateTime']['input']>;
   user?: InputMaybe<UserRelateToOneForUpdateInput>;
@@ -915,6 +924,7 @@ export type DrivingLicenseWhereInput = {
   isExpired?: InputMaybe<BooleanFilter>;
   obtentionYear?: InputMaybe<IntNullableFilter>;
   picture?: InputMaybe<FileWhereInput>;
+  previousPicture?: InputMaybe<FileWhereInput>;
   state?: InputMaybe<StringNullableFilter>;
   updatedAt?: InputMaybe<DateTimeNullableFilter>;
   user?: InputMaybe<UserWhereInput>;
@@ -1104,6 +1114,7 @@ export type Insurance = {
   id: Scalars['ID']['output'];
   isExpired?: Maybe<Scalars['Boolean']['output']>;
   picture?: Maybe<File>;
+  previousPicture?: Maybe<File>;
   state?: Maybe<Scalars['String']['output']>;
   updatedAt?: Maybe<Scalars['DateTime']['output']>;
   user?: Maybe<User>;
@@ -1114,6 +1125,7 @@ export type InsuranceCreateInput = {
   expirationDatetimeUtc?: InputMaybe<Scalars['DateTime']['input']>;
   isExpired?: InputMaybe<Scalars['Boolean']['input']>;
   picture?: InputMaybe<FileRelateToOneForCreateInput>;
+  previousPicture?: InputMaybe<FileRelateToOneForCreateInput>;
   state?: InputMaybe<Scalars['String']['input']>;
   updatedAt?: InputMaybe<Scalars['DateTime']['input']>;
   user?: InputMaybe<UserRelateToOneForCreateInput>;
@@ -1149,6 +1161,7 @@ export type InsuranceUpdateInput = {
   expirationDatetimeUtc?: InputMaybe<Scalars['DateTime']['input']>;
   isExpired?: InputMaybe<Scalars['Boolean']['input']>;
   picture?: InputMaybe<FileRelateToOneForUpdateInput>;
+  previousPicture?: InputMaybe<FileRelateToOneForUpdateInput>;
   state?: InputMaybe<Scalars['String']['input']>;
   updatedAt?: InputMaybe<Scalars['DateTime']['input']>;
   user?: InputMaybe<UserRelateToOneForUpdateInput>;
@@ -1163,6 +1176,7 @@ export type InsuranceWhereInput = {
   id?: InputMaybe<IdFilter>;
   isExpired?: InputMaybe<BooleanFilter>;
   picture?: InputMaybe<FileWhereInput>;
+  previousPicture?: InputMaybe<FileWhereInput>;
   state?: InputMaybe<StringNullableFilter>;
   updatedAt?: InputMaybe<DateTimeNullableFilter>;
   user?: InputMaybe<UserWhereInput>;
@@ -3808,6 +3822,7 @@ export type RegistrationDocument = {
   id: Scalars['ID']['output'];
   isExpired?: Maybe<Scalars['Boolean']['output']>;
   picture?: Maybe<File>;
+  previousPicture?: Maybe<File>;
   state?: Maybe<Scalars['String']['output']>;
   updatedAt?: Maybe<Scalars['DateTime']['output']>;
   user?: Maybe<User>;
@@ -3818,6 +3833,7 @@ export type RegistrationDocumentCreateInput = {
   expirationDatetimeUtc?: InputMaybe<Scalars['DateTime']['input']>;
   isExpired?: InputMaybe<Scalars['Boolean']['input']>;
   picture?: InputMaybe<FileRelateToOneForCreateInput>;
+  previousPicture?: InputMaybe<FileRelateToOneForCreateInput>;
   state?: InputMaybe<Scalars['String']['input']>;
   updatedAt?: InputMaybe<Scalars['DateTime']['input']>;
   user?: InputMaybe<UserRelateToOneForCreateInput>;
@@ -3853,6 +3869,7 @@ export type RegistrationDocumentUpdateInput = {
   expirationDatetimeUtc?: InputMaybe<Scalars['DateTime']['input']>;
   isExpired?: InputMaybe<Scalars['Boolean']['input']>;
   picture?: InputMaybe<FileRelateToOneForUpdateInput>;
+  previousPicture?: InputMaybe<FileRelateToOneForUpdateInput>;
   state?: InputMaybe<Scalars['String']['input']>;
   updatedAt?: InputMaybe<Scalars['DateTime']['input']>;
   user?: InputMaybe<UserRelateToOneForUpdateInput>;
@@ -3867,6 +3884,7 @@ export type RegistrationDocumentWhereInput = {
   id?: InputMaybe<IdFilter>;
   isExpired?: InputMaybe<BooleanFilter>;
   picture?: InputMaybe<FileWhereInput>;
+  previousPicture?: InputMaybe<FileWhereInput>;
   state?: InputMaybe<StringNullableFilter>;
   updatedAt?: InputMaybe<DateTimeNullableFilter>;
   user?: InputMaybe<UserWhereInput>;
@@ -5033,7 +5051,7 @@ export type GetAdminDocumentsQueryVariables = Exact<{
 }>;
 
 
-export type GetAdminDocumentsQuery = { __typename?: 'Query', adminDocuments: { __typename?: 'AdminDocumentsPage', total: number, items: Array<{ __typename?: 'AdminDocument', id: string, type: AdminDocumentType, state?: string | null, createdAt?: string | null, updatedAt?: string | null, user?: { __typename?: 'AdminDocumentUser', id: string, firstname?: string | null, lastname?: string | null, email?: string | null } | null, picture?: { __typename?: 'AdminDocumentPicture', id: string, uri?: string | null } | null }> } };
+export type GetAdminDocumentsQuery = { __typename?: 'Query', adminDocuments: { __typename?: 'AdminDocumentsPage', total: number, items: Array<{ __typename?: 'AdminDocument', id: string, type: AdminDocumentType, state?: string | null, createdAt?: string | null, updatedAt?: string | null, user?: { __typename?: 'AdminDocumentUser', id: string, firstname?: string | null, lastname?: string | null, email?: string | null } | null, picture?: { __typename?: 'AdminDocumentPicture', id: string, uri?: string | null } | null, previousPicture?: { __typename?: 'AdminDocumentPicture', id: string, uri?: string | null } | null }> } };
 
 export type GetAdminDailyAggregatesQueryVariables = Exact<{
   days: Scalars['Int']['input'];
@@ -5978,6 +5996,10 @@ export const GetAdminDocumentsDocument = `
         email
       }
       picture {
+        id
+        uri
+      }
+      previousPicture {
         id
         uri
       }

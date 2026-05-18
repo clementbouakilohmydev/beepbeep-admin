@@ -494,6 +494,10 @@ export const GetAdminDocuments = /* GraphQL */ `
           id
           uri
         }
+        previousPicture {
+          id
+          uri
+        }
       }
     }
   }

@@ -39,7 +39,8 @@ export function DocumentsPage() {
     open: boolean
     title: string
     url: string
-  }>({ open: false, title: "", url: "" })
+    previousUrl?: string | null
+  }>({ open: false, title: "", url: "", previousUrl: null })
 
   // Query paginée serveur (cf adminStats côté back). Avant : fetch des 200
   // derniers drivers + flatten 4 docs en JS → tronqué et lourd.
@@ -131,6 +132,7 @@ export function DocumentsPage() {
         const docType = doc.type as DocumentType
         const userName = doc.user ? getUserDisplay(doc.user) : "—"
         const pictureUrl = doc.picture?.uri ?? null
+        const previousUrl = doc.previousPicture?.uri ?? null
         return (
           <div className="flex justify-end gap-1">
             {pictureUrl && (
@@ -141,6 +143,7 @@ export function DocumentsPage() {
                     open: true,
                     title: `${userName} — ${DOCUMENT_LABELS[docType]}`,
                     url: pictureUrl,
+                    previousUrl,
                   })
                 }
               >
@@ -211,14 +214,42 @@ export function DocumentsPage() {
         open={previewDoc.open}
         onOpenChange={(open) => setPreviewDoc((prev) => ({ ...prev, open }))}
       >
-        <DialogContent className="max-w-3xl">
+        <DialogContent className="max-w-5xl">
           <DialogTitle>{previewDoc.title}</DialogTitle>
-          {previewDoc.url && (
-            <img
-              src={previewDoc.url}
-              alt={previewDoc.title}
-              className="w-full rounded-md"
-            />
+          {previewDoc.previousUrl ? (
+            // Mode comparaison : ancien (rejeté) à gauche, nouveau à droite.
+            // Affiché quand le driver a renvoyé le document après rejet —
+            // l'admin peut vérifier ce qui a changé sans mémoriser sa raison.
+            <div className="grid gap-4 sm:grid-cols-2">
+              <figure>
+                <figcaption className="mb-2 text-xs font-semibold text-destructive">
+                  Précédent (rejeté)
+                </figcaption>
+                <img
+                  src={previewDoc.previousUrl}
+                  alt="Document précédent"
+                  className="w-full rounded-md border border-destructive/40"
+                />
+              </figure>
+              <figure>
+                <figcaption className="mb-2 text-xs font-semibold text-primary">
+                  Nouveau (en attente)
+                </figcaption>
+                <img
+                  src={previewDoc.url}
+                  alt={previewDoc.title}
+                  className="w-full rounded-md border border-primary/40"
+                />
+              </figure>
+            </div>
+          ) : (
+            previewDoc.url && (
+              <img
+                src={previewDoc.url}
+                alt={previewDoc.title}
+                className="w-full rounded-md"
+              />
+            )
           )}
         </DialogContent>
       </Dialog>

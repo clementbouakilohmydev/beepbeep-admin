@@ -284,6 +284,7 @@ type Certificate {
   expirationDatetime: DateTime
   registrationDatetime: DateTime
   picture: File
+  previousPicture: File
   user: User
   updatedAt: DateTime
   createdAt: DateTime
@@ -303,6 +304,7 @@ input CertificateWhereInput {
   expirationDatetime: DateTimeNullableFilter
   registrationDatetime: DateTimeNullableFilter
   picture: FileWhereInput
+  previousPicture: FileWhereInput
   user: UserWhereInput
   updatedAt: DateTimeNullableFilter
   createdAt: DateTimeNullableFilter
@@ -322,6 +324,7 @@ input CertificateUpdateInput {
   expirationDatetime: DateTime
   registrationDatetime: DateTime
   picture: FileRelateToOneForUpdateInput
+  previousPicture: FileRelateToOneForUpdateInput
   user: UserRelateToOneForUpdateInput
   updatedAt: DateTime
   createdAt: DateTime
@@ -343,6 +346,7 @@ input CertificateCreateInput {
   expirationDatetime: DateTime
   registrationDatetime: DateTime
   picture: FileRelateToOneForCreateInput
+  previousPicture: FileRelateToOneForCreateInput
   user: UserRelateToOneForCreateInput
   updatedAt: DateTime
   createdAt: DateTime
@@ -757,6 +761,7 @@ type DrivingLicense {
   expirationDatetimeUtc: DateTime
   isExpired: Boolean
   picture: File
+  previousPicture: File
   user: User
   updatedAt: DateTime
   createdAt: DateTime
@@ -777,6 +782,7 @@ input DrivingLicenseWhereInput {
   expirationDatetimeUtc: DateTimeNullableFilter
   isExpired: BooleanFilter
   picture: FileWhereInput
+  previousPicture: FileWhereInput
   user: UserWhereInput
   updatedAt: DateTimeNullableFilter
   createdAt: DateTimeNullableFilter
@@ -798,6 +804,7 @@ input DrivingLicenseUpdateInput {
   expirationDatetimeUtc: DateTime
   isExpired: Boolean
   picture: FileRelateToOneForUpdateInput
+  previousPicture: FileRelateToOneForUpdateInput
   user: UserRelateToOneForUpdateInput
   updatedAt: DateTime
   createdAt: DateTime
@@ -814,6 +821,7 @@ input DrivingLicenseCreateInput {
   expirationDatetimeUtc: DateTime
   isExpired: Boolean
   picture: FileRelateToOneForCreateInput
+  previousPicture: FileRelateToOneForCreateInput
   user: UserRelateToOneForCreateInput
   updatedAt: DateTime
   createdAt: DateTime
@@ -884,6 +892,7 @@ type Insurance {
   isExpired: Boolean
   state: String
   picture: File
+  previousPicture: File
   user: User
   updatedAt: DateTime
   createdAt: DateTime
@@ -903,6 +912,7 @@ input InsuranceWhereInput {
   isExpired: BooleanFilter
   state: StringNullableFilter
   picture: FileWhereInput
+  previousPicture: FileWhereInput
   user: UserWhereInput
   updatedAt: DateTimeNullableFilter
   createdAt: DateTimeNullableFilter
@@ -933,6 +943,7 @@ input InsuranceUpdateInput {
   isExpired: Boolean
   state: String
   picture: FileRelateToOneForUpdateInput
+  previousPicture: FileRelateToOneForUpdateInput
   user: UserRelateToOneForUpdateInput
   updatedAt: DateTime
   createdAt: DateTime
@@ -948,6 +959,7 @@ input InsuranceCreateInput {
   isExpired: Boolean
   state: String
   picture: FileRelateToOneForCreateInput
+  previousPicture: FileRelateToOneForCreateInput
   user: UserRelateToOneForCreateInput
   updatedAt: DateTime
   createdAt: DateTime
@@ -1477,6 +1489,7 @@ type RegistrationDocument {
   expirationDatetimeUtc: DateTime
   isExpired: Boolean
   picture: File
+  previousPicture: File
   user: User
   updatedAt: DateTime
   createdAt: DateTime
@@ -1496,6 +1509,7 @@ input RegistrationDocumentWhereInput {
   expirationDatetimeUtc: DateTimeNullableFilter
   isExpired: BooleanFilter
   picture: FileWhereInput
+  previousPicture: FileWhereInput
   user: UserWhereInput
   updatedAt: DateTimeNullableFilter
   createdAt: DateTimeNullableFilter
@@ -1515,6 +1529,7 @@ input RegistrationDocumentUpdateInput {
   expirationDatetimeUtc: DateTime
   isExpired: Boolean
   picture: FileRelateToOneForUpdateInput
+  previousPicture: FileRelateToOneForUpdateInput
   user: UserRelateToOneForUpdateInput
   updatedAt: DateTime
   createdAt: DateTime
@@ -1530,6 +1545,7 @@ input RegistrationDocumentCreateInput {
   expirationDatetimeUtc: DateTime
   isExpired: Boolean
   picture: FileRelateToOneForCreateInput
+  previousPicture: FileRelateToOneForCreateInput
   user: UserRelateToOneForCreateInput
   updatedAt: DateTime
   createdAt: DateTime
@@ -3065,6 +3081,9 @@ type AdminDocument {
   state: String
   user: AdminDocumentUser
   picture: AdminDocumentPicture
+
+  """Photo précédente (avant re-upload post-rejet) — null sinon."""
+  previousPicture: AdminDocumentPicture
   createdAt: DateTime
   updatedAt: DateTime
 }
