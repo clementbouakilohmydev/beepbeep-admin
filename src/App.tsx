@@ -39,6 +39,16 @@ const PublicLegalPage = lazy(() =>
     default: m.PublicLegalPage,
   }))
 )
+const PublicAboutPage = lazy(() =>
+  import("@/pages/public-about-page").then((m) => ({
+    default: m.PublicAboutPage,
+  }))
+)
+const PublicSupportPage = lazy(() =>
+  import("@/pages/public-support-page").then((m) => ({
+    default: m.PublicSupportPage,
+  }))
+)
 const UsersPage = lazy(() =>
   import("@/pages/users-page").then((m) => ({ default: m.UsersPage }))
 )
@@ -83,6 +93,22 @@ export function App() {
               element={
                 <Suspense fallback={<PageFallback />}>
                   <PublicLegalPage />
+                </Suspense>
+              }
+            />
+            <Route
+              path="/public/about"
+              element={
+                <Suspense fallback={<PageFallback />}>
+                  <PublicAboutPage />
+                </Suspense>
+              }
+            />
+            <Route
+              path="/public/support"
+              element={
+                <Suspense fallback={<PageFallback />}>
+                  <PublicSupportPage />
                 </Suspense>
               }
             />
