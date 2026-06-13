@@ -34,6 +34,11 @@ const LegalPageEditPage = lazy(() =>
     default: m.LegalPageEditPage,
   }))
 )
+const PublicLegalPage = lazy(() =>
+  import("@/pages/public-legal-page").then((m) => ({
+    default: m.PublicLegalPage,
+  }))
+)
 const UsersPage = lazy(() =>
   import("@/pages/users-page").then((m) => ({ default: m.UsersPage }))
 )
@@ -73,6 +78,14 @@ export function App() {
           <Routes>
             <Route path="/login" element={<LoginPage />} />
             <Route path="/forgot-password" element={<ForgotPasswordPage />} />
+            <Route
+              path="/public/legal/:slug"
+              element={
+                <Suspense fallback={<PageFallback />}>
+                  <PublicLegalPage />
+                </Suspense>
+              }
+            />
             <Route
               element={
                 <ErrorBoundary>
