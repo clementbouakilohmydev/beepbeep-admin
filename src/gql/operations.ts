@@ -515,3 +515,138 @@ export const GetAdminDailyAggregates = /* GraphQL */ `
     }
   }
 `
+
+export const GetTicketObjects = /* GraphQL */ `
+  query GetTicketObjects {
+    ticketObjects(orderBy: [{ createdAt: desc }]) {
+      id
+      object
+      createdAt
+      updatedAt
+    }
+  }
+`
+
+export const CreateTicketObject = /* GraphQL */ `
+  mutation CreateTicketObject($object: String!) {
+    createTicketObject(data: { object: $object }) {
+      id
+      object
+      createdAt
+      updatedAt
+    }
+  }
+`
+
+export const UpdateTicketObject = /* GraphQL */ `
+  mutation UpdateTicketObject($id: ID!, $object: String!) {
+    updateTicketObject(where: { id: $id }, data: { object: $object }) {
+      id
+      object
+      updatedAt
+    }
+  }
+`
+
+export const DeleteTicketObject = /* GraphQL */ `
+  mutation DeleteTicketObject($id: ID!) {
+    deleteTicketObject(where: { id: $id }) {
+      id
+    }
+  }
+`
+
+export const GetLegalPages = /* GraphQL */ `
+  query GetLegalPages {
+    pages(orderBy: [{ slug: asc }]) {
+      id
+      slug
+      name
+      description
+      updatedAt
+      sectionsCount
+    }
+  }
+`
+
+export const GetLegalPage = /* GraphQL */ `
+  query GetLegalPage($slug: String!) {
+    pages(where: { slug: { equals: $slug } }, take: 1) {
+      id
+      slug
+      name
+      description
+      createdAt
+      updatedAt
+      sections(orderBy: [{ createdAt: asc }]) {
+        id
+        name
+        content
+        updatedAt
+      }
+    }
+  }
+`
+
+export const CreateLegalPage = /* GraphQL */ `
+  mutation CreateLegalPage(
+    $slug: String!
+    $name: String!
+    $description: String
+  ) {
+    createPage(data: { slug: $slug, name: $name, description: $description }) {
+      id
+      slug
+    }
+  }
+`
+
+export const UpdateLegalPage = /* GraphQL */ `
+  mutation UpdateLegalPage($id: ID!, $name: String!, $description: String) {
+    updatePage(
+      where: { id: $id }
+      data: { name: $name, description: $description }
+    ) {
+      id
+      name
+      description
+      updatedAt
+    }
+  }
+`
+
+export const CreatePageSection = /* GraphQL */ `
+  mutation CreatePageSection($pageId: ID!, $name: String!, $content: String!) {
+    createPageSection(
+      data: {
+        name: $name
+        content: $content
+        page: { connect: { id: $pageId } }
+      }
+    ) {
+      id
+    }
+  }
+`
+
+export const UpdatePageSection = /* GraphQL */ `
+  mutation UpdatePageSection($id: ID!, $name: String!, $content: String!) {
+    updatePageSection(
+      where: { id: $id }
+      data: { name: $name, content: $content }
+    ) {
+      id
+      name
+      content
+      updatedAt
+    }
+  }
+`
+
+export const DeletePageSection = /* GraphQL */ `
+  mutation DeletePageSection($id: ID!) {
+    deletePageSection(where: { id: $id }) {
+      id
+    }
+  }
+`

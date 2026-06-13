@@ -2,8 +2,10 @@ import { NavLink, Outlet, useLocation } from "react-router-dom"
 import {
   LayoutDashboardIcon,
   TicketIcon,
+  TagIcon,
   UsersIcon,
   FileTextIcon,
+  ScrollTextIcon,
   BarChart3Icon,
   WalletIcon,
   LogOutIcon,
@@ -29,8 +31,10 @@ import {
 const NAV_ITEMS = [
   { to: "/", label: "Dashboard", icon: LayoutDashboardIcon },
   { to: "/tickets", label: "Support", icon: TicketIcon },
+  { to: "/ticket-subjects", label: "Sujets de tickets", icon: TagIcon },
   { to: "/users", label: "Utilisateurs", icon: UsersIcon },
   { to: "/documents", label: "Documents", icon: FileTextIcon },
+  { to: "/legal-pages", label: "Pages légales", icon: ScrollTextIcon },
   { to: "/performance", label: "Performance", icon: BarChart3Icon },
   { to: "/finance", label: "Finances", icon: WalletIcon },
 ]
@@ -60,11 +64,7 @@ export function AppLayout() {
               <SidebarMenu>
                 {NAV_ITEMS.map((item) => (
                   <SidebarMenuItem key={item.to}>
-                    <SidebarMenuButton
-                      asChild
-                      isActive={false}
-                      size="lg"
-                    >
+                    <SidebarMenuButton asChild isActive={false} size="lg">
                       <NavLink to={item.to} end>
                         {({ isActive }) => (
                           <>
@@ -77,11 +77,7 @@ export function AppLayout() {
                             >
                               <item.icon className="size-5" />
                             </span>
-                            <span
-                              className={
-                                isActive ? "font-semibold" : ""
-                              }
-                            >
+                            <span className={isActive ? "font-semibold" : ""}>
                               {item.label}
                             </span>
                           </>

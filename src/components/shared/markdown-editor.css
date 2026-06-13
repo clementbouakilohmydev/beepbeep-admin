@@ -1,0 +1,37 @@
+/*
+ * Z-index des popovers/dialogs internes de MDX Editor au-dessus du
+ * Dialog shadcn qui contient l'éditeur.
+ *
+ * MDX Editor append au document.body un conteneur `.mdxeditor-popup-container`
+ * dans lequel sont portalés tous les popovers de la toolbar (Lien, Image,
+ * Tableau…). Par défaut ce div n'a AUCUN style → position static → ne crée
+ * pas de stacking context. Ses enfants ont z-index 51/52, mais le Dialog
+ * shadcn (z-50, `transform: translate`) crée son propre stacking context →
+ * le popover MDX se retrouve visuellement derrière.
+ *
+ * Fix : on transforme le popup-container en stacking context indépendant
+ * positionné au-dessus de tout Dialog shadcn (qui plafonne à z-50).
+ */
+.mdxeditor-popup-container {
+  position: relative !important;
+  z-index: 100 !important;
+  isolation: isolate;
+}
+
+/*
+ * Ceinture + bretelles : on bumpe aussi les classes internes (overlay 51,
+ * content 52) au cas où une autre source CSS prendrait le dessus. Cible
+ * via [class*="..."] parce que MDX Editor utilise des CSS modules avec
+ * hash (`_dialogOverlay_f3hmk_869`) qui peut bouger entre versions.
+ */
+[class*="_dialogOverlay_"] {
+  z-index: 60 !important;
+}
+
+[class*="_dialogContent_"],
+[class*="_largeDialogContent_"],
+[class*="_popoverContent_"],
+[class*="_linkDialogPopoverContent_"],
+[class*="_tableColumnEditorPopoverContent_"] {
+  z-index: 61 !important;
+}

@@ -12,31 +12,46 @@ import { LoginPage, ForgotPasswordPage, DashboardPage } from "@/pages"
 // (premier écran après auth) et on lazy-load le reste — chaque route
 // devient son propre chunk, chargé à la 1re navigation.
 const TicketsPage = lazy(() =>
-  import("@/pages/tickets-page").then((m) => ({ default: m.TicketsPage })),
+  import("@/pages/tickets-page").then((m) => ({ default: m.TicketsPage }))
 )
 const TicketDetailPage = lazy(() =>
   import("@/pages/ticket-detail-page").then((m) => ({
     default: m.TicketDetailPage,
-  })),
+  }))
+)
+const TicketSubjectsPage = lazy(() =>
+  import("@/pages/ticket-subjects-page").then((m) => ({
+    default: m.TicketSubjectsPage,
+  }))
+)
+const LegalPagesPage = lazy(() =>
+  import("@/pages/legal-pages-page").then((m) => ({
+    default: m.LegalPagesPage,
+  }))
+)
+const LegalPageEditPage = lazy(() =>
+  import("@/pages/legal-page-edit-page").then((m) => ({
+    default: m.LegalPageEditPage,
+  }))
 )
 const UsersPage = lazy(() =>
-  import("@/pages/users-page").then((m) => ({ default: m.UsersPage })),
+  import("@/pages/users-page").then((m) => ({ default: m.UsersPage }))
 )
 const UserDetailPage = lazy(() =>
   import("@/pages/user-detail-page").then((m) => ({
     default: m.UserDetailPage,
-  })),
+  }))
 )
 const DocumentsPage = lazy(() =>
-  import("@/pages/documents-page").then((m) => ({ default: m.DocumentsPage })),
+  import("@/pages/documents-page").then((m) => ({ default: m.DocumentsPage }))
 )
 const PerformancePage = lazy(() =>
   import("@/pages/performance-page").then((m) => ({
     default: m.PerformancePage,
-  })),
+  }))
 )
 const FinancePage = lazy(() =>
-  import("@/pages/finance-page").then((m) => ({ default: m.FinancePage })),
+  import("@/pages/finance-page").then((m) => ({ default: m.FinancePage }))
 )
 
 function PageFallback() {
@@ -58,7 +73,13 @@ export function App() {
           <Routes>
             <Route path="/login" element={<LoginPage />} />
             <Route path="/forgot-password" element={<ForgotPasswordPage />} />
-            <Route element={<ErrorBoundary><AuthGuard /></ErrorBoundary>}>
+            <Route
+              element={
+                <ErrorBoundary>
+                  <AuthGuard />
+                </ErrorBoundary>
+              }
+            >
               <Route element={<AppLayout />}>
                 <Route path="/" element={<DashboardPage />} />
                 <Route
@@ -74,6 +95,30 @@ export function App() {
                   element={
                     <Suspense fallback={<PageFallback />}>
                       <TicketDetailPage />
+                    </Suspense>
+                  }
+                />
+                <Route
+                  path="/ticket-subjects"
+                  element={
+                    <Suspense fallback={<PageFallback />}>
+                      <TicketSubjectsPage />
+                    </Suspense>
+                  }
+                />
+                <Route
+                  path="/legal-pages"
+                  element={
+                    <Suspense fallback={<PageFallback />}>
+                      <LegalPagesPage />
+                    </Suspense>
+                  }
+                />
+                <Route
+                  path="/legal-pages/:slug"
+                  element={
+                    <Suspense fallback={<PageFallback />}>
+                      <LegalPageEditPage />
                     </Suspense>
                   }
                 />

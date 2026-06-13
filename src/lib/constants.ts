@@ -35,6 +35,30 @@ export function parseStatusFilter(raw: string | null): UserStatusFilter {
     : "all"
 }
 
+// Pages légales/statiques : doit rester aligné sur
+// `back/api/src/models/Page.ts` → `PAGE_SLUGS` et `mobile/lib/page-slugs.ts`.
+// Pour ajouter un slug (ex. "cgv") : étendre la liste aux trois endroits +
+// redéployer le back (validation `select`).
+export const LEGAL_PAGE_SLUGS = [
+  "cgu",
+  "legal-mentions",
+  "privacy-policy",
+  "faq",
+] as const
+
+export type LegalPageSlug = (typeof LEGAL_PAGE_SLUGS)[number]
+
+export const LEGAL_PAGE_LABELS: Record<LegalPageSlug, string> = {
+  cgu: "Conditions générales d'utilisation",
+  "legal-mentions": "Mentions légales",
+  "privacy-policy": "Politique de confidentialité",
+  faq: "FAQ",
+}
+
+export function isLegalPageSlug(value: string): value is LegalPageSlug {
+  return (LEGAL_PAGE_SLUGS as readonly string[]).includes(value)
+}
+
 export type TicketFilter = "all" | "pending" | "solved"
 
 const VALID_TICKET_FILTERS: TicketFilter[] = ["all", "pending", "solved"]
