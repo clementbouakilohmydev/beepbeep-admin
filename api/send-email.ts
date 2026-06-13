@@ -1,9 +1,6 @@
 import type { VercelRequest, VercelResponse } from "@vercel/node"
 
-export default async function handler(
-  req: VercelRequest,
-  res: VercelResponse
-) {
+export default async function handler(req: VercelRequest, res: VercelResponse) {
   if (req.method !== "POST") {
     return res.status(405).json({ error: "Method not allowed" })
   }
@@ -12,12 +9,15 @@ export default async function handler(
     const { to, subject, html } = req.body
 
     if (!to || !subject || !html) {
-      return res.status(400).json({ error: "Missing required fields: to, subject, html" })
+      return res
+        .status(400)
+        .json({ error: "Missing required fields: to, subject, html" })
     }
 
     const apiKey = process.env.RESEND_API_KEY ?? ""
     const fromName = process.env.EMAIL_FROM_NAME ?? "BeepBeepCity"
-    const fromEmail = process.env.EMAIL_FROM_ADDRESS ?? "contact@ohmydev.fr"
+    const fromEmail =
+      process.env.EMAIL_FROM_ADDRESS ?? "contact@beepbeepcity.com"
     const replyTo = process.env.EMAIL_REPLY_TO ?? fromEmail
 
     const response = await fetch("https://api.resend.com/emails", {
