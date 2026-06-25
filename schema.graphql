@@ -589,6 +589,7 @@ type Driver {
   slots(where: DriverSlotWhereInput! = {}, orderBy: [DriverSlotOrderByInput!]! = [], take: Int, skip: Int! = 0, cursor: DriverSlotWhereUniqueInput): [DriverSlot!]
   slotsCount(where: DriverSlotWhereInput! = {}): Int
   stripeAccountId: String
+  onboardingStatus: DriverOnboardingStatusType
   user: User
   updatedAt: DateTime
   createdAt: DateTime
@@ -597,6 +598,12 @@ type Driver {
 type DriverTripArroundType {
   distance: Int!
   trip: Trip
+}
+
+type DriverOnboardingStatusType {
+  chargesEnabled: Boolean
+  payoutsEnabled: Boolean
+  detailsSubmitted: Boolean
 }
 
 input DriverWhereUniqueInput {
@@ -1720,6 +1727,7 @@ type User {
   cards: [UserCardType]
   bankAccount: UserBankAccountType
   balance: Float
+  pendingBalance: Float
   payouts: [UserPayoutType]
   updatedAt: DateTime
   createdAt: DateTime
@@ -2673,7 +2681,15 @@ type Mutation {
   changé pendant la suppression, donc le re-login fonctionne).
   """
   reactivateMyAccount: Boolean!
-  addBankAccount(ownerFirstname: String!, ownerLastname: String!, iban: String!): ID
+
+  """
+  Génère un lien d'onboarding Stripe Connect Express pour le driver
+  courant. Crée le compte Express si manquant et persiste son ID sur
+  le Driver. Le mobile ouvre l'URL renvoyée dans un in-app browser :
+  le driver complète son KYC + son IBAN chez Stripe, puis revient sur
+  l'app via la sentinelle /ks/api/stripe-return.
+  """
+  getDriverOnboardingLink: StripeOnboardingLink
   deleteCard(cardId: ID!): Boolean!
   pay(paymentId: ID!, secure: Boolean! = true): PayType!
 }
@@ -3010,6 +3026,11 @@ type DeleteMyAccountResult {
   success: Boolean!
   reasonCode: String
   reasonMessage: String
+}
+
+type StripeOnboardingLink {
+  url: String!
+  accountId: String!
 }
 
 type PayType {

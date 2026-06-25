@@ -673,6 +673,7 @@ export type Driver = {
   locationCity?: Maybe<Scalars["String"]["output"]>
   locationCountry?: Maybe<Scalars["String"]["output"]>
   locationName?: Maybe<Scalars["String"]["output"]>
+  onboardingStatus?: Maybe<DriverOnboardingStatusType>
   radius?: Maybe<Scalars["Int"]["output"]>
   slots?: Maybe<Array<DriverSlot>>
   slotsCount?: Maybe<Scalars["Int"]["output"]>
@@ -711,6 +712,13 @@ export type DriverCreateInput = {
   stripeAccountId?: InputMaybe<Scalars["String"]["input"]>
   updatedAt?: InputMaybe<Scalars["DateTime"]["input"]>
   user?: InputMaybe<UserRelateToOneForCreateInput>
+}
+
+export type DriverOnboardingStatusType = {
+  __typename?: "DriverOnboardingStatusType"
+  chargesEnabled?: Maybe<Scalars["Boolean"]["output"]>
+  detailsSubmitted?: Maybe<Scalars["Boolean"]["output"]>
+  payoutsEnabled?: Maybe<Scalars["Boolean"]["output"]>
 }
 
 export type DriverOrderByInput = {
@@ -1466,7 +1474,6 @@ export type MessageWhereUniqueInput = {
 
 export type Mutation = {
   __typename?: "Mutation"
-  addBankAccount?: Maybe<Scalars["ID"]["output"]>
   addPushToken?: Maybe<AddPushTokenType>
   applyAffiliationCode: Affiliation
   authenticateUserWithPassword?: Maybe<UserAuthenticationWithPasswordResult>
@@ -1592,6 +1599,14 @@ export type Mutation = {
   deleteequipments?: Maybe<Array<Maybe<Equipment>>>
   enableUser?: Maybe<User>
   endSession: Scalars["Boolean"]["output"]
+  /**
+   * Génère un lien d'onboarding Stripe Connect Express pour le driver
+   * courant. Crée le compte Express si manquant et persiste son ID sur
+   * le Driver. Le mobile ouvre l'URL renvoyée dans un in-app browser :
+   * le driver complète son KYC + son IBAN chez Stripe, puis revient sur
+   * l'app via la sentinelle /ks/api/stripe-return.
+   */
+  getDriverOnboardingLink?: Maybe<StripeOnboardingLink>
   pay: PayType
   /**
    * Réactive le compte de l'utilisateur courant (annule le soft-delete
@@ -1658,12 +1673,6 @@ export type Mutation = {
   updateVehicules?: Maybe<Array<Maybe<Vehicule>>>
   updateequipments?: Maybe<Array<Maybe<Equipment>>>
   validateUserCode: Scalars["Boolean"]["output"]
-}
-
-export type MutationAddBankAccountArgs = {
-  iban: Scalars["String"]["input"]
-  ownerFirstname: Scalars["String"]["input"]
-  ownerLastname: Scalars["String"]["input"]
 }
 
 export type MutationAddPushTokenArgs = {
@@ -3663,6 +3672,12 @@ export type StringNullableFilter = {
   startsWith?: InputMaybe<Scalars["String"]["input"]>
 }
 
+export type StripeOnboardingLink = {
+  __typename?: "StripeOnboardingLink"
+  accountId: Scalars["String"]["output"]
+  url: Scalars["String"]["output"]
+}
+
 export type Ticket = {
   __typename?: "Ticket"
   createdAt?: Maybe<Scalars["DateTime"]["output"]>
@@ -4081,6 +4096,7 @@ export type User = {
   payments?: Maybe<Array<Payment>>
   paymentsCount?: Maybe<Scalars["Int"]["output"]>
   payouts?: Maybe<Array<Maybe<UserPayoutType>>>
+  pendingBalance?: Maybe<Scalars["Float"]["output"]>
   phoneNumber?: Maybe<Scalars["String"]["output"]>
   pushNotifications?: Maybe<Scalars["Boolean"]["output"]>
   pushTokens?: Maybe<Scalars["JSON"]["output"]>
