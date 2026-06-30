@@ -1600,11 +1600,12 @@ export type Mutation = {
   enableUser?: Maybe<User>
   endSession: Scalars["Boolean"]["output"]
   /**
-   * Génère un lien d'onboarding Stripe Connect Express pour le driver
-   * courant. Crée le compte Express si manquant et persiste son ID sur
-   * le Driver. Le mobile ouvre l'URL renvoyée dans un in-app browser :
-   * le driver complète son KYC + son IBAN chez Stripe, puis revient sur
-   * l'app via la sentinelle /ks/api/stripe-return.
+   * Génère un lien d'onboarding Stripe Connect pour le driver courant.
+   * L'URL renvoyée pointe vers une page **admin BeepBeepCity** qui héberge
+   * les Stripe Connect Embedded Components — l'utilisateur ne voit jamais
+   * 'stripe.com' : URL admin BBC, branding BBC, composants Stripe stylisés
+   * en thème BBC. Le mobile ouvre cette URL dans un in-app browser via
+   * WebBrowser.openBrowserAsync.
    */
   getDriverOnboardingLink?: Maybe<StripeOnboardingLink>
   pay: PayType
@@ -2927,6 +2928,15 @@ export type Query = {
   files?: Maybe<Array<File>>
   filesCount?: Maybe<Scalars["Int"]["output"]>
   getPendingCoursesCount: Scalars["Int"]["output"]
+  /**
+   * Échange un token d'onboarding signé (généré par
+   * getDriverOnboardingLink) contre une session Stripe Embedded Components.
+   * **Pas d'authentification Keystone requise** — le token HMAC est
+   * lui-même l'authentification (one-shot, 10 min, scopé au driver).
+   * Permet à l'admin web public de monter le composant sans cookies
+   * cross-origin.
+   */
+  getStripeAccountSession?: Maybe<StripeAccountSession>
   insurance?: Maybe<Insurance>
   insurances?: Maybe<Array<Insurance>>
   insurancesCount?: Maybe<Scalars["Int"]["output"]>
@@ -3182,6 +3192,10 @@ export type QueryFilesCountArgs = {
 export type QueryGetPendingCoursesCountArgs = {
   minusHours?: Scalars["Int"]["input"]
   mode: Scalars["String"]["input"]
+}
+
+export type QueryGetStripeAccountSessionArgs = {
+  token: Scalars["String"]["input"]
 }
 
 export type QueryInsuranceArgs = {
@@ -3670,6 +3684,21 @@ export type StringNullableFilter = {
   not?: InputMaybe<StringNullableFilter>
   notIn?: InputMaybe<Array<Scalars["String"]["input"]>>
   startsWith?: InputMaybe<Scalars["String"]["input"]>
+}
+
+export type StripeAccountSession = {
+  __typename?: "StripeAccountSession"
+  /**
+   * client_secret à passer à loadConnectAndInitialize côté admin pour
+   * monter les Connect Embedded Components.
+   */
+  clientSecret: Scalars["String"]["output"]
+  /**
+   * Stripe publishable key à passer à loadConnectAndInitialize. Renvoyée
+   * ici plutôt que stockée en clair dans l'admin pour pouvoir rotation
+   * côté back sans rebuild admin.
+   */
+  publishableKey: Scalars["String"]["output"]
 }
 
 export type StripeOnboardingLink = {

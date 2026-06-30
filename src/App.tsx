@@ -49,6 +49,16 @@ const PublicSupportPage = lazy(() =>
     default: m.PublicSupportPage,
   }))
 )
+const PublicOnboardingPage = lazy(() =>
+  import("@/pages/public-onboarding-page").then((m) => ({
+    default: m.PublicOnboardingPage,
+  }))
+)
+const PublicOnboardingSuccessPage = lazy(() =>
+  import("@/pages/public-onboarding-success-page").then((m) => ({
+    default: m.PublicOnboardingSuccessPage,
+  }))
+)
 const UsersPage = lazy(() =>
   import("@/pages/users-page").then((m) => ({ default: m.UsersPage }))
 )
@@ -109,6 +119,22 @@ export function App() {
               element={
                 <Suspense fallback={<PageFallback />}>
                   <PublicSupportPage />
+                </Suspense>
+              }
+            />
+            <Route
+              path="/public/onboarding/:token"
+              element={
+                <Suspense fallback={<PageFallback />}>
+                  <PublicOnboardingPage />
+                </Suspense>
+              }
+            />
+            <Route
+              path="/public/onboarding-success"
+              element={
+                <Suspense fallback={<PageFallback />}>
+                  <PublicOnboardingSuccessPage />
                 </Suspense>
               }
             />
