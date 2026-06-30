@@ -822,6 +822,33 @@ export type DriverSlotWhereUniqueInput = {
   id?: InputMaybe<Scalars["ID"]["input"]>
 }
 
+export type DriverStripeMutationResult = {
+  __typename?: "DriverStripeMutationResult"
+  /** Message d'erreur Stripe en clair (à afficher au driver). */
+  message?: Maybe<Scalars["String"]["output"]>
+  success: Scalars["Boolean"]["output"]
+}
+
+export type DriverStripeOnboardingState = {
+  __typename?: "DriverStripeOnboardingState"
+  /** Raison Stripe si compte désactivé (ex: requirements past_due). */
+  disabledReason?: Maybe<Scalars["String"]["output"]>
+  /** `payouts_enabled` côté Stripe — payouts possibles dès qu'à true. */
+  payoutsEnabled: Scalars["Boolean"]["output"]
+  /** Étapes restantes à compléter (mapping requirements Stripe). */
+  pendingSteps: Array<DriverStripeOnboardingStep>
+  /** ID du compte Stripe Custom (acct_xxx), null si pas encore créé. */
+  stripeAccountId?: Maybe<Scalars["String"]["output"]>
+}
+
+export type DriverStripeOnboardingStep =
+  | "ADDRESS"
+  | "BANK_ACCOUNT"
+  | "DOB"
+  | "ID_DOCUMENT_BACK"
+  | "ID_DOCUMENT_FRONT"
+  | "TOS_ACCEPTANCE"
+
 export type DriverTripArroundType = {
   __typename?: "DriverTripArroundType"
   distance: Scalars["Int"]["output"]
@@ -1474,6 +1501,10 @@ export type MessageWhereUniqueInput = {
 
 export type Mutation = {
   __typename?: "Mutation"
+  /** Étape acceptation des CGU Stripe (date + IP enregistrées). */
+  acceptDriverStripeTos: DriverStripeMutationResult
+  /** Étape IBAN (sera utilisé comme destination des payouts). */
+  addDriverStripeBankAccount: DriverStripeMutationResult
   addPushToken?: Maybe<AddPushTokenType>
   applyAffiliationCode: Affiliation
   authenticateUserWithPassword?: Maybe<UserAuthenticationWithPasswordResult>
@@ -1599,15 +1630,6 @@ export type Mutation = {
   deleteequipments?: Maybe<Array<Maybe<Equipment>>>
   enableUser?: Maybe<User>
   endSession: Scalars["Boolean"]["output"]
-  /**
-   * Génère un lien d'onboarding Stripe Connect pour le driver courant.
-   * L'URL renvoyée pointe vers une page **admin BeepBeepCity** qui héberge
-   * les Stripe Connect Embedded Components — l'utilisateur ne voit jamais
-   * 'stripe.com' : URL admin BBC, branding BBC, composants Stripe stylisés
-   * en thème BBC. Le mobile ouvre cette URL dans un in-app browser via
-   * WebBrowser.openBrowserAsync.
-   */
-  getDriverOnboardingLink?: Maybe<StripeOnboardingLink>
   pay: PayType
   /**
    * Réactive le compte de l'utilisateur courant (annule le soft-delete
@@ -1631,6 +1653,10 @@ export type Mutation = {
   updateDriver?: Maybe<Driver>
   updateDriverSlot?: Maybe<DriverSlot>
   updateDriverSlots?: Maybe<Array<Maybe<DriverSlot>>>
+  /** Étape adresse personnelle (line1, postal_code, city). */
+  updateDriverStripeAddress: DriverStripeMutationResult
+  /** Étape date de naissance (utile si User.birthdayDatetimeUtc absente). */
+  updateDriverStripeDob: DriverStripeMutationResult
   updateDrivers?: Maybe<Array<Maybe<Driver>>>
   updateDrivingLicense?: Maybe<DrivingLicense>
   updateDrivingLicenses?: Maybe<Array<Maybe<DrivingLicense>>>
@@ -1673,7 +1699,17 @@ export type Mutation = {
   updateVehicule?: Maybe<Vehicule>
   updateVehicules?: Maybe<Array<Maybe<Vehicule>>>
   updateequipments?: Maybe<Array<Maybe<Equipment>>>
+  /**
+   * Upload pièce d'identité côté Stripe. `fileId` est l'ID d'un File
+   * déjà uploadé via /ks/api/files (mécanisme existant). On forward
+   * l'image vers Stripe Files API.
+   */
+  uploadDriverStripeIdDocument: DriverStripeMutationResult
   validateUserCode: Scalars["Boolean"]["output"]
+}
+
+export type MutationAddDriverStripeBankAccountArgs = {
+  iban: Scalars["String"]["input"]
 }
 
 export type MutationAddPushTokenArgs = {
@@ -2210,6 +2246,18 @@ export type MutationUpdateDriverSlotsArgs = {
   data: Array<DriverSlotUpdateArgs>
 }
 
+export type MutationUpdateDriverStripeAddressArgs = {
+  city: Scalars["String"]["input"]
+  line1: Scalars["String"]["input"]
+  postalCode: Scalars["String"]["input"]
+}
+
+export type MutationUpdateDriverStripeDobArgs = {
+  day: Scalars["Int"]["input"]
+  month: Scalars["Int"]["input"]
+  year: Scalars["Int"]["input"]
+}
+
 export type MutationUpdateDriversArgs = {
   data: Array<DriverUpdateArgs>
 }
@@ -2397,6 +2445,11 @@ export type MutationUpdateVehiculesArgs = {
 
 export type MutationUpdateequipmentsArgs = {
   data: Array<EquipmentUpdateArgs>
+}
+
+export type MutationUploadDriverStripeIdDocumentArgs = {
+  fileId: Scalars["ID"]["input"]
+  side: Scalars["String"]["input"]
 }
 
 export type MutationValidateUserCodeArgs = {
@@ -2915,6 +2968,12 @@ export type Query = {
   driverSlot?: Maybe<DriverSlot>
   driverSlots?: Maybe<Array<DriverSlot>>
   driverSlotsCount?: Maybe<Scalars["Int"]["output"]>
+  /**
+   * Renvoie l'état d'onboarding Stripe du driver courant : pendingSteps
+   * + statut payouts. Création paresseuse du compte Stripe au premier
+   * appel (pas au signup). Pré-rempli avec les données User connues.
+   */
+  driverStripeOnboarding: DriverStripeOnboardingState
   drivers?: Maybe<Array<Driver>>
   driversCount?: Maybe<Scalars["Int"]["output"]>
   drivingLicense?: Maybe<DrivingLicense>
@@ -2928,15 +2987,6 @@ export type Query = {
   files?: Maybe<Array<File>>
   filesCount?: Maybe<Scalars["Int"]["output"]>
   getPendingCoursesCount: Scalars["Int"]["output"]
-  /**
-   * Échange un token d'onboarding signé (généré par
-   * getDriverOnboardingLink) contre une session Stripe Embedded Components.
-   * **Pas d'authentification Keystone requise** — le token HMAC est
-   * lui-même l'authentification (one-shot, 10 min, scopé au driver).
-   * Permet à l'admin web public de monter le composant sans cookies
-   * cross-origin.
-   */
-  getStripeAccountSession?: Maybe<StripeAccountSession>
   insurance?: Maybe<Insurance>
   insurances?: Maybe<Array<Insurance>>
   insurancesCount?: Maybe<Scalars["Int"]["output"]>
@@ -3192,10 +3242,6 @@ export type QueryFilesCountArgs = {
 export type QueryGetPendingCoursesCountArgs = {
   minusHours?: Scalars["Int"]["input"]
   mode: Scalars["String"]["input"]
-}
-
-export type QueryGetStripeAccountSessionArgs = {
-  token: Scalars["String"]["input"]
 }
 
 export type QueryInsuranceArgs = {
@@ -3684,27 +3730,6 @@ export type StringNullableFilter = {
   not?: InputMaybe<StringNullableFilter>
   notIn?: InputMaybe<Array<Scalars["String"]["input"]>>
   startsWith?: InputMaybe<Scalars["String"]["input"]>
-}
-
-export type StripeAccountSession = {
-  __typename?: "StripeAccountSession"
-  /**
-   * client_secret à passer à loadConnectAndInitialize côté admin pour
-   * monter les Connect Embedded Components.
-   */
-  clientSecret: Scalars["String"]["output"]
-  /**
-   * Stripe publishable key à passer à loadConnectAndInitialize. Renvoyée
-   * ici plutôt que stockée en clair dans l'admin pour pouvoir rotation
-   * côté back sans rebuild admin.
-   */
-  publishableKey: Scalars["String"]["output"]
-}
-
-export type StripeOnboardingLink = {
-  __typename?: "StripeOnboardingLink"
-  accountId: Scalars["String"]["output"]
-  url: Scalars["String"]["output"]
 }
 
 export type Ticket = {

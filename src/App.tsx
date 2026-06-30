@@ -49,16 +49,6 @@ const PublicSupportPage = lazy(() =>
     default: m.PublicSupportPage,
   }))
 )
-const PublicOnboardingPage = lazy(() =>
-  import("@/pages/public-onboarding-page").then((m) => ({
-    default: m.PublicOnboardingPage,
-  }))
-)
-const PublicOnboardingSuccessPage = lazy(() =>
-  import("@/pages/public-onboarding-success-page").then((m) => ({
-    default: m.PublicOnboardingSuccessPage,
-  }))
-)
 const UsersPage = lazy(() =>
   import("@/pages/users-page").then((m) => ({ default: m.UsersPage }))
 )
@@ -86,24 +76,6 @@ function PageFallback() {
   return (
     <div className="flex h-[60vh] items-center justify-center text-muted-foreground">
       Chargement…
-    </div>
-  )
-}
-
-/**
- * Fallback Suspense dédié aux routes publiques /public/onboarding/*.
- * Plein écran, branding BBC sombre, spinner vert. Important : ce fallback
- * s'affiche pendant le chunk JS lazy load, AVANT que le composant lui-même
- * monte. Le retour client était : "j'ai cru que ça marchait pas" parce que
- * le fallback générique au-dessus était un texte timide sur fond clair.
- */
-function OnboardingFallback() {
-  return (
-    <div className="flex min-h-screen items-center justify-center bg-[#161822] text-white">
-      <div className="text-center">
-        <div className="mx-auto mb-4 h-12 w-12 animate-spin rounded-full border-4 border-[#21EDA9] border-t-transparent" />
-        <p className="text-white/80">Chargement de votre espace…</p>
-      </div>
     </div>
   )
 }
@@ -137,22 +109,6 @@ export function App() {
               element={
                 <Suspense fallback={<PageFallback />}>
                   <PublicSupportPage />
-                </Suspense>
-              }
-            />
-            <Route
-              path="/public/onboarding/:token"
-              element={
-                <Suspense fallback={<OnboardingFallback />}>
-                  <PublicOnboardingPage />
-                </Suspense>
-              }
-            />
-            <Route
-              path="/public/onboarding-success"
-              element={
-                <Suspense fallback={<OnboardingFallback />}>
-                  <PublicOnboardingSuccessPage />
                 </Suspense>
               }
             />

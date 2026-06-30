@@ -2682,15 +2682,24 @@ type Mutation {
   """
   reactivateMyAccount: Boolean!
 
+  """Étape adresse personnelle (line1, postal_code, city)."""
+  updateDriverStripeAddress(line1: String!, postalCode: String!, city: String!): DriverStripeMutationResult!
+
+  """Étape date de naissance (utile si User.birthdayDatetimeUtc absente)."""
+  updateDriverStripeDob(day: Int!, month: Int!, year: Int!): DriverStripeMutationResult!
+
   """
-  Génère un lien d'onboarding Stripe Connect pour le driver courant.
-  L'URL renvoyée pointe vers une page **admin BeepBeepCity** qui héberge
-  les Stripe Connect Embedded Components — l'utilisateur ne voit jamais
-  'stripe.com' : URL admin BBC, branding BBC, composants Stripe stylisés
-  en thème BBC. Le mobile ouvre cette URL dans un in-app browser via
-  WebBrowser.openBrowserAsync.
+  Upload pièce d'identité côté Stripe. `fileId` est l'ID d'un File
+  déjà uploadé via /ks/api/files (mécanisme existant). On forward
+  l'image vers Stripe Files API.
   """
-  getDriverOnboardingLink: StripeOnboardingLink
+  uploadDriverStripeIdDocument(fileId: ID!, side: String!): DriverStripeMutationResult!
+
+  """Étape IBAN (sera utilisé comme destination des payouts)."""
+  addDriverStripeBankAccount(iban: String!): DriverStripeMutationResult!
+
+  """Étape acceptation des CGU Stripe (date + IP enregistrées)."""
+  acceptDriverStripeTos: DriverStripeMutationResult!
   deleteCard(cardId: ID!): Boolean!
   pay(paymentId: ID!, secure: Boolean! = true): PayType!
 }
@@ -2795,14 +2804,11 @@ type Query {
   tripPrice(startDatetimeUtc: DateTime!, node1: NodeInput!, node2: NodeInput!): TripDetailsType!
 
   """
-  Échange un token d'onboarding signé (généré par
-  getDriverOnboardingLink) contre une session Stripe Embedded Components.
-  **Pas d'authentification Keystone requise** — le token HMAC est
-  lui-même l'authentification (one-shot, 10 min, scopé au driver).
-  Permet à l'admin web public de monter le composant sans cookies
-  cross-origin.
+  Renvoie l'état d'onboarding Stripe du driver courant : pendingSteps
+  + statut payouts. Création paresseuse du compte Stripe au premier
+  appel (pas au signup). Pré-rempli avec les données User connues.
   """
-  getStripeAccountSession(token: String!): StripeAccountSession
+  driverStripeOnboarding: DriverStripeOnboardingState!
 
   """
   CA agrégé sur courses en state="paid" entre from..to (bornes incluses).
@@ -3039,24 +3045,34 @@ type DeleteMyAccountResult {
   reasonMessage: String
 }
 
-type StripeOnboardingLink {
-  url: String!
-  accountId: String!
+type DriverStripeOnboardingState {
+  """ID du compte Stripe Custom (acct_xxx), null si pas encore créé."""
+  stripeAccountId: String
+
+  """Étapes restantes à compléter (mapping requirements Stripe)."""
+  pendingSteps: [DriverStripeOnboardingStep!]!
+
+  """`payouts_enabled` côté Stripe — payouts possibles dès qu'à true."""
+  payoutsEnabled: Boolean!
+
+  """Raison Stripe si compte désactivé (ex: requirements past_due)."""
+  disabledReason: String
 }
 
-type StripeAccountSession {
-  """
-  client_secret à passer à loadConnectAndInitialize côté admin pour
-  monter les Connect Embedded Components.
-  """
-  clientSecret: String!
+enum DriverStripeOnboardingStep {
+  ADDRESS
+  DOB
+  ID_DOCUMENT_FRONT
+  ID_DOCUMENT_BACK
+  BANK_ACCOUNT
+  TOS_ACCEPTANCE
+}
 
-  """
-  Stripe publishable key à passer à loadConnectAndInitialize. Renvoyée
-  ici plutôt que stockée en clair dans l'admin pour pouvoir rotation
-  côté back sans rebuild admin.
-  """
-  publishableKey: String!
+type DriverStripeMutationResult {
+  success: Boolean!
+
+  """Message d'erreur Stripe en clair (à afficher au driver)."""
+  message: String
 }
 
 type PayType {
