@@ -26,8 +26,10 @@ type AdminDocument = NonNullable<
 
 const DOC_FILTERS: { value: DocFilter; label: string }[] = [
   { value: "all", label: "Tous" },
-  { value: "pending", label: "En attente" },
-  { value: "processing", label: "En cours" },
+  // `pending` retiré du select : tous les docs utilisent désormais
+  // `processing` (cf back/DrivingLicense.ts). Le filtre "À vérifier"
+  // remonte les docs uploadés en attente de validation, peu importe le doc.
+  { value: "processing", label: "À vérifier" },
   { value: "verified", label: "Vérifié" },
   { value: "rejected", label: "Rejeté" },
 ]

@@ -4,23 +4,27 @@ import { z } from "zod"
  * États possibles d'un document driver côté Keystone.
  * Source de vérité : back/api/src/models/{DrivingLicense,Insurance,Certificate,RegistrationDocument}.ts
  *
- * - `pending`    : soumis, en attente de validation admin (état initial)
- * - `processing` : en cours d'examen
+ * - `processing` : uploadé, à vérifier par un admin (état initial)
  * - `verified`   : validé par un admin
+ * - `rejected`   : rejeté par un admin (driver doit re-uploader ; au prochain
+ *                  upload, `previousPicture` est posée → diff visuel admin)
+ *
+ * (`pending` retiré lors de l'unification — était un doublon historique sur
+ * DrivingLicense uniquement, sémantiquement identique à `processing`.)
  *
  * L'expiration n'est pas un state — c'est un champ séparé `expirationDatetimeUtc` +
  * un champ virtuel `isExpired` (sur Insurance et Certificate uniquement).
  */
-export const DOCUMENT_STATES = ["pending", "processing", "verified"] as const
+export const DOCUMENT_STATES = ["processing", "verified", "rejected"] as const
 
 export const documentStateSchema = z.enum(DOCUMENT_STATES)
 export type DocumentState = z.infer<typeof documentStateSchema>
 
 /** Constantes typées pour usage côté code (évite les strings magiques) */
 export const DOCUMENT_STATE = {
-  PENDING: "pending",
   PROCESSING: "processing",
   VERIFIED: "verified",
+  REJECTED: "rejected",
 } as const satisfies Record<string, DocumentState>
 
 /**
@@ -31,9 +35,7 @@ export const documentMutationInputSchema = z.object({
   state: documentStateSchema,
 })
 
-export type DocumentMutationInput = z.infer<
-  typeof documentMutationInputSchema
->
+export type DocumentMutationInput = z.infer<typeof documentMutationInputSchema>
 
 /**
  * Type d'un document tel que retourné par les queries Keystone.

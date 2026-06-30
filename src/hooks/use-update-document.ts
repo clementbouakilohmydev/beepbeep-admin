@@ -60,11 +60,14 @@ export function useUpdateDocument(type: DocumentType) {
   const validate = (id: string) =>
     mutate({ where: { id }, data: { state: DOCUMENT_STATE.VERIFIED } } as never)
 
-  // "Rejeter" remet le doc en file d'attente côté back (pas d'état "rejected" sur les
-  // documents, ils ont seulement pending → processing → verified). Le driver verra son
-  // doc redevenir "à valider" et pourra renvoyer une nouvelle version.
+  // "Rejeter" passe le doc en `rejected`. Le driver est notifié et doit
+  // ré-uploader sa pièce. Au prochain upload, le model back conserve
+  // `previousPicture` → permet à l'admin de voir l'ancienne et la nouvelle
+  // côte à côte (diff visuel) sans avoir à mémoriser pourquoi il avait
+  // rejeté. Cf models/{DrivingLicense,Insurance,Certificate,
+  // RegistrationDocument}.ts hook resolveInput.
   const reject = (id: string) =>
-    mutate({ where: { id }, data: { state: DOCUMENT_STATE.PENDING } } as never)
+    mutate({ where: { id }, data: { state: DOCUMENT_STATE.REJECTED } } as never)
 
   return { validate, reject, isPending }
 }

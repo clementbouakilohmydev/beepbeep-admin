@@ -5,18 +5,24 @@ type DocumentStateBadgeProps = {
   state: string | null | undefined
 }
 
-const STATE_CONFIG: Record<string, { label: string; variant: StatusBadgeProps["variant"] }> = {
+const STATE_CONFIG: Record<
+  string,
+  { label: string; variant: StatusBadgeProps["variant"] }
+> = {
   verified: {
     label: "Vérifié",
     variant: "primary",
   },
+  // `pending` retiré : tous les docs utilisent désormais `processing`
+  // (cf back/DrivingLicense.ts). Garder une entrée de fallback pour les
+  // anciennes rows si la migration SQL n'a pas encore tourné.
   pending: {
-    label: "En attente",
+    label: "À vérifier",
     variant: "yellow",
   },
   processing: {
-    label: "En cours",
-    variant: "blue",
+    label: "À vérifier",
+    variant: "yellow",
   },
   todo: {
     label: "À faire",
