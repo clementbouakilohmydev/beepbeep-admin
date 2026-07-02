@@ -49,6 +49,11 @@ const PublicSupportPage = lazy(() =>
     default: m.PublicSupportPage,
   }))
 )
+const PublicStripeReturnPage = lazy(() =>
+  import("@/pages/public-stripe-return-page").then((m) => ({
+    default: m.PublicStripeReturnPage,
+  }))
+)
 const UsersPage = lazy(() =>
   import("@/pages/users-page").then((m) => ({ default: m.UsersPage }))
 )
@@ -109,6 +114,14 @@ export function App() {
               element={
                 <Suspense fallback={<PageFallback />}>
                   <PublicSupportPage />
+                </Suspense>
+              }
+            />
+            <Route
+              path="/public/stripe-return"
+              element={
+                <Suspense fallback={<PageFallback />}>
+                  <PublicStripeReturnPage />
                 </Suspense>
               }
             />
