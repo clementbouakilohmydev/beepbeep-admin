@@ -2682,24 +2682,14 @@ type Mutation {
   """
   reactivateMyAccount: Boolean!
 
-  """Étape adresse personnelle (line1, postal_code, city)."""
-  updateDriverStripeAddress(line1: String!, postalCode: String!, city: String!): DriverStripeMutationResult!
-
-  """Étape date de naissance (utile si User.birthdayDatetimeUtc absente)."""
-  updateDriverStripeDob(day: Int!, month: Int!, year: Int!): DriverStripeMutationResult!
-
   """
-  Upload pièce d'identité côté Stripe. `fileId` est l'ID d'un File
-  déjà uploadé via /ks/api/files (mécanisme existant). On forward
-  l'image vers Stripe Files API.
+  Génère un lien d'onboarding Stripe Connect Express pour le driver
+  courant. Crée le compte Express si manquant et persiste son ID sur
+  le Driver. Le mobile ouvre l'URL renvoyée dans un in-app browser :
+  le driver complète son KYC + son IBAN chez Stripe, puis revient sur
+  l'app via la sentinelle /ks/api/stripe-return.
   """
-  uploadDriverStripeIdDocument(fileId: ID!, side: String!): DriverStripeMutationResult!
-
-  """Étape IBAN (sera utilisé comme destination des payouts)."""
-  addDriverStripeBankAccount(iban: String!): DriverStripeMutationResult!
-
-  """Étape acceptation des CGU Stripe (date + IP enregistrées)."""
-  acceptDriverStripeTos: DriverStripeMutationResult!
+  getDriverOnboardingLink: StripeOnboardingLink
   deleteCard(cardId: ID!): Boolean!
   pay(paymentId: ID!, secure: Boolean! = true): PayType!
 }
@@ -2802,13 +2792,6 @@ type Query {
   echo(message: String!): String!
   getPendingCoursesCount(mode: String!, minusHours: Int! = 2): Int!
   tripPrice(startDatetimeUtc: DateTime!, node1: NodeInput!, node2: NodeInput!): TripDetailsType!
-
-  """
-  Renvoie l'état d'onboarding Stripe du driver courant : pendingSteps
-  + statut payouts. Création paresseuse du compte Stripe au premier
-  appel (pas au signup). Pré-rempli avec les données User connues.
-  """
-  driverStripeOnboarding: DriverStripeOnboardingState!
 
   """
   CA agrégé sur courses en state="paid" entre from..to (bornes incluses).
@@ -3045,34 +3028,9 @@ type DeleteMyAccountResult {
   reasonMessage: String
 }
 
-type DriverStripeOnboardingState {
-  """ID du compte Stripe Custom (acct_xxx), null si pas encore créé."""
-  stripeAccountId: String
-
-  """Étapes restantes à compléter (mapping requirements Stripe)."""
-  pendingSteps: [DriverStripeOnboardingStep!]!
-
-  """`payouts_enabled` côté Stripe — payouts possibles dès qu'à true."""
-  payoutsEnabled: Boolean!
-
-  """Raison Stripe si compte désactivé (ex: requirements past_due)."""
-  disabledReason: String
-}
-
-enum DriverStripeOnboardingStep {
-  ADDRESS
-  DOB
-  ID_DOCUMENT_FRONT
-  ID_DOCUMENT_BACK
-  BANK_ACCOUNT
-  TOS_ACCEPTANCE
-}
-
-type DriverStripeMutationResult {
-  success: Boolean!
-
-  """Message d'erreur Stripe en clair (à afficher au driver)."""
-  message: String
+type StripeOnboardingLink {
+  url: String!
+  accountId: String!
 }
 
 type PayType {
