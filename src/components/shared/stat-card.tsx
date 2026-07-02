@@ -1,5 +1,11 @@
 import { Link } from "react-router-dom"
-import { Card, CardContent, CardHeader, CardTitle, Skeleton } from "@/components/ui"
+import {
+  Card,
+  CardContent,
+  CardHeader,
+  CardTitle,
+  Skeleton,
+} from "@/components/ui"
 
 type StatCardProps = {
   title: string
@@ -7,6 +13,7 @@ type StatCardProps = {
   icon: React.ComponentType<{ className?: string }>
   iconClassName?: string
   isLoading: boolean
+  isError?: boolean
   to?: string
   subtitle?: string
 }
@@ -17,6 +24,7 @@ export function StatCard({
   icon: Icon,
   iconClassName,
   isLoading,
+  isError,
   to,
   subtitle,
 }: StatCardProps) {
@@ -33,6 +41,15 @@ export function StatCard({
       <CardContent>
         {isLoading ? (
           <Skeleton className="h-7 w-12 sm:h-9 sm:w-16" />
+        ) : isError ? (
+          <>
+            <div className="text-2xl font-bold text-muted-foreground sm:text-3xl">
+              —
+            </div>
+            <p className="mt-1 text-xs text-destructive">
+              Erreur de chargement
+            </p>
+          </>
         ) : (
           <>
             <div className="text-2xl font-bold sm:text-3xl">{value}</div>

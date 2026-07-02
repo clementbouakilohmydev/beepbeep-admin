@@ -1,8 +1,46 @@
 import type { VercelRequest, VercelResponse } from "@vercel/node"
 
+const AUTH_QUERY = `query { authenticatedItem { ... on User { id isAdmin } } }`
+
+/**
+ * Vérifie que la requête provient d'un admin authentifié Keystone.
+ * On relaie le Bearer token du client vers l'API GraphQL du back et on
+ * exige `authenticatedItem.isAdmin`. Sans ça l'endpoint d'envoi d'email
+ * serait ouvert à n'importe qui (spam/abus via Resend).
+ */
+async function isAuthenticatedAdmin(authHeader: string | undefined) {
+  if (!authHeader?.startsWith("Bearer ")) return false
+
+  const apiUrl = process.env.VITE_API_URL
+  if (!apiUrl) return false
+
+  try {
+    const response = await fetch(apiUrl, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: authHeader,
+      },
+      body: JSON.stringify({ query: AUTH_QUERY }),
+    })
+    if (!response.ok) return false
+    const json = (await response.json()) as {
+      data?: { authenticatedItem?: { id?: string; isAdmin?: boolean } | null }
+    }
+    return json.data?.authenticatedItem?.isAdmin === true
+  } catch {
+    return false
+  }
+}
+
 export default async function handler(req: VercelRequest, res: VercelResponse) {
   if (req.method !== "POST") {
     return res.status(405).json({ error: "Method not allowed" })
+  }
+
+  const authorized = await isAuthenticatedAdmin(req.headers.authorization)
+  if (!authorized) {
+    return res.status(401).json({ error: "Unauthorized" })
   }
 
   try {

@@ -45,6 +45,15 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   const user = parseAuthUser(data?.authenticatedItem)
 
+  // Token présent mais `authenticatedItem` null une fois le chargement fini →
+  // le token est invalide/expiré côté back. On purge comme pour auth:expired
+  // (sinon l'app reste bloquée avec un token mort en localStorage).
+  useEffect(() => {
+    if (!isLoading && token && !data?.authenticatedItem) {
+      window.dispatchEvent(new Event("auth:expired"))
+    }
+  }, [isLoading, token, data?.authenticatedItem])
+
   const logout = () => {
     endSession(undefined as never, {
       onSettled: () => {

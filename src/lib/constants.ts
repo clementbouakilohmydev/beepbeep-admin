@@ -1,7 +1,10 @@
+// LOCALE / MAX_RATING sont canoniques dans BEEP/shared/ (copie auto-générée
+// dans src/shared/constants.ts) — on les ré-exporte pour éviter un doublon
+// qui pourrait diverger.
+export { LOCALE, MAX_RATING } from "@/shared/constants"
+
 export const SESSION_TOKEN_KEY = "session-token"
-export const MAX_RATING = 5
 export const PAGE_SIZE = 10
-export const LOCALE = "fr-FR" as const
 export const CHART_DAYS = 30
 
 export const DOCUMENT_LABELS = {

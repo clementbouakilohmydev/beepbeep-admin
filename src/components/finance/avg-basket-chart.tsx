@@ -4,7 +4,7 @@ import { mapDailyAggregatesToChartData } from "@/lib/chart"
 import { CHART_DAYS } from "@/lib/constants"
 
 export function AvgBasketChart() {
-  const { data, isLoading } = useGetAdminDailyAggregatesQuery({
+  const { data, isLoading, isError } = useGetAdminDailyAggregatesQuery({
     days: CHART_DAYS,
   })
   const chartData = mapDailyAggregatesToChartData(
@@ -21,6 +21,7 @@ export function AvgBasketChart() {
       color="var(--color-chart-1)"
       configLabel="Panier moyen"
       isLoading={isLoading}
+      isError={isError}
       formatter={(v) => `${v.toFixed(2)} \u20AC`}
     />
   )

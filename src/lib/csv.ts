@@ -4,10 +4,18 @@
  * RFC 4180 avec guillemets si nécessaire, header + lignes.
  */
 
-/** Sérialise une cellule en respectant RFC 4180 (quotes + escape). */
+/**
+ * Sérialise une cellule en respectant RFC 4180 (quotes + escape).
+ * Protection contre l'injection de formules : Excel/Sheets exécutent une
+ * cellule commençant par `=`, `+`, `-`, `@` — on la préfixe d'une apostrophe
+ * pour la neutraliser (l'apostrophe n'apparaît pas dans le tableur).
+ */
 function escapeCell(value: unknown): string {
   if (value == null) return ""
-  const str = String(value)
+  let str = String(value)
+  if (/^[=+\-@]/.test(str)) {
+    str = `'${str}`
+  }
   const needsQuote = /[",\n\r;]/.test(str)
   if (!needsQuote) return str
   return `"${str.replace(/"/g, '""')}"`

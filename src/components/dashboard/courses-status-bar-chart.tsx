@@ -5,7 +5,13 @@ import {
   ChartTooltip,
   ChartTooltipContent,
 } from "@/components/ui/chart"
-import { Card, CardContent, CardHeader, CardTitle, Skeleton } from "@/components/ui"
+import {
+  Card,
+  CardContent,
+  CardHeader,
+  CardTitle,
+  Skeleton,
+} from "@/components/ui"
 
 const chartConfig = {
   count: { label: "Courses" },
@@ -26,11 +32,13 @@ type CoursesStatusBarChartProps = {
     cancelled?: number | null
   }
   isLoading: boolean
+  isError?: boolean
 }
 
 export function CoursesStatusBarChart({
   data,
   isLoading,
+  isError,
 }: CoursesStatusBarChartProps) {
   const chartData = [
     { name: "En cours", count: data?.inProgress ?? 0 },
@@ -49,6 +57,10 @@ export function CoursesStatusBarChart({
       <CardContent>
         {isLoading ? (
           <Skeleton className="h-[200px] w-full" />
+        ) : isError ? (
+          <div className="flex h-[200px] w-full items-center justify-center text-sm text-destructive">
+            Erreur de chargement
+          </div>
         ) : (
           <ChartContainer config={chartConfig} className="h-[200px] w-full">
             <BarChart data={chartData}>

@@ -5,7 +5,13 @@ import {
   ChartTooltip,
   ChartTooltipContent,
 } from "@/components/ui/chart"
-import { Card, CardContent, CardHeader, CardTitle, Skeleton } from "@/components/ui"
+import {
+  Card,
+  CardContent,
+  CardHeader,
+  CardTitle,
+  Skeleton,
+} from "@/components/ui"
 
 type AreaChartCardProps = {
   title: string
@@ -18,6 +24,7 @@ type AreaChartCardProps = {
   color: string
   configLabel: string
   isLoading: boolean
+  isError?: boolean
   height?: number
   formatter?: (value: number) => string
 }
@@ -29,6 +36,7 @@ export function AreaChartCard({
   color,
   configLabel,
   isLoading,
+  isError,
   height = 200,
   formatter,
 }: AreaChartCardProps) {
@@ -44,14 +52,55 @@ export function AreaChartCard({
       <CardContent>
         {isLoading ? (
           <Skeleton className="w-full" style={{ height }} />
+        ) : isError ? (
+          <div
+            className="flex w-full items-center justify-center text-sm text-destructive"
+            style={{ height }}
+          >
+            Erreur de chargement
+          </div>
         ) : (
-          <ChartContainer config={chartConfig} className="w-full" style={{ height }}>
+          <ChartContainer
+            config={chartConfig}
+            className="w-full"
+            style={{ height }}
+          >
             <AreaChart data={data}>
               <CartesianGrid strokeDasharray="3 3" vertical={false} />
-              <XAxis dataKey="date" tickLine={false} axisLine={false} fontSize={11} interval="preserveStartEnd" />
-              <YAxis tickLine={false} axisLine={false} fontSize={11} allowDecimals={false} width={35} />
-              <ChartTooltip content={<ChartTooltipContent formatter={formatter ? (value) => formatter(Number(value)) : undefined} />} />
-              <Area type="monotone" dataKey={dataKey} name={dataKey} stroke={color} fill={color} fillOpacity={0.15} strokeWidth={2} />
+              <XAxis
+                dataKey="date"
+                tickLine={false}
+                axisLine={false}
+                fontSize={11}
+                interval="preserveStartEnd"
+              />
+              <YAxis
+                tickLine={false}
+                axisLine={false}
+                fontSize={11}
+                allowDecimals={false}
+                width={35}
+              />
+              <ChartTooltip
+                content={
+                  <ChartTooltipContent
+                    formatter={
+                      formatter
+                        ? (value) => formatter(Number(value))
+                        : undefined
+                    }
+                  />
+                }
+              />
+              <Area
+                type="monotone"
+                dataKey={dataKey}
+                name={dataKey}
+                stroke={color}
+                fill={color}
+                fillOpacity={0.15}
+                strokeWidth={2}
+              />
             </AreaChart>
           </ChartContainer>
         )}

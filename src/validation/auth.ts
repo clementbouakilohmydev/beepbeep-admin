@@ -50,9 +50,15 @@ export const loginFailureSchema = z.object({
   message: z.string(),
 })
 
-export const loginResponseSchema = z.discriminatedUnion("__typename", [
-  loginSuccessSchema.required({ __typename: true }),
-  loginFailureSchema.required({ __typename: true }),
+/**
+ * Union non-discriminée : le document GraphQL du login ne sélectionne pas
+ * `__typename`, donc on discrimine sur la présence de `sessionToken`
+ * (succès) vs `message` (échec). L'ordre compte — le succès est testé en
+ * premier.
+ */
+export const loginResponseSchema = z.union([
+  loginSuccessSchema,
+  loginFailureSchema,
 ])
 
 export type LoginResponseParsed = z.infer<typeof loginResponseSchema>

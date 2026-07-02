@@ -4,7 +4,7 @@ import { mapTrendToChartData } from "@/lib/chart"
 import { CHART_DAYS } from "@/lib/constants"
 
 export function TicketsTrendChart() {
-  const { data, isLoading } = useGetAdminTicketsTrendQuery({
+  const { data, isLoading, isError } = useGetAdminTicketsTrendQuery({
     days: CHART_DAYS,
   })
   const chartData = mapTrendToChartData(data?.adminTicketsTrend, CHART_DAYS)
@@ -17,6 +17,7 @@ export function TicketsTrendChart() {
       color="var(--color-destructive)"
       configLabel="Tickets"
       isLoading={isLoading}
+      isError={isError}
     />
   )
 }

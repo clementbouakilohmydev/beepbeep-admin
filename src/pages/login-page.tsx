@@ -15,6 +15,7 @@ import {
 import { AuthLayout } from "@/components/shared/auth-layout"
 import { useAuthenticateUserWithPasswordMutation } from "@/gql/generated"
 import { SESSION_TOKEN_KEY } from "@/lib/constants"
+import { loginResponseSchema } from "@/validation/auth"
 
 export function LoginPage() {
   const { isAuthenticated, isLoading } = useAuth()
@@ -26,25 +27,26 @@ export function LoginPage() {
 
   const { mutate: login, isPending } = useAuthenticateUserWithPasswordMutation({
     onSuccess: async (data) => {
-      const result = data.authenticateUserWithPassword
-      if (!result) {
+      const parsed = loginResponseSchema.safeParse(
+        data.authenticateUserWithPassword
+      )
+      if (!parsed.success) {
         toast.error("Une erreur est survenue")
         return
       }
 
-      if ("message" in result) {
+      const result = parsed.data
+      if (!("sessionToken" in result)) {
         toast.error("E-mail ou mot de passe incorrect")
         return
       }
 
-      if ("sessionToken" in result) {
-        localStorage.setItem(SESSION_TOKEN_KEY, result.sessionToken)
-        window.dispatchEvent(new Event("auth:token-changed"))
-        await queryClient.invalidateQueries({
-          queryKey: ["GetAuthenticatedItem"],
-        })
-        navigate("/")
-      }
+      localStorage.setItem(SESSION_TOKEN_KEY, result.sessionToken)
+      window.dispatchEvent(new Event("auth:token-changed"))
+      await queryClient.invalidateQueries({
+        queryKey: ["GetAuthenticatedItem"],
+      })
+      navigate("/")
     },
     onError: () => {
       toast.error("Impossible de contacter le serveur")

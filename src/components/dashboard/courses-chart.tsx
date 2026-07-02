@@ -4,7 +4,7 @@ import { mapTrendToChartData } from "@/lib/chart"
 import { CHART_DAYS } from "@/lib/constants"
 
 export function CoursesChart() {
-  const { data, isLoading } = useGetAdminCoursesTrendQuery({
+  const { data, isLoading, isError } = useGetAdminCoursesTrendQuery({
     days: CHART_DAYS,
   })
   const chartData = mapTrendToChartData(data?.adminCoursesTrend, CHART_DAYS)
@@ -17,6 +17,7 @@ export function CoursesChart() {
       color="var(--color-primary)"
       configLabel="Courses"
       isLoading={isLoading}
+      isError={isError}
     />
   )
 }

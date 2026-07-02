@@ -3,8 +3,36 @@ import tailwindcss from "@tailwindcss/vite"
 import react from "@vitejs/plugin-react"
 import { defineConfig, loadEnv, type Plugin } from "vite"
 
+const AUTH_QUERY = `query { authenticatedItem { ... on User { id isAdmin } } }`
+
 function resendProxy(): Plugin {
   let envVars: Record<string, string> = {}
+
+  // Même protection que le handler Vercel (api/send-email.ts) : on relaie le
+  // Bearer token vers l'API Keystone et on exige un user isAdmin.
+  async function isAuthenticatedAdmin(authHeader: string | undefined) {
+    if (!authHeader?.startsWith("Bearer ")) return false
+    const apiUrl = envVars.VITE_API_URL
+    if (!apiUrl) return false
+    try {
+      const response = await fetch(apiUrl, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: authHeader,
+        },
+        body: JSON.stringify({ query: AUTH_QUERY }),
+      })
+      if (!response.ok) return false
+      const json = (await response.json()) as {
+        data?: { authenticatedItem?: { isAdmin?: boolean } | null }
+      }
+      return json.data?.authenticatedItem?.isAdmin === true
+    } catch {
+      return false
+    }
+  }
+
   return {
     name: "resend-proxy",
     configResolved(config) {
@@ -15,6 +43,16 @@ function resendProxy(): Plugin {
         if (req.method !== "POST") {
           res.statusCode = 405
           res.end(JSON.stringify({ error: "Method not allowed" }))
+          return
+        }
+
+        const authorized = await isAuthenticatedAdmin(
+          req.headers.authorization as string | undefined
+        )
+        if (!authorized) {
+          res.statusCode = 401
+          res.setHeader("Content-Type", "application/json")
+          res.end(JSON.stringify({ error: "Unauthorized" }))
           return
         }
 

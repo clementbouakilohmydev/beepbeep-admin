@@ -4,7 +4,7 @@ import { mapTrendToChartData } from "@/lib/chart"
 import { CHART_DAYS } from "@/lib/constants"
 
 export function RegistrationChart() {
-  const { data, isLoading } = useGetAdminUsersTrendQuery({
+  const { data, isLoading, isError } = useGetAdminUsersTrendQuery({
     days: CHART_DAYS,
   })
   const chartData = mapTrendToChartData(data?.adminUsersTrend, CHART_DAYS)
@@ -17,6 +17,7 @@ export function RegistrationChart() {
       color="var(--color-primary)"
       configLabel="Inscriptions"
       isLoading={isLoading}
+      isError={isError}
     />
   )
 }

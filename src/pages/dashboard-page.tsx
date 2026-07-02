@@ -51,50 +51,68 @@ export function DashboardPage() {
     refetch,
   } = useGetTicketsCountsQuery(
     {},
-    { refetchInterval: DASHBOARD_REFETCH_INTERVAL_MS },
+    { refetchInterval: DASHBOARD_REFETCH_INTERVAL_MS }
   )
 
   const dateWheres = getDateWheres()
-  const { data: usersData, isLoading: usersLoading } =
-    useGetUsersCountsQuery(dateWheres, {
-      refetchInterval: DASHBOARD_REFETCH_INTERVAL_MS,
-    })
+  const {
+    data: usersData,
+    isLoading: usersLoading,
+    isError: usersError,
+  } = useGetUsersCountsQuery(dateWheres, {
+    refetchInterval: DASHBOARD_REFETCH_INTERVAL_MS,
+  })
 
-  const { data: driversRatingData, isLoading: driversRatingLoading } =
-    useGetAdminDriversAverageRatingQuery({})
+  const {
+    data: driversRatingData,
+    isLoading: driversRatingLoading,
+    isError: driversRatingError,
+  } = useGetAdminDriversAverageRatingQuery({})
 
   const averageDriverRating = formatRating(
     driversRatingData?.adminDriversAverageRating
   )
 
-  const { data: pendingDocsData, isLoading: pendingDocsLoading } =
-    useGetAdminPendingDocumentsCountQuery(
-      {},
-      { refetchInterval: DASHBOARD_REFETCH_INTERVAL_MS },
-    )
+  const {
+    data: pendingDocsData,
+    isLoading: pendingDocsLoading,
+    isError: pendingDocsError,
+  } = useGetAdminPendingDocumentsCountQuery(
+    {},
+    { refetchInterval: DASHBOARD_REFETCH_INTERVAL_MS }
+  )
 
   const pendingDocsCount = pendingDocsData?.adminPendingDocumentsCount ?? 0
 
-  const { data: coursesCountsData, isLoading: coursesCountsLoading } =
-    useGetCoursesCountsQuery(
-      {},
-      { refetchInterval: DASHBOARD_REFETCH_INTERVAL_MS },
-    )
+  const {
+    data: coursesCountsData,
+    isLoading: coursesCountsLoading,
+    isError: coursesCountsError,
+  } = useGetCoursesCountsQuery(
+    {},
+    { refetchInterval: DASHBOARD_REFETCH_INTERVAL_MS }
+  )
 
   const dateBoundaries = getDateBoundaries()
-  const { data: coursesByPeriodData, isLoading: coursesByPeriodLoading } =
-    useGetCoursesCountsByPeriodQuery(
-      {
-        todayWhere: { createdAt: { gte: dateBoundaries.todayISO } },
-        weekWhere: { createdAt: { gte: dateBoundaries.weekISO } },
-        monthWhere: { createdAt: { gte: dateBoundaries.monthISO } },
-        yearWhere: { createdAt: { gte: dateBoundaries.yearISO } },
-      },
-      { refetchInterval: DASHBOARD_REFETCH_INTERVAL_MS },
-    )
+  const {
+    data: coursesByPeriodData,
+    isLoading: coursesByPeriodLoading,
+    isError: coursesByPeriodError,
+  } = useGetCoursesCountsByPeriodQuery(
+    {
+      todayWhere: { createdAt: { gte: dateBoundaries.todayISO } },
+      weekWhere: { createdAt: { gte: dateBoundaries.weekISO } },
+      monthWhere: { createdAt: { gte: dateBoundaries.monthISO } },
+      yearWhere: { createdAt: { gte: dateBoundaries.yearISO } },
+    },
+    { refetchInterval: DASHBOARD_REFETCH_INTERVAL_MS }
+  )
 
-  const { data: coursesMetricsData, isLoading: coursesMetricsLoading } =
-    useGetAdminCoursesMetricsQuery({})
+  const {
+    data: coursesMetricsData,
+    isLoading: coursesMetricsLoading,
+    isError: coursesMetricsError,
+  } = useGetAdminCoursesMetricsQuery({})
 
   const avgDistance = formatDistanceMeters(
     coursesMetricsData?.adminCoursesMetrics.averageDistance
@@ -126,6 +144,7 @@ export function DashboardPage() {
           iconClassName="text-yellow-600"
           to="/documents"
           isLoading={pendingDocsLoading}
+          isError={pendingDocsError}
         />
         <StatCard
           title="Tickets traités"
@@ -140,6 +159,7 @@ export function DashboardPage() {
           icon={StarIcon}
           iconClassName="text-yellow-500"
           isLoading={driversRatingLoading}
+          isError={driversRatingError}
         />
       </div>
 
@@ -155,24 +175,28 @@ export function DashboardPage() {
             value={usersData?.today ?? 0}
             icon={CalendarIcon}
             isLoading={usersLoading}
+            isError={usersError}
           />
           <StatCard
             title="Cette semaine"
             value={usersData?.week ?? 0}
             icon={CalendarDaysIcon}
             isLoading={usersLoading}
+            isError={usersError}
           />
           <StatCard
             title="Ce mois"
             value={usersData?.month ?? 0}
             icon={CalendarRangeIcon}
             isLoading={usersLoading}
+            isError={usersError}
           />
           <StatCard
             title="Total"
             value={usersData?.total ?? 0}
             icon={UsersIcon}
             isLoading={usersLoading}
+            isError={usersError}
           />
         </div>
 
@@ -202,30 +226,35 @@ export function DashboardPage() {
             value={coursesByPeriodData?.today ?? 0}
             icon={CalendarIcon}
             isLoading={coursesByPeriodLoading}
+            isError={coursesByPeriodError}
           />
           <StatCard
             title="Semaine"
             value={coursesByPeriodData?.week ?? 0}
             icon={CalendarDaysIcon}
             isLoading={coursesByPeriodLoading}
+            isError={coursesByPeriodError}
           />
           <StatCard
             title="Mois"
             value={coursesByPeriodData?.month ?? 0}
             icon={CalendarRangeIcon}
             isLoading={coursesByPeriodLoading}
+            isError={coursesByPeriodError}
           />
           <StatCard
             title="Année"
             value={coursesByPeriodData?.year ?? 0}
             icon={HashIcon}
             isLoading={coursesByPeriodLoading}
+            isError={coursesByPeriodError}
           />
           <StatCard
             title="Total"
             value={coursesByPeriodData?.total ?? 0}
             icon={RouteIcon}
             isLoading={coursesByPeriodLoading}
+            isError={coursesByPeriodError}
           />
         </div>
 
@@ -236,6 +265,7 @@ export function DashboardPage() {
             icon={RouteIcon}
             iconClassName="text-blue-500"
             isLoading={coursesMetricsLoading}
+            isError={coursesMetricsError}
           />
           <StatCard
             title="Temps d'acceptation"
@@ -243,6 +273,7 @@ export function DashboardPage() {
             icon={TimerIcon}
             iconClassName="text-yellow-500"
             isLoading={coursesMetricsLoading}
+            isError={coursesMetricsError}
           />
         </div>
 
@@ -250,6 +281,7 @@ export function DashboardPage() {
           <CoursesStatusBarChart
             data={coursesCountsData}
             isLoading={coursesCountsLoading}
+            isError={coursesCountsError}
           />
           <CoursesChart />
         </div>

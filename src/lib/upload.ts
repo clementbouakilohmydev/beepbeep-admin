@@ -2,6 +2,12 @@ import { SESSION_TOKEN_KEY } from "@/lib/constants"
 
 // API_URL pointe sur /ks/api (GraphQL). L'endpoint REST d'upload de
 // fichier est /ks/api/files, soit la même base — on dérive l'URL.
+if (import.meta.env.PROD && !import.meta.env.VITE_API_URL) {
+  throw new Error(
+    "VITE_API_URL est requis en production (fallback préprod interdit)"
+  )
+}
+
 const API_URL =
   import.meta.env.VITE_API_URL ||
   "https://api.beepbeepcity-pp.aleygues.fr/ks/api"
