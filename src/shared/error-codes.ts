@@ -27,6 +27,7 @@ export const ErrorCode = {
   TRIP_TOO_FAR_IN_FUTURE: "trip_too_far_in_future",
   TRIP_INVALID: "trip_invalid",
   TRIP_MISSING_NODES: "trip_missing_nodes",
+  TRIP_PRICING_UNAVAILABLE: "trip_pricing_unavailable",
   TRIP_HAS_COURSES_CANNOT_DELETE: "trip_has_courses_cannot_delete",
   PASSENGER_ALREADY_HAS_ANNOUNCEMENT: "passenger_already_has_announcement",
 
@@ -74,6 +75,8 @@ export const ErrorCodeMessages: Record<ErrorCodeValue, string> = {
     "Vous ne pouvez pas créer un trajet à plus de 6 jours",
   [ErrorCode.TRIP_INVALID]: "Les informations du trajet sont incomplètes",
   [ErrorCode.TRIP_MISSING_NODES]: "Le départ ou la destination est manquant",
+  [ErrorCode.TRIP_PRICING_UNAVAILABLE]:
+    "Impossible de calculer l'itinéraire pour ce trajet pour le moment, merci de réessayer dans un instant",
   [ErrorCode.TRIP_HAS_COURSES_CANNOT_DELETE]:
     "Ce trajet a déjà une course associée et ne peut pas être supprimé",
   [ErrorCode.PASSENGER_ALREADY_HAS_ANNOUNCEMENT]:
