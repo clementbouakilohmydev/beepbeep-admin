@@ -45,8 +45,10 @@ export function SendMessageDialog({
       setSubject("")
       setMessage("")
       onOpenChange(false)
-    } catch {
-      toast.error("Erreur lors de l'envoi du message")
+    } catch (e) {
+      toast.error(
+        e instanceof Error ? e.message : "Erreur lors de l'envoi du message"
+      )
     } finally {
       setIsSending(false)
     }
@@ -82,7 +84,7 @@ export function SendMessageDialog({
                 value={message}
                 onChange={(e) => setMessage(e.target.value)}
                 rows={5}
-                className="w-full rounded-md border bg-background px-3 py-2 text-sm ring-offset-background placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+                className="w-full rounded-md border bg-background px-3 py-2 text-sm ring-offset-background placeholder:text-muted-foreground focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none"
               />
             </div>
           </div>

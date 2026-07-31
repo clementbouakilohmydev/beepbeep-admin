@@ -55,6 +55,15 @@ export function PublicSupportPage() {
             <Link to="/public/about" className="hover:text-neutral-700">
               À propos
             </Link>
+            <Link
+              to="/public/account-deletion"
+              className="hover:text-neutral-700"
+            >
+              Supprimer mon compte
+            </Link>
+            <Link to="/public/data-deletion" className="hover:text-neutral-700">
+              Supprimer mes données
+            </Link>
             <Link to="/public/legal/cgu" className="hover:text-neutral-700">
               CGU
             </Link>

@@ -22,7 +22,11 @@ export async function sendEmail(params: SendEmailParams) {
   const data = await response.json()
 
   if (!response.ok) {
-    throw new Error(data.error || "Erreur lors de l'envoi de l'email")
+    // L'endpoint renvoie { error }, mais on lit aussi { message } au cas où
+    // (format d'erreur brut de Resend) pour un diagnostic plus précis.
+    throw new Error(
+      data.error || data.message || "Erreur lors de l'envoi de l'email"
+    )
   }
 
   return data

@@ -44,21 +44,29 @@ export function useUpdateDocument(type: DocumentType) {
   const label = DOCUMENT_LABELS[type]
 
   const invalidate = () => {
+    // Page "Documents" (liste paginée serveur) + badge "à vérifier" du menu :
+    // sans ça la table restait figée après validate/reject (le doc ne
+    // changeait pas d'état à l'écran et le bouton restait re-cliquable).
+    queryClient.invalidateQueries({ queryKey: ["GetAdminDocuments"] })
+    queryClient.invalidateQueries({
+      queryKey: ["GetAdminPendingDocumentsCount"],
+    })
+    // Fiche user (onglet documents) éventuellement ouverte en parallèle.
     queryClient.invalidateQueries({ queryKey: ["GetUser"] })
     queryClient.invalidateQueries({ queryKey: ["GetUsers"] })
   }
 
-  const { mutate, isPending } = useMutationFor(
-    type,
-    () => {
-      invalidate()
-      toast.success(`${label} mis à jour`)
-    },
-    () => toast.error("Erreur lors de la mise à jour")
+  const { mutate, isPending } = useMutationFor(type, invalidate, () =>
+    toast.error("Erreur lors de la mise à jour")
   )
 
   const validate = (id: string) =>
-    mutate({ where: { id }, data: { state: DOCUMENT_STATE.VERIFIED } } as never)
+    mutate(
+      { where: { id }, data: { state: DOCUMENT_STATE.VERIFIED } } as never,
+      {
+        onSuccess: () => toast.success(`Document validé — ${label}`),
+      }
+    )
 
   // "Rejeter" passe le doc en `rejected`. Le driver est notifié et doit
   // ré-uploader sa pièce. Au prochain upload, le model back conserve
@@ -67,7 +75,12 @@ export function useUpdateDocument(type: DocumentType) {
   // rejeté. Cf models/{DrivingLicense,Insurance,Certificate,
   // RegistrationDocument}.ts hook resolveInput.
   const reject = (id: string) =>
-    mutate({ where: { id }, data: { state: DOCUMENT_STATE.REJECTED } } as never)
+    mutate(
+      { where: { id }, data: { state: DOCUMENT_STATE.REJECTED } } as never,
+      {
+        onSuccess: () => toast.success(`Document rejeté — ${label}`),
+      }
+    )
 
   return { validate, reject, isPending }
 }

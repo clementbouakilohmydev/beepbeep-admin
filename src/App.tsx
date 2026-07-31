@@ -49,6 +49,16 @@ const PublicSupportPage = lazy(() =>
     default: m.PublicSupportPage,
   }))
 )
+const PublicAccountDeletionPage = lazy(() =>
+  import("@/pages/public-account-deletion-page").then((m) => ({
+    default: m.PublicAccountDeletionPage,
+  }))
+)
+const PublicDataDeletionPage = lazy(() =>
+  import("@/pages/public-data-deletion-page").then((m) => ({
+    default: m.PublicDataDeletionPage,
+  }))
+)
 const PublicStripeReturnPage = lazy(() =>
   import("@/pages/public-stripe-return-page").then((m) => ({
     default: m.PublicStripeReturnPage,
@@ -114,6 +124,22 @@ export function App() {
               element={
                 <Suspense fallback={<PageFallback />}>
                   <PublicSupportPage />
+                </Suspense>
+              }
+            />
+            <Route
+              path="/public/account-deletion"
+              element={
+                <Suspense fallback={<PageFallback />}>
+                  <PublicAccountDeletionPage />
+                </Suspense>
+              }
+            />
+            <Route
+              path="/public/data-deletion"
+              element={
+                <Suspense fallback={<PageFallback />}>
+                  <PublicDataDeletionPage />
                 </Suspense>
               }
             />

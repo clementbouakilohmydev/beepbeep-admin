@@ -1,4 +1,4 @@
-import { CircleAlertIcon, StarIcon } from "lucide-react"
+import { CircleAlertIcon, CircleCheckIcon, StarIcon } from "lucide-react"
 import { type ColumnDef } from "@tanstack/react-table"
 import { Badge } from "@/components/ui"
 import { DataTable } from "@/components/shared/data-table"
@@ -22,15 +22,42 @@ type UsersTableProps = {
   onUserClick: (userId: string) => void
 }
 
-function getPendingDocsCount(user: User) {
-  if (user.type !== "driver") return 0
-  const docs = [
-    user.drivingLicense?.state,
-    user.insurance?.state,
-    user.registrationDocument?.state,
-    user.certificate?.state,
-  ]
-  return docs.filter((s) => s && s !== "verified").length
+type DriverDocsStatus =
+  | { kind: "na" } // pas un conducteur
+  | { kind: "none" } // aucune pièce envoyée
+  | { kind: "pending"; awaiting: number } // pièces envoyées, exigences pas encore remplies
+  | { kind: "complete" } // exigences remplies → conducteur activable
+
+/**
+ * État réel des documents d'un conducteur pour l'affichage admin.
+ *
+ * Règle métier (docs/REGLES_METIER.md §7) : un conducteur est complet quand
+ * **(Permis de conduire OU Certificat)** est validé, **ET** l'Assurance
+ * validée, **ET** la Carte grise validée. (Le véhicule est vérifié à part.)
+ *
+ * ⚠️ Bug historique corrigé ici : un document ABSENT (`undefined`) était
+ * écarté par un `s && …`, donc un conducteur n'ayant envoyé aucune pièce
+ * ressortait « Tous validés ». Désormais une pièce absente compte comme
+ * non validée.
+ */
+function getDriverDocsStatus(user: User): DriverDocsStatus {
+  if (user.type !== "driver") return { kind: "na" }
+
+  const dl = user.drivingLicense?.state
+  const cert = user.certificate?.state
+  const ins = user.insurance?.state
+  const rd = user.registrationDocument?.state
+  const states = [dl, cert, ins, rd]
+
+  if (!states.some(Boolean)) return { kind: "none" }
+
+  const licenceOk = dl === "verified" || cert === "verified"
+  const complete = licenceOk && ins === "verified" && rd === "verified"
+  if (complete) return { kind: "complete" }
+
+  // Pièces déjà envoyées mais pas encore "verified" → à traiter par l'admin.
+  const awaiting = states.filter((s) => s && s !== "verified").length
+  return { kind: "pending", awaiting }
 }
 
 const columns: ColumnDef<User, unknown>[] = [
@@ -68,7 +95,10 @@ const columns: ColumnDef<User, unknown>[] = [
   },
   {
     id: "status",
-    header: "Statut",
+    // "Compte" (et pas "Statut") : ce badge reflète le flag `enabled`
+    // (blocage admin du compte), PAS l'activation métier du conducteur —
+    // celle-ci est portée par la colonne "Documents" ci-dessous.
+    header: "Compte",
     cell: ({ row }) => <UserStatusBadge enabled={row.original.enabled} />,
     meta: { skeletonClassName: "h-5 w-16" },
   },
@@ -76,31 +106,59 @@ const columns: ColumnDef<User, unknown>[] = [
     id: "documents",
     header: "Documents",
     cell: ({ row }) => {
-      const user = row.original
-      if (user.type !== "driver") {
+      const status = getDriverDocsStatus(row.original)
+
+      if (status.kind === "na") {
         return <span className="text-muted-foreground">—</span>
       }
-      const pendingDocs = getPendingDocsCount(user)
-      if (pendingDocs > 0) {
+
+      if (status.kind === "complete") {
+        return (
+          <Badge variant="secondary" className="bg-primary/20 text-primary">
+            <CircleCheckIcon className="mr-1 size-3" />
+            Validés
+          </Badge>
+        )
+      }
+
+      if (status.kind === "none") {
         return (
           <Tooltip>
             <TooltipTrigger asChild>
-              <Badge
-                variant="secondary"
-                className="bg-yellow-500/20 text-yellow-400"
-              >
+              <Badge variant="secondary" className="bg-red-500/20 text-red-400">
                 <CircleAlertIcon className="mr-1 size-3" />
-                {pendingDocs} en attente
+                Aucun document
               </Badge>
             </TooltipTrigger>
-            <TooltipContent>Documents à valider</TooltipContent>
+            <TooltipContent>
+              Le conducteur n'a envoyé aucune pièce
+            </TooltipContent>
           </Tooltip>
         )
       }
+
+      // pending : des pièces sont envoyées mais les exigences ne sont pas
+      // encore remplies (soit des pièces à valider, soit des obligatoires
+      // manquantes).
       return (
-        <Badge variant="secondary" className="bg-primary/20 text-primary">
-          Tous validés
-        </Badge>
+        <Tooltip>
+          <TooltipTrigger asChild>
+            <Badge
+              variant="secondary"
+              className="bg-yellow-500/20 text-yellow-400"
+            >
+              <CircleAlertIcon className="mr-1 size-3" />
+              {status.awaiting > 0
+                ? `${status.awaiting} à valider`
+                : "Incomplet"}
+            </Badge>
+          </TooltipTrigger>
+          <TooltipContent>
+            {status.awaiting > 0
+              ? "Documents en attente de validation"
+              : "Documents obligatoires manquants"}
+          </TooltipContent>
+        </Tooltip>
       )
     },
     meta: { skeletonClassName: "h-5 w-24" },

@@ -162,7 +162,7 @@ export function DocumentsPage() {
                 Valider
               </Button>
             )}
-            {doc.state !== "verified" && (
+            {doc.state !== "verified" && doc.state !== "rejected" && (
               <Button
                 variant="outline"
                 onClick={() => hookMap[docType].reject(doc.id)}
