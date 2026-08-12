@@ -1687,6 +1687,8 @@ type User {
   anonymized: Boolean
   deletedAt: DateTime
   deletionReason: String
+  deletionRequestedAt: DateTime
+  anonymizedAt: DateTime
   password: PasswordState
   type: String
   driver: Driver
@@ -1783,6 +1785,8 @@ input UserWhereInput {
   anonymized: BooleanFilter
   deletedAt: DateTimeNullableFilter
   deletionReason: StringFilter
+  deletionRequestedAt: DateTimeNullableFilter
+  anonymizedAt: DateTimeNullableFilter
   password: PasswordFilter
   type: StringFilter
   driver: DriverWhereInput
@@ -1856,6 +1860,8 @@ input UserOrderByInput {
   anonymized: OrderDirection
   deletedAt: OrderDirection
   deletionReason: OrderDirection
+  deletionRequestedAt: OrderDirection
+  anonymizedAt: OrderDirection
   type: OrderDirection
   lastname: OrderDirection
   firstname: OrderDirection
@@ -1876,6 +1882,8 @@ input UserUpdateInput {
   anonymized: Boolean
   deletedAt: DateTime
   deletionReason: String
+  deletionRequestedAt: DateTime
+  anonymizedAt: DateTime
   password: String
   type: String
   driver: DriverRelateToOneForUpdateInput
@@ -1997,6 +2005,8 @@ input UserCreateInput {
   anonymized: Boolean
   deletedAt: DateTime
   deletionReason: String
+  deletionRequestedAt: DateTime
+  anonymizedAt: DateTime
   password: String
   type: String
   driver: DriverRelateToOneForCreateInput
@@ -2706,6 +2716,15 @@ type Mutation {
   becomeDriver: BecomeDriverResult!
 
   """
+  Bascule le mode actif du compte courant. Idempotent. Passer en "driver"
+  exige un profil conducteur existant (sinon reasonCode="not_a_driver" :
+  le client doit rediriger vers le parcours becomeDriver).
+  
+  Après succès, le client DOIT refetch l'utilisateur.
+  """
+  switchUserMode(mode: UserMode!): SwitchUserModeResult!
+
+  """
   Génère un lien d'onboarding Stripe Connect Express pour le driver
   courant. Crée le compte Express si manquant et persiste son ID sur
   le Driver. Le mobile ouvre l'URL renvoyée dans un in-app browser :
@@ -2860,7 +2879,7 @@ type Query {
 
   """
   Métriques moyennes des courses terminées (state="paid") sur la fenêtre.
-  averageAcceptanceTimeSeconds = avg(startDatetimeUtc - createdAt).
+  averageMatchingTimeSeconds = avg(Course.createdAt - Trip.createdAt).
   """
   adminCoursesMetrics(from: DateTime, to: DateTime): AdminCoursesMetrics!
 
@@ -3085,6 +3104,13 @@ Résultat de deleteMyAccount.
 """
 type DeleteMyAccountResult {
   success: Boolean!
+
+  """
+  true : la demande est enregistrée et la clôture se fera automatiquement
+  dès que les fonds auront été versés. À présenter comme une confirmation,
+  pas comme une erreur, malgré success=false.
+  """
+  scheduled: Boolean!
   reasonCode: String
   reasonMessage: String
 }
@@ -3092,7 +3118,15 @@ type DeleteMyAccountResult {
 type AdminDeleteUserAccountResult {
   success: Boolean!
 
-  """Motif de refus (active_course, pending_payment, …) — null si succès."""
+  """
+  true : la clôture est programmée et se fera dès le versement des fonds.
+  À présenter comme une confirmation, pas comme un échec.
+  """
+  scheduled: Boolean!
+
+  """
+  Motif de refus (active_course, deletion_scheduled, …) — null si succès.
+  """
   reasonCode: String
 
   """Message prêt à afficher dans le back-office."""
@@ -3108,6 +3142,20 @@ type BecomeDriverResult {
   driverId: ID
 
   """Motif de refus — null si succès."""
+  reasonCode: String
+  reasonMessage: String
+}
+
+enum UserMode {
+  passenger
+  driver
+}
+
+type SwitchUserModeResult {
+  success: Boolean!
+
+  """Mode actif après l'opération."""
+  mode: UserMode
   reasonCode: String
   reasonMessage: String
 }
@@ -3172,7 +3220,14 @@ type AdminCoursesMetrics {
   averageDistance: Float
   averageDuration: Float
   averagePrice: Float
-  averageAcceptanceTimeSeconds: Float
+
+  """
+  Délai moyen de mise en relation, en secondes : temps écoulé entre la
+  publication de l'annonce par le passager (Trip.createdAt) et son
+  acceptation par un conducteur (Course.createdAt). Mesure l'attente réelle
+  côté passager.
+  """
+  averageMatchingTimeSeconds: Float
   count: Int!
 }
 

@@ -136,9 +136,15 @@ export type AddressWhereUniqueInput = {
 
 export type AdminCoursesMetrics = {
   __typename?: "AdminCoursesMetrics"
-  averageAcceptanceTimeSeconds?: Maybe<Scalars["Float"]["output"]>
   averageDistance?: Maybe<Scalars["Float"]["output"]>
   averageDuration?: Maybe<Scalars["Float"]["output"]>
+  /**
+   * Délai moyen de mise en relation, en secondes : temps écoulé entre la
+   * publication de l'annonce par le passager (Trip.createdAt) et son
+   * acceptation par un conducteur (Course.createdAt). Mesure l'attente réelle
+   * côté passager.
+   */
+  averageMatchingTimeSeconds?: Maybe<Scalars["Float"]["output"]>
   averagePrice?: Maybe<Scalars["Float"]["output"]>
   count: Scalars["Int"]["output"]
 }
@@ -155,10 +161,15 @@ export type AdminDailyAggregate = {
 
 export type AdminDeleteUserAccountResult = {
   __typename?: "AdminDeleteUserAccountResult"
-  /** Motif de refus (active_course, pending_payment, …) — null si succès. */
+  /** Motif de refus (active_course, deletion_scheduled, …) — null si succès. */
   reasonCode?: Maybe<Scalars["String"]["output"]>
   /** Message prêt à afficher dans le back-office. */
   reasonMessage?: Maybe<Scalars["String"]["output"]>
+  /**
+   * true : la clôture est programmée et se fera dès le versement des fonds.
+   * À présenter comme une confirmation, pas comme un échec.
+   */
+  scheduled: Scalars["Boolean"]["output"]
   success: Scalars["Boolean"]["output"]
 }
 
@@ -680,6 +691,12 @@ export type DeleteMyAccountResult = {
   __typename?: "DeleteMyAccountResult"
   reasonCode?: Maybe<Scalars["String"]["output"]>
   reasonMessage?: Maybe<Scalars["String"]["output"]>
+  /**
+   * true : la demande est enregistrée et la clôture se fera automatiquement
+   * dès que les fonds auront été versés. À présenter comme une confirmation,
+   * pas comme une erreur, malgré success=false.
+   */
+  scheduled: Scalars["Boolean"]["output"]
   success: Scalars["Boolean"]["output"]
 }
 
@@ -1699,6 +1716,14 @@ export type Mutation = {
   reactivateMyAccount: Scalars["Boolean"]["output"]
   resetPassword: ResetPasswordType
   sendUserCode: SendUserCodeType
+  /**
+   * Bascule le mode actif du compte courant. Idempotent. Passer en "driver"
+   * exige un profil conducteur existant (sinon reasonCode="not_a_driver" :
+   * le client doit rediriger vers le parcours becomeDriver).
+   *
+   * Après succès, le client DOIT refetch l'utilisateur.
+   */
+  switchUserMode: SwitchUserModeResult
   terminateCourse?: Maybe<Scalars["Boolean"]["output"]>
   updateAddress?: Maybe<Address>
   updateAddresses?: Maybe<Array<Maybe<Address>>>
@@ -2250,6 +2275,10 @@ export type MutationResetPasswordArgs = {
 
 export type MutationSendUserCodeArgs = {
   email: Scalars["String"]["input"]
+}
+
+export type MutationSwitchUserModeArgs = {
+  mode: UserMode
 }
 
 export type MutationTerminateCourseArgs = {
@@ -2970,7 +2999,7 @@ export type Query = {
   addressesCount?: Maybe<Scalars["Int"]["output"]>
   /**
    * Métriques moyennes des courses terminées (state="paid") sur la fenêtre.
-   * averageAcceptanceTimeSeconds = avg(startDatetimeUtc - createdAt).
+   * averageMatchingTimeSeconds = avg(Course.createdAt - Trip.createdAt).
    */
   adminCoursesMetrics: AdminCoursesMetrics
   /**
@@ -3800,6 +3829,15 @@ export type StripeOnboardingLink = {
   url: Scalars["String"]["output"]
 }
 
+export type SwitchUserModeResult = {
+  __typename?: "SwitchUserModeResult"
+  /** Mode actif après l'opération. */
+  mode?: Maybe<UserMode>
+  reasonCode?: Maybe<Scalars["String"]["output"]>
+  reasonMessage?: Maybe<Scalars["String"]["output"]>
+  success: Scalars["Boolean"]["output"]
+}
+
 export type Ticket = {
   __typename?: "Ticket"
   createdAt?: Maybe<Scalars["DateTime"]["output"]>
@@ -4186,6 +4224,7 @@ export type User = {
   affiliationCode?: Maybe<Scalars["String"]["output"]>
   age?: Maybe<Scalars["Int"]["output"]>
   anonymized?: Maybe<Scalars["Boolean"]["output"]>
+  anonymizedAt?: Maybe<Scalars["DateTime"]["output"]>
   avatar?: Maybe<File>
   averageRate?: Maybe<Scalars["Float"]["output"]>
   balance?: Maybe<Scalars["Float"]["output"]>
@@ -4197,6 +4236,7 @@ export type User = {
   createdAt?: Maybe<Scalars["DateTime"]["output"]>
   deletedAt?: Maybe<Scalars["DateTime"]["output"]>
   deletionReason?: Maybe<Scalars["String"]["output"]>
+  deletionRequestedAt?: Maybe<Scalars["DateTime"]["output"]>
   driver?: Maybe<Driver>
   driverCourses?: Maybe<Array<Course>>
   driverCoursesCount?: Maybe<Scalars["Int"]["output"]>
@@ -4437,12 +4477,14 @@ export type UserCreateInput = {
   affiliationCode?: InputMaybe<Scalars["String"]["input"]>
   age?: InputMaybe<Scalars["Int"]["input"]>
   anonymized?: InputMaybe<Scalars["Boolean"]["input"]>
+  anonymizedAt?: InputMaybe<Scalars["DateTime"]["input"]>
   avatar?: InputMaybe<FileRelateToOneForCreateInput>
   birthdayDatetimeUtc?: InputMaybe<Scalars["DateTime"]["input"]>
   certificate?: InputMaybe<CertificateRelateToOneForCreateInput>
   createdAt?: InputMaybe<Scalars["DateTime"]["input"]>
   deletedAt?: InputMaybe<Scalars["DateTime"]["input"]>
   deletionReason?: InputMaybe<Scalars["String"]["input"]>
+  deletionRequestedAt?: InputMaybe<Scalars["DateTime"]["input"]>
   driver?: InputMaybe<DriverRelateToOneForCreateInput>
   driverCourses?: InputMaybe<CourseRelateToManyForCreateInput>
   drivingLicense?: InputMaybe<DrivingLicenseRelateToOneForCreateInput>
@@ -4469,14 +4511,18 @@ export type UserCreateInput = {
   vehicule?: InputMaybe<VehiculeRelateToOneForCreateInput>
 }
 
+export type UserMode = "driver" | "passenger"
+
 export type UserOrderByInput = {
   affiliationCode?: InputMaybe<OrderDirection>
   age?: InputMaybe<OrderDirection>
   anonymized?: InputMaybe<OrderDirection>
+  anonymizedAt?: InputMaybe<OrderDirection>
   birthdayDatetimeUtc?: InputMaybe<OrderDirection>
   createdAt?: InputMaybe<OrderDirection>
   deletedAt?: InputMaybe<OrderDirection>
   deletionReason?: InputMaybe<OrderDirection>
+  deletionRequestedAt?: InputMaybe<OrderDirection>
   email?: InputMaybe<OrderDirection>
   enabled?: InputMaybe<OrderDirection>
   firstname?: InputMaybe<OrderDirection>
@@ -4521,12 +4567,14 @@ export type UserUpdateInput = {
   affiliationCode?: InputMaybe<Scalars["String"]["input"]>
   age?: InputMaybe<Scalars["Int"]["input"]>
   anonymized?: InputMaybe<Scalars["Boolean"]["input"]>
+  anonymizedAt?: InputMaybe<Scalars["DateTime"]["input"]>
   avatar?: InputMaybe<FileRelateToOneForUpdateInput>
   birthdayDatetimeUtc?: InputMaybe<Scalars["DateTime"]["input"]>
   certificate?: InputMaybe<CertificateRelateToOneForUpdateInput>
   createdAt?: InputMaybe<Scalars["DateTime"]["input"]>
   deletedAt?: InputMaybe<Scalars["DateTime"]["input"]>
   deletionReason?: InputMaybe<Scalars["String"]["input"]>
+  deletionRequestedAt?: InputMaybe<Scalars["DateTime"]["input"]>
   driver?: InputMaybe<DriverRelateToOneForUpdateInput>
   driverCourses?: InputMaybe<CourseRelateToManyForUpdateInput>
   drivingLicense?: InputMaybe<DrivingLicenseRelateToOneForUpdateInput>
@@ -4563,12 +4611,14 @@ export type UserWhereInput = {
   affiliationCode?: InputMaybe<StringFilter>
   age?: InputMaybe<IntNullableFilter>
   anonymized?: InputMaybe<BooleanFilter>
+  anonymizedAt?: InputMaybe<DateTimeNullableFilter>
   avatar?: InputMaybe<FileWhereInput>
   birthdayDatetimeUtc?: InputMaybe<DateTimeNullableFilter>
   certificate?: InputMaybe<CertificateWhereInput>
   createdAt?: InputMaybe<DateTimeNullableFilter>
   deletedAt?: InputMaybe<DateTimeNullableFilter>
   deletionReason?: InputMaybe<StringFilter>
+  deletionRequestedAt?: InputMaybe<DateTimeNullableFilter>
   driver?: InputMaybe<DriverWhereInput>
   driverCourses?: InputMaybe<CourseManyRelationFilter>
   drivingLicense?: InputMaybe<DrivingLicenseWhereInput>
@@ -5082,6 +5132,7 @@ export type AdminDeleteUserAccountMutation = {
   adminDeleteUserAccount: {
     __typename?: "AdminDeleteUserAccountResult"
     success: boolean
+    scheduled: boolean
     reasonCode?: string | null
     reasonMessage?: string | null
   }
@@ -5185,7 +5236,7 @@ export type GetAdminCoursesMetricsQuery = {
     averageDistance?: number | null
     averageDuration?: number | null
     averagePrice?: number | null
-    averageAcceptanceTimeSeconds?: number | null
+    averageMatchingTimeSeconds?: number | null
     count: number
   }
 }
@@ -6289,6 +6340,7 @@ export const AdminDeleteUserAccountDocument = `
     mutation AdminDeleteUserAccount($userId: ID!, $reason: String) {
   adminDeleteUserAccount(userId: $userId, reason: $reason) {
     success
+    scheduled
     reasonCode
     reasonMessage
   }
@@ -6619,7 +6671,7 @@ export const GetAdminCoursesMetricsDocument = `
     averageDistance
     averageDuration
     averagePrice
-    averageAcceptanceTimeSeconds
+    averageMatchingTimeSeconds
     count
   }
 }

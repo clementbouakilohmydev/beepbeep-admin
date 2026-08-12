@@ -368,6 +368,7 @@ export const AdminDeleteUserAccount = /* GraphQL */ `
   mutation AdminDeleteUserAccount($userId: ID!, $reason: String) {
     adminDeleteUserAccount(userId: $userId, reason: $reason) {
       success
+      scheduled
       reasonCode
       reasonMessage
     }
@@ -452,7 +453,7 @@ export const GetAdminCoursesMetrics = /* GraphQL */ `
       averageDistance
       averageDuration
       averagePrice
-      averageAcceptanceTimeSeconds
+      averageMatchingTimeSeconds
       count
     }
   }

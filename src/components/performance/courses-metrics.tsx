@@ -3,7 +3,7 @@ import { StatCard } from "@/components/shared/stat-card"
 import { useGetAdminCoursesMetricsQuery } from "@/gql/generated"
 import {
   formatDistanceMeters,
-  formatLeadTimeSeconds,
+  formatMatchingTimeSeconds,
   formatDurationSeconds,
   formatPriceEur,
 } from "@/lib/statistics"
@@ -21,9 +21,9 @@ export function CoursesMetrics() {
         isLoading={isLoading}
       />
       <StatCard
-        title="Délai moyen avant départ"
-        value={formatLeadTimeSeconds(m?.averageAcceptanceTimeSeconds)}
-        subtitle="entre réservation et départ"
+        title="Délai moyen de mise en relation"
+        value={formatMatchingTimeSeconds(m?.averageMatchingTimeSeconds)}
+        subtitle="attente avant qu'un conducteur accepte"
         icon={TimerIcon}
         iconClassName="text-yellow-500"
         isLoading={isLoading}

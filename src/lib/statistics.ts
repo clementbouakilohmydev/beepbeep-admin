@@ -17,21 +17,19 @@ export function formatDurationSeconds(seconds: number | null | undefined) {
 }
 
 /**
- * Délai entre la création de la course et l'heure de départ prévue.
+ * Délai de mise en relation : temps d'attente vécu par le passager entre la
+ * publication de son annonce et le moment où un conducteur la prend.
  *
- * ⚠️ Ce n'est PAS un « temps d'acceptation », malgré le nom que portait
- * cette carte jusqu'ici. Une Course naît déjà en state "accepted" : c'est le
- * conducteur qui la crée en acceptant (cf back Course.ts, resolveInput). Il
- * n'existe donc aucun intervalle « demande → acceptation » à mesurer, et
- * aucun champ `acceptedAt` en base. L'agrégat serveur calcule
- * `AVG(startDatetimeUtc - createdAt)` = le délai d'anticipation des
- * réservations, ce que le libellé reflète désormais.
+ * Cette carte affichait auparavant un « temps d'acceptation » qui n'existe
+ * pas : une Course naît déjà en state "accepted", puisque c'est le conducteur
+ * qui la crée en acceptant (cf back Course.ts, resolveInput). Il n'y a donc
+ * aucun intervalle « demande → acceptation », ni champ `acceptedAt` en base.
+ * L'agrégat serveur calcule désormais `AVG(Course.createdAt - Trip.createdAt)`.
  *
- * Une valeur ≤ 0 signifie que la course a été acceptée après l'heure de
- * départ prévue (réservation de dernière minute). On l'affiche « < 1 min »
- * plutôt que « — », qui laissait croire à une métrique non calculée.
+ * Une valeur ≤ 0 (annonce prise dans la seconde) s'affiche « < 1 min » plutôt
+ * que « — », qui laissait croire à une métrique non calculée.
  */
-export function formatLeadTimeSeconds(seconds: number | null | undefined) {
+export function formatMatchingTimeSeconds(seconds: number | null | undefined) {
   if (seconds == null) return "—"
   if (seconds <= 0) return "< 1 min"
   const mins = seconds / 60

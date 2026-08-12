@@ -43,6 +43,20 @@ export function DeleteAccountDialog({
     useAdminDeleteUserAccountMutation({
       onSuccess: (data) => {
         const res = data.adminDeleteUserAccount
+
+        // Clôture programmée : la demande est acceptée, il ne manque que le
+        // versement des fonds. C'est une confirmation malgré success=false.
+        if (res.scheduled) {
+          queryClient.invalidateQueries({ queryKey: ["GetUser"] })
+          toast.success(
+            res.reasonMessage ??
+              "Clôture programmée dès le versement des fonds."
+          )
+          setOpen(false)
+          setReason("")
+          return
+        }
+
         if (!res.success) {
           toast.error(
             res.reasonMessage ?? "Suppression impossible pour le moment."

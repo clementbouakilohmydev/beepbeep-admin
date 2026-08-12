@@ -26,7 +26,7 @@ import { SectionHeader } from "@/components/shared/section-header"
 import { Separator } from "@/components/ui/separator"
 import {
   formatDistanceMeters,
-  formatLeadTimeSeconds,
+  formatMatchingTimeSeconds,
   formatRating,
 } from "@/lib/statistics"
 import { RegistrationChart } from "@/components/dashboard/registration-chart"
@@ -123,8 +123,8 @@ export function DashboardPage() {
   const avgDistance = formatDistanceMeters(
     coursesMetricsData?.adminCoursesMetrics.averageDistance
   )
-  const avgLeadTime = formatLeadTimeSeconds(
-    coursesMetricsData?.adminCoursesMetrics.averageAcceptanceTimeSeconds
+  const avgMatchingTime = formatMatchingTimeSeconds(
+    coursesMetricsData?.adminCoursesMetrics.averageMatchingTimeSeconds
   )
 
   if (isError && !ticketsLoading) {
@@ -297,9 +297,9 @@ export function DashboardPage() {
             isError={coursesMetricsError}
           />
           <StatCard
-            title="Délai moyen avant départ"
-            value={avgLeadTime}
-            subtitle="entre réservation et départ"
+            title="Délai moyen de mise en relation"
+            value={avgMatchingTime}
+            subtitle="attente avant qu'un conducteur accepte"
             icon={TimerIcon}
             iconClassName="text-yellow-500"
             isLoading={coursesMetricsLoading}
