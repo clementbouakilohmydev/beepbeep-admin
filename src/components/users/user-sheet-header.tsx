@@ -24,6 +24,7 @@ import { getUserDisplay } from "@/lib/format"
 import { withSessionToken } from "@/lib/file-url"
 import { UserTypeBadge } from "./user-type-badge"
 import { UserStatusBadge } from "./user-status-badge"
+import { DeleteAccountDialog } from "./delete-account-dialog"
 
 type UserSheetHeaderProps = {
   user: MappedUser
@@ -60,6 +61,11 @@ export function UserSheetHeader({
           <div className="mt-1.5 flex flex-wrap items-center gap-2">
             <UserTypeBadge type={user.type} />
             <UserStatusBadge enabled={user.enabled} />
+            {user.deletedAt && (
+              <span className="rounded-md bg-destructive/15 px-2 py-0.5 text-xs font-medium text-destructive">
+                Compte supprimé
+              </span>
+            )}
           </div>
         </div>
       </div>
@@ -120,6 +126,13 @@ export function UserSheetHeader({
             </AlertDialogFooter>
           </AlertDialogContent>
         </AlertDialog>
+        {!user.isAdmin && (
+          <DeleteAccountDialog
+            userId={user.id}
+            userName={getUserDisplay(user)}
+            isDeleted={!!user.deletedAt}
+          />
+        )}
       </div>
       {user.email && (
         <SendMessageDialog

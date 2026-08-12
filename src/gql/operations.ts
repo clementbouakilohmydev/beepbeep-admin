@@ -231,6 +231,7 @@ export const GetUser = /* GraphQL */ `
       isAdmin
       enabled
       anonymized
+      deletedAt
       phoneNumber
       birthdayDatetimeUtc
       affiliationCode
@@ -359,6 +360,19 @@ export const GetCoursesCountsByPeriod = /* GraphQL */ `
 // GetRecentUsers / GetDriversAverageRating (fetch 500-1000 rows + calcul
 // client) ont été remplacées par les agrégats serveur de adminStats
 // (cf back/api/src/extensions/adminStats.ts) — Get*AdminStats*Query plus bas.
+
+// Suppression de compte déclenchée par le support (cf back
+// extensions/adminDeleteUserAccount.ts). Peut légitimement échouer sans être
+// une erreur réseau — d'où le `success` + `reasonMessage` à afficher tel quel.
+export const AdminDeleteUserAccount = /* GraphQL */ `
+  mutation AdminDeleteUserAccount($userId: ID!, $reason: String) {
+    adminDeleteUserAccount(userId: $userId, reason: $reason) {
+      success
+      reasonCode
+      reasonMessage
+    }
+  }
+`
 
 export const UpdateUser = /* GraphQL */ `
   mutation UpdateUser($where: UserWhereUniqueInput!, $data: UserUpdateInput!) {

@@ -604,6 +604,8 @@ type DriverOnboardingStatusType {
   chargesEnabled: Boolean
   payoutsEnabled: Boolean
   detailsSubmitted: Boolean
+  currentlyDue: [String!]
+  disabledReason: String
 }
 
 input DriverWhereUniqueInput {
@@ -2672,6 +2674,9 @@ type Mutation {
     balance Stripe Connect non transférée).
   - Anonymise les données seulement plus tard (TODO : cron de hard
     anonymization). En V1, le User reste consultable pour réactivation.
+  
+  Garde-fous métier partagés avec adminDeleteUserAccount
+  (cf services/accountDeletion.ts).
   """
   deleteMyAccount(password: String!, reason: String): DeleteMyAccountResult!
 
@@ -2683,6 +2688,24 @@ type Mutation {
   reactivateMyAccount: Boolean!
 
   """
+  Marque le compte d'un utilisateur comme supprimé, à la demande du support.
+  Refuse si une course est en cours, un paiement en vol, ou des gains non
+  encore versés — exactement comme deleteMyAccount côté app.
+  """
+  adminDeleteUserAccount(userId: ID!, reason: String): AdminDeleteUserAccountResult!
+
+  """
+  Transforme le compte courant en compte conducteur : crée le profil Driver
+  s'il n'existe pas et bascule `type` sur "driver". Idempotent — rappeler
+  la mutation sur un compte déjà conducteur renvoie success sans rien
+  modifier. L'historique passager est conservé.
+  
+  Après succès, le client DOIT refetch l'utilisateur : `type` conditionne
+  l'écran d'accueil (DriverHome vs PassengerHome).
+  """
+  becomeDriver: BecomeDriverResult!
+
+  """
   Génère un lien d'onboarding Stripe Connect Express pour le driver
   courant. Crée le compte Express si manquant et persiste son ID sur
   le Driver. Le mobile ouvre l'URL renvoyée dans un in-app browser :
@@ -2690,6 +2713,36 @@ type Mutation {
   l'app via la sentinelle /ks/api/stripe-return.
   """
   getDriverOnboardingLink: StripeOnboardingLink
+
+  """
+  Crée le compte Custom à partir d'un account token créé côté mobile
+  (clé publishable). Idempotent : si un compte Custom valide existe déjà,
+  renvoie success sans en recréer. Supprime au passage un éventuel compte
+  legacy (Express) avant recréation.
+  """
+  createDriverStripeAccount(accountToken: String!): DriverStripeMutationResult!
+
+  """
+  Applique un account token (créé côté mobile) au compte du driver —
+  étapes adresse, date de naissance, ou tout champ individual.*.
+  """
+  updateDriverStripeAccount(accountToken: String!): DriverStripeMutationResult!
+
+  """
+  Pièce d'identité : `fileId` = File déjà uploadé via /ks/api/files.
+  Le back pousse l'image vers Stripe Files puis la rattache au compte.
+  """
+  uploadDriverStripeIdDocument(fileId: ID!, side: String!): DriverStripeMutationResult!
+
+  """
+  IBAN : `bankAccountToken` = btok créé côté mobile (l'IBAN ne transite jamais ici).
+  """
+  addDriverStripeBankAccount(bankAccountToken: String!): DriverStripeMutationResult!
+
+  """
+  Acceptation CGU Stripe (date + IP + UA enregistrés, service_agreement recipient).
+  """
+  acceptDriverStripeTos: DriverStripeMutationResult!
   deleteCard(cardId: ID!): Boolean!
   pay(paymentId: ID!, secure: Boolean! = true): PayType!
 }
@@ -2793,9 +2846,15 @@ type Query {
   getPendingCoursesCount(mode: String!, minusHours: Int! = 2): Int!
   tripPrice(startDatetimeUtc: DateTime!, node1: NodeInput!, node2: NodeInput!): TripDetailsType!
 
+  """État d'onboarding Stripe du driver courant. Lecture seule."""
+  driverStripeOnboarding: DriverStripeOnboardingState!
+
   """
-  CA agrégé sur courses en state="paid" entre from..to (bornes incluses).
-  Si from/to absents → toutes les courses paid.
+  CA agrégé entre from..to (bornes incluses) : SUM(price) des courses
+  state="paid" + SUM(cancellationFee) des courses state="cancelled"
+  (frais d'annulation encaissés). fees = commission des paid + FEES% sur
+  les frais d'annulation. basket/count : courses terminées uniquement.
+  from/to absents → tout l'historique.
   """
   adminRevenueStats(from: DateTime, to: DateTime): AdminRevenueStats!
 
@@ -2833,8 +2892,10 @@ type Query {
 
   """
   Agrégats par jour sur les N derniers jours (default 30). Pour chaque
-  jour : count (courses paid créées ce jour), revenue (sum price),
-  fees (sum fees), averagePrice (avg basket), averageDistance (avg en m).
+  jour : count (courses paid créées ce jour), revenue (sum price des paid
+  + sum cancellationFee des courses annulées), fees (commission des paid
+  + FEES% sur les frais d'annulation), averagePrice (avg basket paid),
+  averageDistance (avg en m, paid).
   Single query qui sert les 3 charts finance/perf (revenue trend, panier
   moyen, distance moyenne) sans tirer 500 rows côté client.
   """
@@ -3028,9 +3089,68 @@ type DeleteMyAccountResult {
   reasonMessage: String
 }
 
+type AdminDeleteUserAccountResult {
+  success: Boolean!
+
+  """Motif de refus (active_course, pending_payment, …) — null si succès."""
+  reasonCode: String
+
+  """Message prêt à afficher dans le back-office."""
+  reasonMessage: String
+}
+
+type BecomeDriverResult {
+  success: Boolean!
+
+  """
+  Id du profil conducteur (existant ou fraîchement créé) — null si refus.
+  """
+  driverId: ID
+
+  """Motif de refus — null si succès."""
+  reasonCode: String
+  reasonMessage: String
+}
+
 type StripeOnboardingLink {
   url: String!
   accountId: String!
+}
+
+type DriverStripeOnboardingState {
+  """ID du compte Stripe Custom (acct_xxx), null si pas encore créé."""
+  stripeAccountId: String
+
+  """
+  true si le mobile doit (re)créer le compte : aucun compte, compte
+  supprimé côté Stripe, ou compte legacy (Express hosted) incompatible.
+  """
+  needsAccount: Boolean!
+
+  """Étapes restantes à compléter (mapping requirements Stripe)."""
+  pendingSteps: [DriverStripeOnboardingStep!]!
+
+  """`payouts_enabled` côté Stripe — payable dès que true."""
+  payoutsEnabled: Boolean!
+
+  """Raison Stripe si compte désactivé (ex: requirements past_due)."""
+  disabledReason: String
+}
+
+enum DriverStripeOnboardingStep {
+  ADDRESS
+  DOB
+  ID_DOCUMENT_FRONT
+  ID_DOCUMENT_BACK
+  BANK_ACCOUNT
+  TOS_ACCEPTANCE
+}
+
+type DriverStripeMutationResult {
+  success: Boolean!
+
+  """Message d'erreur Stripe en clair (à afficher au driver)."""
+  message: String
 }
 
 type PayType {

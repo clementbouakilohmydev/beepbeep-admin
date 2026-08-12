@@ -153,6 +153,15 @@ export type AdminDailyAggregate = {
   revenue: Scalars["Float"]["output"]
 }
 
+export type AdminDeleteUserAccountResult = {
+  __typename?: "AdminDeleteUserAccountResult"
+  /** Motif de refus (active_course, pending_payment, …) — null si succès. */
+  reasonCode?: Maybe<Scalars["String"]["output"]>
+  /** Message prêt à afficher dans le back-office. */
+  reasonMessage?: Maybe<Scalars["String"]["output"]>
+  success: Scalars["Boolean"]["output"]
+}
+
 export type AdminDocument = {
   __typename?: "AdminDocument"
   createdAt?: Maybe<Scalars["DateTime"]["output"]>
@@ -355,6 +364,16 @@ export type AffiliationWhereUniqueInput = {
 }
 
 export type AuthenticatedItem = User
+
+export type BecomeDriverResult = {
+  __typename?: "BecomeDriverResult"
+  /** Id du profil conducteur (existant ou fraîchement créé) — null si refus. */
+  driverId?: Maybe<Scalars["ID"]["output"]>
+  /** Motif de refus — null si succès. */
+  reasonCode?: Maybe<Scalars["String"]["output"]>
+  reasonMessage?: Maybe<Scalars["String"]["output"]>
+  success: Scalars["Boolean"]["output"]
+}
 
 export type BooleanFilter = {
   equals?: InputMaybe<Scalars["Boolean"]["input"]>
@@ -717,7 +736,9 @@ export type DriverCreateInput = {
 export type DriverOnboardingStatusType = {
   __typename?: "DriverOnboardingStatusType"
   chargesEnabled?: Maybe<Scalars["Boolean"]["output"]>
+  currentlyDue?: Maybe<Array<Scalars["String"]["output"]>>
   detailsSubmitted?: Maybe<Scalars["Boolean"]["output"]>
+  disabledReason?: Maybe<Scalars["String"]["output"]>
   payoutsEnabled?: Maybe<Scalars["Boolean"]["output"]>
 }
 
@@ -821,6 +842,38 @@ export type DriverSlotWhereInput = {
 export type DriverSlotWhereUniqueInput = {
   id?: InputMaybe<Scalars["ID"]["input"]>
 }
+
+export type DriverStripeMutationResult = {
+  __typename?: "DriverStripeMutationResult"
+  /** Message d'erreur Stripe en clair (à afficher au driver). */
+  message?: Maybe<Scalars["String"]["output"]>
+  success: Scalars["Boolean"]["output"]
+}
+
+export type DriverStripeOnboardingState = {
+  __typename?: "DriverStripeOnboardingState"
+  /** Raison Stripe si compte désactivé (ex: requirements past_due). */
+  disabledReason?: Maybe<Scalars["String"]["output"]>
+  /**
+   * true si le mobile doit (re)créer le compte : aucun compte, compte
+   * supprimé côté Stripe, ou compte legacy (Express hosted) incompatible.
+   */
+  needsAccount: Scalars["Boolean"]["output"]
+  /** `payouts_enabled` côté Stripe — payable dès que true. */
+  payoutsEnabled: Scalars["Boolean"]["output"]
+  /** Étapes restantes à compléter (mapping requirements Stripe). */
+  pendingSteps: Array<DriverStripeOnboardingStep>
+  /** ID du compte Stripe Custom (acct_xxx), null si pas encore créé. */
+  stripeAccountId?: Maybe<Scalars["String"]["output"]>
+}
+
+export type DriverStripeOnboardingStep =
+  | "ADDRESS"
+  | "BANK_ACCOUNT"
+  | "DOB"
+  | "ID_DOCUMENT_BACK"
+  | "ID_DOCUMENT_FRONT"
+  | "TOS_ACCEPTANCE"
 
 export type DriverTripArroundType = {
   __typename?: "DriverTripArroundType"
@@ -1474,9 +1527,29 @@ export type MessageWhereUniqueInput = {
 
 export type Mutation = {
   __typename?: "Mutation"
+  /** Acceptation CGU Stripe (date + IP + UA enregistrés, service_agreement recipient). */
+  acceptDriverStripeTos: DriverStripeMutationResult
+  /** IBAN : `bankAccountToken` = btok créé côté mobile (l'IBAN ne transite jamais ici). */
+  addDriverStripeBankAccount: DriverStripeMutationResult
   addPushToken?: Maybe<AddPushTokenType>
+  /**
+   * Marque le compte d'un utilisateur comme supprimé, à la demande du support.
+   * Refuse si une course est en cours, un paiement en vol, ou des gains non
+   * encore versés — exactement comme deleteMyAccount côté app.
+   */
+  adminDeleteUserAccount: AdminDeleteUserAccountResult
   applyAffiliationCode: Affiliation
   authenticateUserWithPassword?: Maybe<UserAuthenticationWithPasswordResult>
+  /**
+   * Transforme le compte courant en compte conducteur : crée le profil Driver
+   * s'il n'existe pas et bascule `type` sur "driver". Idempotent — rappeler
+   * la mutation sur un compte déjà conducteur renvoie success sans rien
+   * modifier. L'historique passager est conservé.
+   *
+   * Après succès, le client DOIT refetch l'utilisateur : `type` conditionne
+   * l'écran d'accueil (DriverHome vs PassengerHome).
+   */
+  becomeDriver: BecomeDriverResult
   cancelCourse?: Maybe<Scalars["Boolean"]["output"]>
   clearPushTokens?: Maybe<ClearPushTokensType>
   createAddress?: Maybe<Address>
@@ -1492,6 +1565,13 @@ export type Mutation = {
   createDriver?: Maybe<Driver>
   createDriverSlot?: Maybe<DriverSlot>
   createDriverSlots?: Maybe<Array<Maybe<DriverSlot>>>
+  /**
+   * Crée le compte Custom à partir d'un account token créé côté mobile
+   * (clé publishable). Idempotent : si un compte Custom valide existe déjà,
+   * renvoie success sans en recréer. Supprime au passage un éventuel compte
+   * legacy (Express) avant recréation.
+   */
+  createDriverStripeAccount: DriverStripeMutationResult
   createDrivers?: Maybe<Array<Maybe<Driver>>>
   createDrivingLicense?: Maybe<DrivingLicense>
   createDrivingLicenses?: Maybe<Array<Maybe<DrivingLicense>>>
@@ -1566,6 +1646,9 @@ export type Mutation = {
    *   balance Stripe Connect non transférée).
    * - Anonymise les données seulement plus tard (TODO : cron de hard
    *   anonymization). En V1, le User reste consultable pour réactivation.
+   *
+   * Garde-fous métier partagés avec adminDeleteUserAccount
+   * (cf services/accountDeletion.ts).
    */
   deleteMyAccount: DeleteMyAccountResult
   deleteNode?: Maybe<Node>
@@ -1630,6 +1713,11 @@ export type Mutation = {
   updateDriver?: Maybe<Driver>
   updateDriverSlot?: Maybe<DriverSlot>
   updateDriverSlots?: Maybe<Array<Maybe<DriverSlot>>>
+  /**
+   * Applique un account token (créé côté mobile) au compte du driver —
+   * étapes adresse, date de naissance, ou tout champ individual.*.
+   */
+  updateDriverStripeAccount: DriverStripeMutationResult
   updateDrivers?: Maybe<Array<Maybe<Driver>>>
   updateDrivingLicense?: Maybe<DrivingLicense>
   updateDrivingLicenses?: Maybe<Array<Maybe<DrivingLicense>>>
@@ -1672,11 +1760,25 @@ export type Mutation = {
   updateVehicule?: Maybe<Vehicule>
   updateVehicules?: Maybe<Array<Maybe<Vehicule>>>
   updateequipments?: Maybe<Array<Maybe<Equipment>>>
+  /**
+   * Pièce d'identité : `fileId` = File déjà uploadé via /ks/api/files.
+   * Le back pousse l'image vers Stripe Files puis la rattache au compte.
+   */
+  uploadDriverStripeIdDocument: DriverStripeMutationResult
   validateUserCode: Scalars["Boolean"]["output"]
+}
+
+export type MutationAddDriverStripeBankAccountArgs = {
+  bankAccountToken: Scalars["String"]["input"]
 }
 
 export type MutationAddPushTokenArgs = {
   token: Scalars["String"]["input"]
+}
+
+export type MutationAdminDeleteUserAccountArgs = {
+  reason?: InputMaybe<Scalars["String"]["input"]>
+  userId: Scalars["ID"]["input"]
 }
 
 export type MutationApplyAffiliationCodeArgs = {
@@ -1742,6 +1844,10 @@ export type MutationCreateDriverSlotArgs = {
 
 export type MutationCreateDriverSlotsArgs = {
   data: Array<DriverSlotCreateInput>
+}
+
+export type MutationCreateDriverStripeAccountArgs = {
+  accountToken: Scalars["String"]["input"]
 }
 
 export type MutationCreateDriversArgs = {
@@ -2209,6 +2315,10 @@ export type MutationUpdateDriverSlotsArgs = {
   data: Array<DriverSlotUpdateArgs>
 }
 
+export type MutationUpdateDriverStripeAccountArgs = {
+  accountToken: Scalars["String"]["input"]
+}
+
 export type MutationUpdateDriversArgs = {
   data: Array<DriverUpdateArgs>
 }
@@ -2396,6 +2506,11 @@ export type MutationUpdateVehiculesArgs = {
 
 export type MutationUpdateequipmentsArgs = {
   data: Array<EquipmentUpdateArgs>
+}
+
+export type MutationUploadDriverStripeIdDocumentArgs = {
+  fileId: Scalars["ID"]["input"]
+  side: Scalars["String"]["input"]
 }
 
 export type MutationValidateUserCodeArgs = {
@@ -2865,8 +2980,10 @@ export type Query = {
   adminCoursesTrend: Array<AdminTrendPoint>
   /**
    * Agrégats par jour sur les N derniers jours (default 30). Pour chaque
-   * jour : count (courses paid créées ce jour), revenue (sum price),
-   * fees (sum fees), averagePrice (avg basket), averageDistance (avg en m).
+   * jour : count (courses paid créées ce jour), revenue (sum price des paid
+   * + sum cancellationFee des courses annulées), fees (commission des paid
+   * + FEES% sur les frais d'annulation), averagePrice (avg basket paid),
+   * averageDistance (avg en m, paid).
    * Single query qui sert les 3 charts finance/perf (revenue trend, panier
    * moyen, distance moyenne) sans tirer 500 rows côté client.
    */
@@ -2892,8 +3009,11 @@ export type Query = {
    */
   adminPendingDocumentsCount: Scalars["Int"]["output"]
   /**
-   * CA agrégé sur courses en state="paid" entre from..to (bornes incluses).
-   * Si from/to absents → toutes les courses paid.
+   * CA agrégé entre from..to (bornes incluses) : SUM(price) des courses
+   * state="paid" + SUM(cancellationFee) des courses state="cancelled"
+   * (frais d'annulation encaissés). fees = commission des paid + FEES% sur
+   * les frais d'annulation. basket/count : courses terminées uniquement.
+   * from/to absents → tout l'historique.
    */
   adminRevenueStats: AdminRevenueStats
   /** Nombre de tickets créés par jour sur les N derniers jours (default 30). */
@@ -2914,6 +3034,8 @@ export type Query = {
   driverSlot?: Maybe<DriverSlot>
   driverSlots?: Maybe<Array<DriverSlot>>
   driverSlotsCount?: Maybe<Scalars["Int"]["output"]>
+  /** État d'onboarding Stripe du driver courant. Lecture seule. */
+  driverStripeOnboarding: DriverStripeOnboardingState
   drivers?: Maybe<Array<Driver>>
   driversCount?: Maybe<Scalars["Int"]["output"]>
   drivingLicense?: Maybe<DrivingLicense>
@@ -4837,6 +4959,7 @@ export type GetUserQuery = {
     isAdmin?: boolean | null
     enabled?: boolean | null
     anonymized?: boolean | null
+    deletedAt?: string | null
     phoneNumber?: string | null
     birthdayDatetimeUtc?: string | null
     affiliationCode?: string | null
@@ -4947,6 +5070,21 @@ export type GetCoursesCountsByPeriodQuery = {
   weekDone?: number | null
   monthDone?: number | null
   yearDone?: number | null
+}
+
+export type AdminDeleteUserAccountMutationVariables = Exact<{
+  userId: Scalars["ID"]["input"]
+  reason?: InputMaybe<Scalars["String"]["input"]>
+}>
+
+export type AdminDeleteUserAccountMutation = {
+  __typename?: "Mutation"
+  adminDeleteUserAccount: {
+    __typename?: "AdminDeleteUserAccountResult"
+    success: boolean
+    reasonCode?: string | null
+    reasonMessage?: string | null
+  }
 }
 
 export type UpdateUserMutationVariables = Exact<{
@@ -5925,6 +6063,7 @@ export const GetUserDocument = `
     isAdmin
     enabled
     anonymized
+    deletedAt
     phoneNumber
     birthdayDatetimeUtc
     affiliationCode
@@ -6145,6 +6284,52 @@ useGetCoursesCountsByPeriodQuery.fetcher = (
     GetCoursesCountsByPeriodQuery,
     GetCoursesCountsByPeriodQueryVariables
   >(GetCoursesCountsByPeriodDocument, variables, options)
+
+export const AdminDeleteUserAccountDocument = `
+    mutation AdminDeleteUserAccount($userId: ID!, $reason: String) {
+  adminDeleteUserAccount(userId: $userId, reason: $reason) {
+    success
+    reasonCode
+    reasonMessage
+  }
+}
+    `
+
+export const useAdminDeleteUserAccountMutation = <
+  TError = unknown,
+  TContext = unknown,
+>(
+  options?: UseMutationOptions<
+    AdminDeleteUserAccountMutation,
+    TError,
+    AdminDeleteUserAccountMutationVariables,
+    TContext
+  >
+) => {
+  return useMutation<
+    AdminDeleteUserAccountMutation,
+    TError,
+    AdminDeleteUserAccountMutationVariables,
+    TContext
+  >({
+    mutationKey: ["AdminDeleteUserAccount"],
+    mutationFn: (variables?: AdminDeleteUserAccountMutationVariables) =>
+      graphqlClient<
+        AdminDeleteUserAccountMutation,
+        AdminDeleteUserAccountMutationVariables
+      >(AdminDeleteUserAccountDocument, variables)(),
+    ...options,
+  })
+}
+
+useAdminDeleteUserAccountMutation.fetcher = (
+  variables: AdminDeleteUserAccountMutationVariables,
+  options?: RequestInit["headers"]
+) =>
+  graphqlClient<
+    AdminDeleteUserAccountMutation,
+    AdminDeleteUserAccountMutationVariables
+  >(AdminDeleteUserAccountDocument, variables, options)
 
 export const UpdateUserDocument = `
     mutation UpdateUser($where: UserWhereUniqueInput!, $data: UserUpdateInput!) {
