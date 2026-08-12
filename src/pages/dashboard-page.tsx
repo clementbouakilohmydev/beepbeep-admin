@@ -20,13 +20,13 @@ import {
   useGetAdminDriversAverageRatingQuery,
   useGetAdminPendingDocumentsCountQuery,
 } from "@/gql/generated"
-import { getDateWheres, getDateBoundaries } from "@/lib/date"
+import { getDateWheres, getCourseWheres } from "@/lib/date"
 import { StatCard } from "@/components/shared/stat-card"
 import { SectionHeader } from "@/components/shared/section-header"
 import { Separator } from "@/components/ui/separator"
 import {
   formatDistanceMeters,
-  formatAcceptanceTimeSeconds,
+  formatLeadTimeSeconds,
   formatRating,
 } from "@/lib/statistics"
 import { RegistrationChart } from "@/components/dashboard/registration-chart"
@@ -93,20 +93,26 @@ export function DashboardPage() {
     { refetchInterval: DASHBOARD_REFETCH_INTERVAL_MS }
   )
 
-  const dateBoundaries = getDateBoundaries()
   const {
     data: coursesByPeriodData,
     isLoading: coursesByPeriodLoading,
     isError: coursesByPeriodError,
-  } = useGetCoursesCountsByPeriodQuery(
-    {
-      todayWhere: { createdAt: { gte: dateBoundaries.todayISO } },
-      weekWhere: { createdAt: { gte: dateBoundaries.weekISO } },
-      monthWhere: { createdAt: { gte: dateBoundaries.monthISO } },
-      yearWhere: { createdAt: { gte: dateBoundaries.yearISO } },
-    },
-    { refetchInterval: DASHBOARD_REFETCH_INTERVAL_MS }
-  )
+  } = useGetCoursesCountsByPeriodQuery(getCourseWheres(), {
+    refetchInterval: DASHBOARD_REFETCH_INTERVAL_MS,
+  })
+
+  /**
+   * Sous-titre « sur N créées » — affiché seulement quand le nombre de
+   * courses créées diffère du nombre de courses effectuées, pour ne pas
+   * alourdir les cartes quand les deux coïncident.
+   */
+  const createdSubtitle = (
+    done: number | null | undefined,
+    created: number | null | undefined
+  ) =>
+    created != null && created !== (done ?? 0)
+      ? `sur ${created} créée${created > 1 ? "s" : ""}`
+      : undefined
 
   const {
     data: coursesMetricsData,
@@ -117,7 +123,7 @@ export function DashboardPage() {
   const avgDistance = formatDistanceMeters(
     coursesMetricsData?.adminCoursesMetrics.averageDistance
   )
-  const avgAcceptanceTime = formatAcceptanceTimeSeconds(
+  const avgLeadTime = formatLeadTimeSeconds(
     coursesMetricsData?.adminCoursesMetrics.averageAcceptanceTimeSeconds
   )
 
@@ -215,43 +221,66 @@ export function DashboardPage() {
       {/* ─── Courses ─── */}
       <section className="space-y-4">
         <SectionHeader
-          title="Courses"
+          title="Courses effectuées"
           to="/performance"
           linkLabel="Performance"
         />
 
+        {/* Valeur principale = courses terminées et payées (même définition
+            que la page Finance). Le nombre de courses créées, lui, reste
+            visible en sous-titre et dans le graphe par statut ci-dessous. */}
         <div className="grid grid-cols-2 gap-3 sm:gap-4 lg:grid-cols-5">
           <StatCard
             title="Aujourd'hui"
-            value={coursesByPeriodData?.today ?? 0}
+            value={coursesByPeriodData?.todayDone ?? 0}
+            subtitle={createdSubtitle(
+              coursesByPeriodData?.todayDone,
+              coursesByPeriodData?.today
+            )}
             icon={CalendarIcon}
             isLoading={coursesByPeriodLoading}
             isError={coursesByPeriodError}
           />
           <StatCard
             title="Semaine"
-            value={coursesByPeriodData?.week ?? 0}
+            value={coursesByPeriodData?.weekDone ?? 0}
+            subtitle={createdSubtitle(
+              coursesByPeriodData?.weekDone,
+              coursesByPeriodData?.week
+            )}
             icon={CalendarDaysIcon}
             isLoading={coursesByPeriodLoading}
             isError={coursesByPeriodError}
           />
           <StatCard
             title="Mois"
-            value={coursesByPeriodData?.month ?? 0}
+            value={coursesByPeriodData?.monthDone ?? 0}
+            subtitle={createdSubtitle(
+              coursesByPeriodData?.monthDone,
+              coursesByPeriodData?.month
+            )}
             icon={CalendarRangeIcon}
             isLoading={coursesByPeriodLoading}
             isError={coursesByPeriodError}
           />
           <StatCard
             title="Année"
-            value={coursesByPeriodData?.year ?? 0}
+            value={coursesByPeriodData?.yearDone ?? 0}
+            subtitle={createdSubtitle(
+              coursesByPeriodData?.yearDone,
+              coursesByPeriodData?.year
+            )}
             icon={HashIcon}
             isLoading={coursesByPeriodLoading}
             isError={coursesByPeriodError}
           />
           <StatCard
             title="Total"
-            value={coursesByPeriodData?.total ?? 0}
+            value={coursesByPeriodData?.totalDone ?? 0}
+            subtitle={createdSubtitle(
+              coursesByPeriodData?.totalDone,
+              coursesByPeriodData?.total
+            )}
             icon={RouteIcon}
             isLoading={coursesByPeriodLoading}
             isError={coursesByPeriodError}
@@ -268,8 +297,9 @@ export function DashboardPage() {
             isError={coursesMetricsError}
           />
           <StatCard
-            title="Temps d'acceptation"
-            value={avgAcceptanceTime}
+            title="Délai moyen avant départ"
+            value={avgLeadTime}
+            subtitle="entre réservation et départ"
             icon={TimerIcon}
             iconClassName="text-yellow-500"
             isLoading={coursesMetricsLoading}

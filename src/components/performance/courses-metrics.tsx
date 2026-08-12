@@ -1,14 +1,9 @@
-import {
-  RouteIcon,
-  TimerIcon,
-  ClockIcon,
-  BanknoteIcon,
-} from "lucide-react"
+import { RouteIcon, TimerIcon, ClockIcon, BanknoteIcon } from "lucide-react"
 import { StatCard } from "@/components/shared/stat-card"
 import { useGetAdminCoursesMetricsQuery } from "@/gql/generated"
 import {
   formatDistanceMeters,
-  formatAcceptanceTimeSeconds,
+  formatLeadTimeSeconds,
   formatDurationSeconds,
   formatPriceEur,
 } from "@/lib/statistics"
@@ -26,8 +21,9 @@ export function CoursesMetrics() {
         isLoading={isLoading}
       />
       <StatCard
-        title="Temps moyen d'acceptation"
-        value={formatAcceptanceTimeSeconds(m?.averageAcceptanceTimeSeconds)}
+        title="Délai moyen avant départ"
+        value={formatLeadTimeSeconds(m?.averageAcceptanceTimeSeconds)}
+        subtitle="entre réservation et départ"
         icon={TimerIcon}
         iconClassName="text-yellow-500"
         isLoading={isLoading}

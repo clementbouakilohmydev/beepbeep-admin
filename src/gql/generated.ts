@@ -4928,6 +4928,11 @@ export type GetCoursesCountsByPeriodQueryVariables = Exact<{
   weekWhere: CourseWhereInput
   monthWhere: CourseWhereInput
   yearWhere: CourseWhereInput
+  todayDoneWhere: CourseWhereInput
+  weekDoneWhere: CourseWhereInput
+  monthDoneWhere: CourseWhereInput
+  yearDoneWhere: CourseWhereInput
+  doneWhere: CourseWhereInput
 }>
 
 export type GetCoursesCountsByPeriodQuery = {
@@ -4937,6 +4942,11 @@ export type GetCoursesCountsByPeriodQuery = {
   week?: number | null
   month?: number | null
   year?: number | null
+  totalDone?: number | null
+  todayDone?: number | null
+  weekDone?: number | null
+  monthDone?: number | null
+  yearDone?: number | null
 }
 
 export type UpdateUserMutationVariables = Exact<{
@@ -6083,12 +6093,17 @@ useGetCoursesCountsQuery.fetcher = (
   )
 
 export const GetCoursesCountsByPeriodDocument = `
-    query GetCoursesCountsByPeriod($todayWhere: CourseWhereInput!, $weekWhere: CourseWhereInput!, $monthWhere: CourseWhereInput!, $yearWhere: CourseWhereInput!) {
+    query GetCoursesCountsByPeriod($todayWhere: CourseWhereInput!, $weekWhere: CourseWhereInput!, $monthWhere: CourseWhereInput!, $yearWhere: CourseWhereInput!, $todayDoneWhere: CourseWhereInput!, $weekDoneWhere: CourseWhereInput!, $monthDoneWhere: CourseWhereInput!, $yearDoneWhere: CourseWhereInput!, $doneWhere: CourseWhereInput!) {
   total: coursesCount
   today: coursesCount(where: $todayWhere)
   week: coursesCount(where: $weekWhere)
   month: coursesCount(where: $monthWhere)
   year: coursesCount(where: $yearWhere)
+  totalDone: coursesCount(where: $doneWhere)
+  todayDone: coursesCount(where: $todayDoneWhere)
+  weekDone: coursesCount(where: $weekDoneWhere)
+  monthDone: coursesCount(where: $monthDoneWhere)
+  yearDone: coursesCount(where: $yearDoneWhere)
 }
     `
 

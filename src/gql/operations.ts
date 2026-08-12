@@ -326,18 +326,32 @@ export const GetCoursesCounts = /* GraphQL */ `
   }
 `
 
+// Deux séries par période : `*` = courses créées (tous états), `*Done` =
+// courses réellement effectuées (state "paid"). Le dashboard affiche la
+// seconde en valeur principale et la première en sous-titre — cf
+// lib/date.ts#getCourseWheres pour le pourquoi.
 export const GetCoursesCountsByPeriod = /* GraphQL */ `
   query GetCoursesCountsByPeriod(
     $todayWhere: CourseWhereInput!
     $weekWhere: CourseWhereInput!
     $monthWhere: CourseWhereInput!
     $yearWhere: CourseWhereInput!
+    $todayDoneWhere: CourseWhereInput!
+    $weekDoneWhere: CourseWhereInput!
+    $monthDoneWhere: CourseWhereInput!
+    $yearDoneWhere: CourseWhereInput!
+    $doneWhere: CourseWhereInput!
   ) {
     total: coursesCount
     today: coursesCount(where: $todayWhere)
     week: coursesCount(where: $weekWhere)
     month: coursesCount(where: $monthWhere)
     year: coursesCount(where: $yearWhere)
+    totalDone: coursesCount(where: $doneWhere)
+    todayDone: coursesCount(where: $todayDoneWhere)
+    weekDone: coursesCount(where: $weekDoneWhere)
+    monthDone: coursesCount(where: $monthDoneWhere)
+    yearDone: coursesCount(where: $yearDoneWhere)
   }
 `
 

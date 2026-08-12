@@ -14,7 +14,7 @@ import {
   useGetCoursesCountsQuery,
   useGetCoursesCountsByPeriodQuery,
 } from "@/gql/generated"
-import { getDateBoundaries } from "@/lib/date"
+import { getCourseWheres } from "@/lib/date"
 import { ErrorState } from "@/components/shared/error-state"
 import { CoursesStatusChart } from "@/components/performance/courses-status-chart"
 import { CoursesTrendChart } from "@/components/performance/courses-trend-chart"
@@ -22,17 +22,24 @@ import { CoursesMetrics } from "@/components/performance/courses-metrics"
 import { AvgDistanceChart } from "@/components/performance/avg-distance-chart"
 
 export function PerformancePage() {
-  const { data: statusData, isLoading: statusLoading, isError, refetch } =
-    useGetCoursesCountsQuery({})
+  const {
+    data: statusData,
+    isLoading: statusLoading,
+    isError,
+    refetch,
+  } = useGetCoursesCountsQuery({})
 
-  const dateBoundaries = getDateBoundaries()
   const { data: periodData, isLoading: periodLoading } =
-    useGetCoursesCountsByPeriodQuery({
-      todayWhere: { createdAt: { gte: dateBoundaries.todayISO } },
-      weekWhere: { createdAt: { gte: dateBoundaries.weekISO } },
-      monthWhere: { createdAt: { gte: dateBoundaries.monthISO } },
-      yearWhere: { createdAt: { gte: dateBoundaries.yearISO } },
-    })
+    useGetCoursesCountsByPeriodQuery(getCourseWheres())
+
+  /** « sur N créées » — masqué quand créées et effectuées coïncident. */
+  const createdSubtitle = (
+    done: number | null | undefined,
+    created: number | null | undefined
+  ) =>
+    created != null && created !== (done ?? 0)
+      ? `sur ${created} créée${created > 1 ? "s" : ""}`
+      : undefined
 
   if (isError && !statusLoading) {
     return <ErrorState onRetry={refetch} />
@@ -77,35 +84,42 @@ export function PerformancePage() {
 
       {/* Period counts */}
       <div>
-        <h2 className="mb-3 text-lg font-semibold">Par période</h2>
+        <h2 className="mb-3 text-lg font-semibold">
+          Par période (courses effectuées)
+        </h2>
         <div className="grid grid-cols-2 gap-3 sm:gap-4 lg:grid-cols-5">
           <StatCard
             title="Aujourd'hui"
-            value={periodData?.today ?? 0}
+            value={periodData?.todayDone ?? 0}
+            subtitle={createdSubtitle(periodData?.todayDone, periodData?.today)}
             icon={CalendarIcon}
             isLoading={periodLoading}
           />
           <StatCard
             title="Cette semaine"
-            value={periodData?.week ?? 0}
+            value={periodData?.weekDone ?? 0}
+            subtitle={createdSubtitle(periodData?.weekDone, periodData?.week)}
             icon={CalendarDaysIcon}
             isLoading={periodLoading}
           />
           <StatCard
             title="Ce mois"
-            value={periodData?.month ?? 0}
+            value={periodData?.monthDone ?? 0}
+            subtitle={createdSubtitle(periodData?.monthDone, periodData?.month)}
             icon={CalendarRangeIcon}
             isLoading={periodLoading}
           />
           <StatCard
             title="Cette année"
-            value={periodData?.year ?? 0}
+            value={periodData?.yearDone ?? 0}
+            subtitle={createdSubtitle(periodData?.yearDone, periodData?.year)}
             icon={HashIcon}
             isLoading={periodLoading}
           />
           <StatCard
             title="Total"
-            value={periodData?.total ?? 0}
+            value={periodData?.totalDone ?? 0}
+            subtitle={createdSubtitle(periodData?.totalDone, periodData?.total)}
             icon={RouteIcon}
             isLoading={periodLoading}
           />
