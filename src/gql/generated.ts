@@ -482,6 +482,7 @@ export type Course = {
   createdAt?: Maybe<Scalars["DateTime"]["output"]>
   distance?: Maybe<Scalars["Int"]["output"]>
   driver?: Maybe<User>
+  driverLiveLocation?: Maybe<CourseDriverLiveLocation>
   duration?: Maybe<Scalars["Int"]["output"]>
   endDatetimeUtc?: Maybe<Scalars["DateTime"]["output"]>
   fees?: Maybe<Scalars["Float"]["output"]>
@@ -550,6 +551,13 @@ export type CourseCreateInput = {
   trip?: InputMaybe<TripRelateToOneForCreateInput>
   updatedAt?: InputMaybe<Scalars["DateTime"]["input"]>
   user?: InputMaybe<UserRelateToOneForCreateInput>
+}
+
+export type CourseDriverLiveLocation = {
+  __typename?: "CourseDriverLiveLocation"
+  latitude: Scalars["Float"]["output"]
+  longitude: Scalars["Float"]["output"]
+  updatedAt?: Maybe<Scalars["String"]["output"]>
 }
 
 export type CourseManyRelationFilter = {
@@ -705,11 +713,18 @@ export type Driver = {
   availability?: Maybe<Scalars["String"]["output"]>
   createdAt?: Maybe<Scalars["DateTime"]["output"]>
   id: Scalars["ID"]["output"]
+  liveLatitude?: Maybe<Scalars["Float"]["output"]>
+  liveLocationAt?: Maybe<Scalars["DateTime"]["output"]>
+  liveLongitude?: Maybe<Scalars["Float"]["output"]>
   location?: Maybe<Scalars["JSON"]["output"]>
   locationCity?: Maybe<Scalars["String"]["output"]>
   locationCountry?: Maybe<Scalars["String"]["output"]>
   locationName?: Maybe<Scalars["String"]["output"]>
   onboardingStatus?: Maybe<DriverOnboardingStatusType>
+  paymentReminderSentAt?: Maybe<Scalars["DateTime"]["output"]>
+  paymentRemindersSent?: Maybe<Scalars["Int"]["output"]>
+  payoutsCheckedAt?: Maybe<Scalars["DateTime"]["output"]>
+  payoutsEnabled?: Maybe<Scalars["Boolean"]["output"]>
   radius?: Maybe<Scalars["Int"]["output"]>
   slots?: Maybe<Array<DriverSlot>>
   slotsCount?: Maybe<Scalars["Int"]["output"]>
@@ -739,10 +754,17 @@ export type DriverTripsArroundArgs = {
 export type DriverCreateInput = {
   availability?: InputMaybe<Scalars["String"]["input"]>
   createdAt?: InputMaybe<Scalars["DateTime"]["input"]>
+  liveLatitude?: InputMaybe<Scalars["Float"]["input"]>
+  liveLocationAt?: InputMaybe<Scalars["DateTime"]["input"]>
+  liveLongitude?: InputMaybe<Scalars["Float"]["input"]>
   location?: InputMaybe<Scalars["JSON"]["input"]>
   locationCity?: InputMaybe<Scalars["String"]["input"]>
   locationCountry?: InputMaybe<Scalars["String"]["input"]>
   locationName?: InputMaybe<Scalars["String"]["input"]>
+  paymentReminderSentAt?: InputMaybe<Scalars["DateTime"]["input"]>
+  paymentRemindersSent?: InputMaybe<Scalars["Int"]["input"]>
+  payoutsCheckedAt?: InputMaybe<Scalars["DateTime"]["input"]>
+  payoutsEnabled?: InputMaybe<Scalars["Boolean"]["input"]>
   radius?: InputMaybe<Scalars["Int"]["input"]>
   slots?: InputMaybe<DriverSlotRelateToManyForCreateInput>
   stripeAccountId?: InputMaybe<Scalars["String"]["input"]>
@@ -763,9 +785,16 @@ export type DriverOrderByInput = {
   availability?: InputMaybe<OrderDirection>
   createdAt?: InputMaybe<OrderDirection>
   id?: InputMaybe<OrderDirection>
+  liveLatitude?: InputMaybe<OrderDirection>
+  liveLocationAt?: InputMaybe<OrderDirection>
+  liveLongitude?: InputMaybe<OrderDirection>
   locationCity?: InputMaybe<OrderDirection>
   locationCountry?: InputMaybe<OrderDirection>
   locationName?: InputMaybe<OrderDirection>
+  paymentReminderSentAt?: InputMaybe<OrderDirection>
+  paymentRemindersSent?: InputMaybe<OrderDirection>
+  payoutsCheckedAt?: InputMaybe<OrderDirection>
+  payoutsEnabled?: InputMaybe<OrderDirection>
   radius?: InputMaybe<OrderDirection>
   stripeAccountId?: InputMaybe<OrderDirection>
   updatedAt?: InputMaybe<OrderDirection>
@@ -906,10 +935,17 @@ export type DriverUpdateArgs = {
 export type DriverUpdateInput = {
   availability?: InputMaybe<Scalars["String"]["input"]>
   createdAt?: InputMaybe<Scalars["DateTime"]["input"]>
+  liveLatitude?: InputMaybe<Scalars["Float"]["input"]>
+  liveLocationAt?: InputMaybe<Scalars["DateTime"]["input"]>
+  liveLongitude?: InputMaybe<Scalars["Float"]["input"]>
   location?: InputMaybe<Scalars["JSON"]["input"]>
   locationCity?: InputMaybe<Scalars["String"]["input"]>
   locationCountry?: InputMaybe<Scalars["String"]["input"]>
   locationName?: InputMaybe<Scalars["String"]["input"]>
+  paymentReminderSentAt?: InputMaybe<Scalars["DateTime"]["input"]>
+  paymentRemindersSent?: InputMaybe<Scalars["Int"]["input"]>
+  payoutsCheckedAt?: InputMaybe<Scalars["DateTime"]["input"]>
+  payoutsEnabled?: InputMaybe<Scalars["Boolean"]["input"]>
   radius?: InputMaybe<Scalars["Int"]["input"]>
   slots?: InputMaybe<DriverSlotRelateToManyForUpdateInput>
   stripeAccountId?: InputMaybe<Scalars["String"]["input"]>
@@ -924,9 +960,16 @@ export type DriverWhereInput = {
   availability?: InputMaybe<StringNullableFilter>
   createdAt?: InputMaybe<DateTimeNullableFilter>
   id?: InputMaybe<IdFilter>
+  liveLatitude?: InputMaybe<FloatNullableFilter>
+  liveLocationAt?: InputMaybe<DateTimeNullableFilter>
+  liveLongitude?: InputMaybe<FloatNullableFilter>
   locationCity?: InputMaybe<StringFilter>
   locationCountry?: InputMaybe<StringFilter>
   locationName?: InputMaybe<StringFilter>
+  paymentReminderSentAt?: InputMaybe<DateTimeNullableFilter>
+  paymentRemindersSent?: InputMaybe<IntNullableFilter>
+  payoutsCheckedAt?: InputMaybe<DateTimeNullableFilter>
+  payoutsEnabled?: InputMaybe<BooleanFilter>
   radius?: InputMaybe<IntFilter>
   slots?: InputMaybe<DriverSlotManyRelationFilter>
   stripeAccountId?: InputMaybe<StringFilter>
@@ -1431,6 +1474,14 @@ export type KeystoneMeta = {
   adminMeta: KeystoneAdminMeta
 }
 
+export type LiveLocation = {
+  __typename?: "LiveLocation"
+  latitude: Scalars["Float"]["output"]
+  longitude: Scalars["Float"]["output"]
+  /** Horodatage du relevé — permet au client d'afficher « il y a 2 min ». */
+  updatedAt?: Maybe<Scalars["DateTime"]["output"]>
+}
+
 export type Location = {
   __typename?: "Location"
   gpid?: Maybe<Scalars["String"]["output"]>
@@ -1755,6 +1806,12 @@ export type Mutation = {
   updateLocations?: Maybe<Array<Maybe<Location>>>
   updateMessage?: Maybe<Message>
   updateMessages?: Maybe<Array<Maybe<Message>>>
+  /**
+   * Publie la position du conducteur courant. Acceptée uniquement s'il a une
+   * course en state "accepted" ; sinon la position est effacée et
+   * trackingActive repasse à false.
+   */
+  updateMyLiveLocation: UpdateLiveLocationResult
   updateNode?: Maybe<Node>
   updateNodes?: Maybe<Array<Maybe<Node>>>
   updateNotification?: Maybe<Notification>
@@ -2400,6 +2457,11 @@ export type MutationUpdateMessageArgs = {
 
 export type MutationUpdateMessagesArgs = {
   data: Array<MessageUpdateArgs>
+}
+
+export type MutationUpdateMyLiveLocationArgs = {
+  latitude: Scalars["Float"]["input"]
+  longitude: Scalars["Float"]["input"]
 }
 
 export type MutationUpdateNodeArgs = {
@@ -4209,6 +4271,17 @@ export type TripWhereUniqueInput = {
   payment?: InputMaybe<PaymentWhereUniqueInput>
 }
 
+export type UpdateLiveLocationResult = {
+  __typename?: "UpdateLiveLocationResult"
+  success: Scalars["Boolean"]["output"]
+  /**
+   * false = plus aucune course en cours : le client DOIT arrêter le suivi
+   * en arrière-plan. C'est le signal d'arrêt côté serveur, pour le cas où
+   * l'app aurait raté la fin de la course.
+   */
+  trackingActive: Scalars["Boolean"]["output"]
+}
+
 export type UpdatePasswordType = {
   __typename?: "UpdatePasswordType"
   success: Scalars["Boolean"]["output"]
@@ -4840,6 +4913,13 @@ export type GetUsersQuery = {
       __typename?: "Certificate"
       id: string
       state?: string | null
+    } | null
+    driver?: {
+      __typename?: "Driver"
+      id: string
+      stripeAccountId?: string | null
+      payoutsEnabled?: boolean | null
+      payoutsCheckedAt?: string | null
     } | null
   }> | null
 }
@@ -5736,6 +5816,12 @@ export const GetUsersDocument = `
     certificate {
       id
       state
+    }
+    driver {
+      id
+      stripeAccountId
+      payoutsEnabled
+      payoutsCheckedAt
     }
     averageRate
     ratingsCount

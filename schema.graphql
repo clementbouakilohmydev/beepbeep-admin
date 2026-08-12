@@ -373,6 +373,7 @@ type Course {
   cancellationFee: Float
   distance: Int
   trip: Trip
+  driverLiveLocation: CourseDriverLiveLocation
   driver: User
   passenger: User
   ratings(where: RatingWhereInput! = {}, orderBy: [RatingOrderByInput!]! = [], take: Int, skip: Int! = 0, cursor: RatingWhereUniqueInput): [Rating!]
@@ -382,6 +383,12 @@ type Course {
   user: User
   updatedAt: DateTime
   createdAt: DateTime
+}
+
+type CourseDriverLiveLocation {
+  latitude: Float!
+  longitude: Float!
+  updatedAt: String
 }
 
 input CourseWhereUniqueInput {
@@ -590,6 +597,13 @@ type Driver {
   slotsCount(where: DriverSlotWhereInput! = {}): Int
   stripeAccountId: String
   onboardingStatus: DriverOnboardingStatusType
+  paymentReminderSentAt: DateTime
+  paymentRemindersSent: Int
+  payoutsEnabled: Boolean
+  payoutsCheckedAt: DateTime
+  liveLatitude: Float
+  liveLongitude: Float
+  liveLocationAt: DateTime
   user: User
   updatedAt: DateTime
   createdAt: DateTime
@@ -625,6 +639,13 @@ input DriverWhereInput {
   locationCountry: StringFilter
   slots: DriverSlotManyRelationFilter
   stripeAccountId: StringFilter
+  paymentReminderSentAt: DateTimeNullableFilter
+  paymentRemindersSent: IntNullableFilter
+  payoutsEnabled: BooleanFilter
+  payoutsCheckedAt: DateTimeNullableFilter
+  liveLatitude: FloatNullableFilter
+  liveLongitude: FloatNullableFilter
+  liveLocationAt: DateTimeNullableFilter
   user: UserWhereInput
   updatedAt: DateTimeNullableFilter
   createdAt: DateTimeNullableFilter
@@ -655,6 +676,13 @@ input DriverOrderByInput {
   locationCity: OrderDirection
   locationCountry: OrderDirection
   stripeAccountId: OrderDirection
+  paymentReminderSentAt: OrderDirection
+  paymentRemindersSent: OrderDirection
+  payoutsEnabled: OrderDirection
+  payoutsCheckedAt: OrderDirection
+  liveLatitude: OrderDirection
+  liveLongitude: OrderDirection
+  liveLocationAt: OrderDirection
   updatedAt: OrderDirection
   createdAt: OrderDirection
 }
@@ -668,6 +696,13 @@ input DriverUpdateInput {
   locationCountry: String
   slots: DriverSlotRelateToManyForUpdateInput
   stripeAccountId: String
+  paymentReminderSentAt: DateTime
+  paymentRemindersSent: Int
+  payoutsEnabled: Boolean
+  payoutsCheckedAt: DateTime
+  liveLatitude: Float
+  liveLongitude: Float
+  liveLocationAt: DateTime
   user: UserRelateToOneForUpdateInput
   updatedAt: DateTime
   createdAt: DateTime
@@ -694,6 +729,13 @@ input DriverCreateInput {
   locationCountry: String
   slots: DriverSlotRelateToManyForCreateInput
   stripeAccountId: String
+  paymentReminderSentAt: DateTime
+  paymentRemindersSent: Int
+  payoutsEnabled: Boolean
+  payoutsCheckedAt: DateTime
+  liveLatitude: Float
+  liveLongitude: Float
+  liveLocationAt: DateTime
   user: UserRelateToOneForCreateInput
   updatedAt: DateTime
   createdAt: DateTime
@@ -2725,6 +2767,13 @@ type Mutation {
   switchUserMode(mode: UserMode!): SwitchUserModeResult!
 
   """
+  Publie la position du conducteur courant. Acceptée uniquement s'il a une
+  course en state "accepted" ; sinon la position est effacée et
+  trackingActive repasse à false.
+  """
+  updateMyLiveLocation(latitude: Float!, longitude: Float!): UpdateLiveLocationResult!
+
+  """
   Génère un lien d'onboarding Stripe Connect Express pour le driver
   courant. Crée le compte Express si manquant et persiste son ID sur
   le Driver. Le mobile ouvre l'URL renvoyée dans un in-app browser :
@@ -3158,6 +3207,25 @@ type SwitchUserModeResult {
   mode: UserMode
   reasonCode: String
   reasonMessage: String
+}
+
+type LiveLocation {
+  latitude: Float!
+  longitude: Float!
+
+  """Horodatage du relevé — permet au client d'afficher « il y a 2 min »."""
+  updatedAt: DateTime
+}
+
+type UpdateLiveLocationResult {
+  success: Boolean!
+
+  """
+  false = plus aucune course en cours : le client DOIT arrêter le suivi
+  en arrière-plan. C'est le signal d'arrêt côté serveur, pour le cas où
+  l'app aurait raté la fin de la course.
+  """
+  trackingActive: Boolean!
 }
 
 type StripeOnboardingLink {

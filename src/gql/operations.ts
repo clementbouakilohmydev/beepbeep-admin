@@ -79,6 +79,15 @@ export const GetUsers = /* GraphQL */ `
         id
         state
       }
+      # Miroir DB de payouts_enabled, rafraîchi une fois par jour par le cron
+      # back driverPaymentReminders. Le virtual onboardingStatus, lui, appelle
+      # Stripe à chaque lecture — inutilisable sur une liste.
+      driver {
+        id
+        stripeAccountId
+        payoutsEnabled
+        payoutsCheckedAt
+      }
       averageRate
       ratingsCount
     }

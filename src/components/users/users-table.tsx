@@ -164,6 +164,80 @@ const columns: ColumnDef<User, unknown>[] = [
     meta: { skeletonClassName: "h-5 w-24" },
   },
   {
+    id: "payment",
+    header: "Paiement",
+    cell: ({ row }) => {
+      const user = row.original
+      if (user.type !== "driver") {
+        return <span className="text-muted-foreground">—</span>
+      }
+
+      const driver = user.driver
+      const checkedAt = driver?.payoutsCheckedAt
+        ? formatDate(driver.payoutsCheckedAt)
+        : null
+
+      // Aucun compte Stripe = le conducteur n'a jamais ouvert le tunnel de
+      // configuration. C'est la population majoritaire des non-payables.
+      if (!driver?.stripeAccountId) {
+        return (
+          <Tooltip>
+            <TooltipTrigger asChild>
+              <Badge variant="secondary" className="bg-red-500/20 text-red-400">
+                <CircleAlertIcon className="mr-1 size-3" />
+                Non configuré
+              </Badge>
+            </TooltipTrigger>
+            <TooltipContent>
+              Le conducteur n'a jamais ouvert la configuration des paiements —
+              il ne peut pas être payé
+            </TooltipContent>
+          </Tooltip>
+        )
+      }
+
+      if (driver.payoutsEnabled) {
+        return (
+          <Tooltip>
+            <TooltipTrigger asChild>
+              <Badge variant="secondary" className="bg-primary/20 text-primary">
+                <CircleCheckIcon className="mr-1 size-3" />
+                Payable
+              </Badge>
+            </TooltipTrigger>
+            <TooltipContent>
+              {checkedAt ? `Vérifié le ${checkedAt}` : "Virements autorisés"}
+            </TooltipContent>
+          </Tooltip>
+        )
+      }
+
+      return (
+        <Tooltip>
+          <TooltipTrigger asChild>
+            <Badge
+              variant="secondary"
+              className="bg-yellow-500/20 text-yellow-400"
+            >
+              <CircleAlertIcon className="mr-1 size-3" />
+              KYC incomplet
+            </Badge>
+          </TooltipTrigger>
+          <TooltipContent>
+            Configuration commencée mais Stripe n'autorise pas encore les
+            virements
+            {checkedAt ? ` — vérifié le ${checkedAt}` : ""}
+          </TooltipContent>
+        </Tooltip>
+      )
+    },
+    meta: {
+      headerClassName: "hidden lg:table-cell",
+      cellClassName: "hidden lg:table-cell",
+      skeletonClassName: "h-5 w-24",
+    },
+  },
+  {
     id: "rating",
     header: "Note",
     cell: ({ row }) => {
