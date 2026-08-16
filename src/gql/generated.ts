@@ -134,6 +134,15 @@ export type AddressWhereUniqueInput = {
   id?: InputMaybe<Scalars["ID"]["input"]>
 }
 
+export type AdminCancelCourseResult = {
+  __typename?: "AdminCancelCourseResult"
+  reasonCode?: Maybe<Scalars["String"]["output"]>
+  reasonMessage?: Maybe<Scalars["String"]["output"]>
+  /** État du remboursement Stripe : succeeded, pending, failed, ou null si non demandé / rien à rembourser. */
+  refundStatus?: Maybe<Scalars["String"]["output"]>
+  success: Scalars["Boolean"]["output"]
+}
+
 export type AdminCoursesMetrics = {
   __typename?: "AdminCoursesMetrics"
   averageDistance?: Maybe<Scalars["Float"]["output"]>
@@ -479,6 +488,8 @@ export type ClearPushTokensType = {
 export type Course = {
   __typename?: "Course"
   cancellationFee?: Maybe<Scalars["Float"]["output"]>
+  cancelledAt?: Maybe<Scalars["DateTime"]["output"]>
+  cancelledBy?: Maybe<Scalars["String"]["output"]>
   createdAt?: Maybe<Scalars["DateTime"]["output"]>
   distance?: Maybe<Scalars["Int"]["output"]>
   driver?: Maybe<User>
@@ -531,6 +542,8 @@ export type CourseRatingsCountArgs = {
 
 export type CourseCreateInput = {
   cancellationFee?: InputMaybe<Scalars["Float"]["input"]>
+  cancelledAt?: InputMaybe<Scalars["DateTime"]["input"]>
+  cancelledBy?: InputMaybe<Scalars["String"]["input"]>
   createdAt?: InputMaybe<Scalars["DateTime"]["input"]>
   distance?: InputMaybe<Scalars["Int"]["input"]>
   driver?: InputMaybe<UserRelateToOneForCreateInput>
@@ -568,6 +581,8 @@ export type CourseManyRelationFilter = {
 
 export type CourseOrderByInput = {
   cancellationFee?: InputMaybe<OrderDirection>
+  cancelledAt?: InputMaybe<OrderDirection>
+  cancelledBy?: InputMaybe<OrderDirection>
   createdAt?: InputMaybe<OrderDirection>
   distance?: InputMaybe<OrderDirection>
   duration?: InputMaybe<OrderDirection>
@@ -612,6 +627,8 @@ export type CourseUpdateArgs = {
 
 export type CourseUpdateInput = {
   cancellationFee?: InputMaybe<Scalars["Float"]["input"]>
+  cancelledAt?: InputMaybe<Scalars["DateTime"]["input"]>
+  cancelledBy?: InputMaybe<Scalars["String"]["input"]>
   createdAt?: InputMaybe<Scalars["DateTime"]["input"]>
   distance?: InputMaybe<Scalars["Int"]["input"]>
   driver?: InputMaybe<UserRelateToOneForUpdateInput>
@@ -639,6 +656,8 @@ export type CourseWhereInput = {
   NOT?: InputMaybe<Array<CourseWhereInput>>
   OR?: InputMaybe<Array<CourseWhereInput>>
   cancellationFee?: InputMaybe<FloatNullableFilter>
+  cancelledAt?: InputMaybe<DateTimeNullableFilter>
+  cancelledBy?: InputMaybe<StringNullableFilter>
   createdAt?: InputMaybe<DateTimeNullableFilter>
   distance?: InputMaybe<IntNullableFilter>
   driver?: InputMaybe<UserWhereInput>
@@ -1601,6 +1620,12 @@ export type Mutation = {
   addDriverStripeBankAccount: DriverStripeMutationResult
   addPushToken?: Maybe<AddPushTokenType>
   /**
+   * Annule une course depuis le back-office et, si `refund` vaut true,
+   * rembourse le passager du montant réellement encaissé.
+   * Réservé aux administrateurs, journalisé dans AdminLog.
+   */
+  adminCancelCourse: AdminCancelCourseResult
+  /**
    * Marque le compte d'un utilisateur comme supprimé, à la demande du support.
    * Refuse si une course est en cours, un paiement en vol, ou des gains non
    * encore versés — exactement comme deleteMyAccount côté app.
@@ -1856,6 +1881,12 @@ export type MutationAddDriverStripeBankAccountArgs = {
 
 export type MutationAddPushTokenArgs = {
   token: Scalars["String"]["input"]
+}
+
+export type MutationAdminCancelCourseArgs = {
+  courseId: Scalars["ID"]["input"]
+  reason?: InputMaybe<Scalars["String"]["input"]>
+  refund?: InputMaybe<Scalars["Boolean"]["input"]>
 }
 
 export type MutationAdminDeleteUserAccountArgs = {
@@ -5218,6 +5249,71 @@ export type AdminDeleteUserAccountMutation = {
   }
 }
 
+export type GetUserActiveCourseQueryVariables = Exact<{
+  userId: Scalars["ID"]["input"]
+}>
+
+export type GetUserActiveCourseQuery = {
+  __typename?: "Query"
+  asPassenger?: Array<{
+    __typename?: "Course"
+    id: string
+    price?: number | null
+    createdAt?: string | null
+    startDatetimeUtc?: string | null
+    driver?: {
+      __typename?: "User"
+      id: string
+      firstname?: string | null
+      lastname?: string | null
+      phoneNumber?: string | null
+    } | null
+    passenger?: {
+      __typename?: "User"
+      id: string
+      firstname?: string | null
+      lastname?: string | null
+    } | null
+  }> | null
+  asDriver?: Array<{
+    __typename?: "Course"
+    id: string
+    price?: number | null
+    createdAt?: string | null
+    startDatetimeUtc?: string | null
+    driver?: {
+      __typename?: "User"
+      id: string
+      firstname?: string | null
+      lastname?: string | null
+    } | null
+    passenger?: {
+      __typename?: "User"
+      id: string
+      firstname?: string | null
+      lastname?: string | null
+      phoneNumber?: string | null
+    } | null
+  }> | null
+}
+
+export type AdminCancelCourseMutationVariables = Exact<{
+  courseId: Scalars["ID"]["input"]
+  reason?: InputMaybe<Scalars["String"]["input"]>
+  refund?: InputMaybe<Scalars["Boolean"]["input"]>
+}>
+
+export type AdminCancelCourseMutation = {
+  __typename?: "Mutation"
+  adminCancelCourse: {
+    __typename?: "AdminCancelCourseResult"
+    success: boolean
+    refundStatus?: string | null
+    reasonCode?: string | null
+    reasonMessage?: string | null
+  }
+}
+
 export type UpdateUserMutationVariables = Exact<{
   where: UserWhereUniqueInput
   data: UserUpdateInput
@@ -6468,6 +6564,141 @@ useAdminDeleteUserAccountMutation.fetcher = (
     AdminDeleteUserAccountMutation,
     AdminDeleteUserAccountMutationVariables
   >(AdminDeleteUserAccountDocument, variables, options)
+
+export const GetUserActiveCourseDocument = `
+    query GetUserActiveCourse($userId: ID!) {
+  asPassenger: courses(
+    where: {passenger: {id: {equals: $userId}}, state: {equals: "accepted"}}
+    orderBy: [{createdAt: desc}]
+    take: 1
+  ) {
+    id
+    price
+    createdAt
+    startDatetimeUtc
+    driver {
+      id
+      firstname
+      lastname
+      phoneNumber
+    }
+    passenger {
+      id
+      firstname
+      lastname
+    }
+  }
+  asDriver: courses(
+    where: {driver: {id: {equals: $userId}}, state: {equals: "accepted"}}
+    orderBy: [{createdAt: desc}]
+    take: 1
+  ) {
+    id
+    price
+    createdAt
+    startDatetimeUtc
+    driver {
+      id
+      firstname
+      lastname
+    }
+    passenger {
+      id
+      firstname
+      lastname
+      phoneNumber
+    }
+  }
+}
+    `
+
+export const useGetUserActiveCourseQuery = <
+  TData = GetUserActiveCourseQuery,
+  TError = unknown,
+>(
+  variables: GetUserActiveCourseQueryVariables,
+  options?: Omit<
+    UseQueryOptions<GetUserActiveCourseQuery, TError, TData>,
+    "queryKey"
+  > & {
+    queryKey?: UseQueryOptions<
+      GetUserActiveCourseQuery,
+      TError,
+      TData
+    >["queryKey"]
+  }
+) => {
+  return useQuery<GetUserActiveCourseQuery, TError, TData>({
+    queryKey: ["GetUserActiveCourse", variables],
+    queryFn: graphqlClient<
+      GetUserActiveCourseQuery,
+      GetUserActiveCourseQueryVariables
+    >(GetUserActiveCourseDocument, variables),
+    ...options,
+  })
+}
+
+useGetUserActiveCourseQuery.getKey = (
+  variables: GetUserActiveCourseQueryVariables
+) => ["GetUserActiveCourse", variables]
+
+useGetUserActiveCourseQuery.fetcher = (
+  variables: GetUserActiveCourseQueryVariables,
+  options?: RequestInit["headers"]
+) =>
+  graphqlClient<GetUserActiveCourseQuery, GetUserActiveCourseQueryVariables>(
+    GetUserActiveCourseDocument,
+    variables,
+    options
+  )
+
+export const AdminCancelCourseDocument = `
+    mutation AdminCancelCourse($courseId: ID!, $reason: String, $refund: Boolean) {
+  adminCancelCourse(courseId: $courseId, reason: $reason, refund: $refund) {
+    success
+    refundStatus
+    reasonCode
+    reasonMessage
+  }
+}
+    `
+
+export const useAdminCancelCourseMutation = <
+  TError = unknown,
+  TContext = unknown,
+>(
+  options?: UseMutationOptions<
+    AdminCancelCourseMutation,
+    TError,
+    AdminCancelCourseMutationVariables,
+    TContext
+  >
+) => {
+  return useMutation<
+    AdminCancelCourseMutation,
+    TError,
+    AdminCancelCourseMutationVariables,
+    TContext
+  >({
+    mutationKey: ["AdminCancelCourse"],
+    mutationFn: (variables?: AdminCancelCourseMutationVariables) =>
+      graphqlClient<
+        AdminCancelCourseMutation,
+        AdminCancelCourseMutationVariables
+      >(AdminCancelCourseDocument, variables)(),
+    ...options,
+  })
+}
+
+useAdminCancelCourseMutation.fetcher = (
+  variables: AdminCancelCourseMutationVariables,
+  options?: RequestInit["headers"]
+) =>
+  graphqlClient<AdminCancelCourseMutation, AdminCancelCourseMutationVariables>(
+    AdminCancelCourseDocument,
+    variables,
+    options
+  )
 
 export const UpdateUserDocument = `
     mutation UpdateUser($where: UserWhereUniqueInput!, $data: UserUpdateInput!) {

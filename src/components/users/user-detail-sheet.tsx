@@ -11,6 +11,7 @@ import { UserSheetInfo } from "./user-sheet-info"
 import { UserSheetVehicle } from "./user-sheet-vehicle"
 import { UserSheetDocuments } from "./user-sheet-documents"
 import { UserSheetRatings } from "./user-sheet-ratings"
+import { UserActiveCourse } from "./user-active-course"
 
 type UserDetailSheetProps = {
   userId: string | null
@@ -55,47 +56,54 @@ export function UserDetailSheet({ userId, onClose }: UserDetailSheetProps) {
 
   return (
     <DetailSheet open={!!userId} onClose={onClose}>
-        {isLoading ? (
-          <SheetLoadingSkeleton />
-        ) : !user ? (
-          <div className="flex h-full items-center justify-center">
-            <p className="text-muted-foreground">Utilisateur introuvable.</p>
-          </div>
-        ) : (
-          <>
-            <UserSheetHeader
-              user={user}
-              updateUser={updateUser}
-              isUpdatingUser={isUpdatingUser}
+      {isLoading ? (
+        <SheetLoadingSkeleton />
+      ) : !user ? (
+        <div className="flex h-full items-center justify-center">
+          <p className="text-muted-foreground">Utilisateur introuvable.</p>
+        </div>
+      ) : (
+        <>
+          <UserSheetHeader
+            user={user}
+            updateUser={updateUser}
+            isUpdatingUser={isUpdatingUser}
+          />
+
+          <div className="space-y-6 px-4 pb-6">
+            {/* Placé avant les infos : c'est l'élément actionnable quand un
+                  utilisateur écrit au support parce qu'il est bloqué. */}
+            <UserActiveCourse
+              userId={user.id}
+              userName={`${user.firstname ?? ""} ${user.lastname ?? ""}`.trim()}
             />
 
-            <div className="space-y-6 px-4 pb-6">
-              <UserSheetInfo user={user} />
+            <UserSheetInfo user={user} />
 
-              {isDriver && user.vehicule && (
-                <UserSheetVehicle vehicule={user.vehicule} />
-              )}
+            {isDriver && user.vehicule && (
+              <UserSheetVehicle vehicule={user.vehicule} />
+            )}
 
-              {isDriver && (
-                <UserSheetDocuments
-                  user={user}
-                  dl={dl}
-                  ins={ins}
-                  rd={rd}
-                  cert={cert}
-                  isValidatingDoc={isValidatingDoc}
-                />
-              )}
+            {isDriver && (
+              <UserSheetDocuments
+                user={user}
+                dl={dl}
+                ins={ins}
+                rd={rd}
+                cert={cert}
+                isValidatingDoc={isValidatingDoc}
+              />
+            )}
 
-              {(user.ratingsCount ?? 0) > 0 && user.ratings?.length ? (
-                <UserSheetRatings
-                  ratings={user.ratings}
-                  ratingsCount={user.ratingsCount ?? 0}
-                />
-              ) : null}
-            </div>
-          </>
-        )}
+            {(user.ratingsCount ?? 0) > 0 && user.ratings?.length ? (
+              <UserSheetRatings
+                ratings={user.ratings}
+                ratingsCount={user.ratingsCount ?? 0}
+              />
+            ) : null}
+          </div>
+        </>
+      )}
     </DetailSheet>
   )
 }

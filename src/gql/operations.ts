@@ -384,6 +384,78 @@ export const AdminDeleteUserAccount = /* GraphQL */ `
   }
 `
 
+// Course en cours de l'utilisateur, dans les deux rôles. Sert au bloc
+// « course en cours » de la fiche : depuis que le passager ne peut plus
+// annuler passé 60 s, c'est le support qui doit pouvoir débloquer une course
+// fantôme (conducteur qui ne vient jamais).
+export const GetUserActiveCourse = /* GraphQL */ `
+  query GetUserActiveCourse($userId: ID!) {
+    asPassenger: courses(
+      where: {
+        passenger: { id: { equals: $userId } }
+        state: { equals: "accepted" }
+      }
+      orderBy: [{ createdAt: desc }]
+      take: 1
+    ) {
+      id
+      price
+      createdAt
+      startDatetimeUtc
+      driver {
+        id
+        firstname
+        lastname
+        phoneNumber
+      }
+      passenger {
+        id
+        firstname
+        lastname
+      }
+    }
+    asDriver: courses(
+      where: {
+        driver: { id: { equals: $userId } }
+        state: { equals: "accepted" }
+      }
+      orderBy: [{ createdAt: desc }]
+      take: 1
+    ) {
+      id
+      price
+      createdAt
+      startDatetimeUtc
+      driver {
+        id
+        firstname
+        lastname
+      }
+      passenger {
+        id
+        firstname
+        lastname
+        phoneNumber
+      }
+    }
+  }
+`
+
+export const AdminCancelCourse = /* GraphQL */ `
+  mutation AdminCancelCourse(
+    $courseId: ID!
+    $reason: String
+    $refund: Boolean
+  ) {
+    adminCancelCourse(courseId: $courseId, reason: $reason, refund: $refund) {
+      success
+      refundStatus
+      reasonCode
+      reasonMessage
+    }
+  }
+`
+
 export const UpdateUser = /* GraphQL */ `
   mutation UpdateUser($where: UserWhereUniqueInput!, $data: UserUpdateInput!) {
     updateUser(where: $where, data: $data) {

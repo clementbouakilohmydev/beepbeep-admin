@@ -371,6 +371,8 @@ type Course {
   price: Float
   fees: Float
   cancellationFee: Float
+  cancelledBy: String
+  cancelledAt: DateTime
   distance: Int
   trip: Trip
   driverLiveLocation: CourseDriverLiveLocation
@@ -413,6 +415,8 @@ input CourseWhereInput {
   price: FloatNullableFilter
   fees: FloatNullableFilter
   cancellationFee: FloatNullableFilter
+  cancelledBy: StringNullableFilter
+  cancelledAt: DateTimeNullableFilter
   distance: IntNullableFilter
   trip: TripWhereInput
   driver: UserWhereInput
@@ -469,6 +473,8 @@ input CourseOrderByInput {
   price: OrderDirection
   fees: OrderDirection
   cancellationFee: OrderDirection
+  cancelledBy: OrderDirection
+  cancelledAt: OrderDirection
   distance: OrderDirection
   updatedAt: OrderDirection
   createdAt: OrderDirection
@@ -487,6 +493,8 @@ input CourseUpdateInput {
   price: Float
   fees: Float
   cancellationFee: Float
+  cancelledBy: String
+  cancelledAt: DateTime
   distance: Int
   trip: TripRelateToOneForUpdateInput
   driver: UserRelateToOneForUpdateInput
@@ -548,6 +556,8 @@ input CourseCreateInput {
   price: Float
   fees: Float
   cancellationFee: Float
+  cancelledBy: String
+  cancelledAt: DateTime
   distance: Int
   trip: TripRelateToOneForCreateInput
   driver: UserRelateToOneForCreateInput
@@ -2747,6 +2757,13 @@ type Mutation {
   adminDeleteUserAccount(userId: ID!, reason: String): AdminDeleteUserAccountResult!
 
   """
+  Annule une course depuis le back-office et, si `refund` vaut true,
+  rembourse le passager du montant réellement encaissé.
+  Réservé aux administrateurs, journalisé dans AdminLog.
+  """
+  adminCancelCourse(courseId: ID!, reason: String, refund: Boolean): AdminCancelCourseResult!
+
+  """
   Transforme le compte courant en compte conducteur : crée le profil Driver
   s'il n'existe pas et bascule `type` sur "driver". Idempotent — rappeler
   la mutation sur un compte déjà conducteur renvoie success sans rien
@@ -3179,6 +3196,17 @@ type AdminDeleteUserAccountResult {
   reasonCode: String
 
   """Message prêt à afficher dans le back-office."""
+  reasonMessage: String
+}
+
+type AdminCancelCourseResult {
+  success: Boolean!
+
+  """
+  État du remboursement Stripe : succeeded, pending, failed, ou null si non demandé / rien à rembourser.
+  """
+  refundStatus: String
+  reasonCode: String
   reasonMessage: String
 }
 
