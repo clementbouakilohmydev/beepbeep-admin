@@ -18,7 +18,7 @@ import { SESSION_TOKEN_KEY } from "@/lib/constants"
 import { loginResponseSchema } from "@/validation/auth"
 
 export function LoginPage() {
-  const { isAuthenticated, isLoading } = useAuth()
+  const { isAuthenticated, isLoading, user, logout } = useAuth()
   const navigate = useNavigate()
   const queryClient = useQueryClient()
   const [email, setEmail] = useState("")
@@ -70,8 +70,29 @@ export function LoginPage() {
     )
   }
 
-  if (isAuthenticated) {
+  // Authentifié ET administrateur → on entre.
+  if (isAuthenticated && user?.isAdmin === true) {
     return <Navigate to="/" replace />
+  }
+
+  // Authentifié mais SANS droits admin : compte d'application (passager ou
+  // conducteur). On l'informe au lieu de le renvoyer vers l'accueil — sans
+  // cette branche, AuthGuard le renverrait ici et on tournerait en boucle.
+  if (isAuthenticated) {
+    return (
+      <AuthLayout>
+        <div className="flex flex-col items-center gap-4 text-center">
+          <h1 className="text-2xl font-bold">Accès réservé</h1>
+          <p className="text-sm text-muted-foreground">
+            Cet espace est réservé à l'équipe BeepBeepCity. Votre compte
+            fonctionne normalement dans l'application mobile.
+          </p>
+          <Button type="button" onClick={logout} className="w-full">
+            Se déconnecter
+          </Button>
+        </div>
+      </AuthLayout>
+    )
   }
 
   return (
