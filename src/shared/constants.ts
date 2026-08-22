@@ -9,12 +9,12 @@
  * Source canonique : BEEP/shared/constants.ts
  */
 
-export const LOCALE = "fr-FR" as const
-export const TIMEZONE = "Europe/Paris" as const
-export const CURRENCY = "EUR" as const
+export const LOCALE = "fr-FR" as const;
+export const TIMEZONE = "Europe/Paris" as const;
+export const CURRENCY = "EUR" as const;
 
 /** Note maximale pour un Rating (système 1-5 étoiles) */
-export const MAX_RATING = 5
+export const MAX_RATING = 5;
 
 // ─── Course / Trip states ──────────────────────────────────────────────
 // Source de vérité = back/api/src/models/Course.ts (Course.state.options)
@@ -31,7 +31,7 @@ export const CourseState = {
   CANCELLED: "cancelled",
   REJECTED: "rejected",
   PAID: "paid",
-} as const
+} as const;
 
 /** Tous les états valides d'une Course côté back */
 export const COURSE_STATES = [
@@ -39,16 +39,16 @@ export const COURSE_STATES = [
   CourseState.CANCELLED,
   CourseState.REJECTED,
   CourseState.PAID,
-] as const
+] as const;
 
-export type CourseStateValue = (typeof COURSE_STATES)[number] | (string & {})
+export type CourseStateValue = (typeof COURSE_STATES)[number] | (string & {});
 
 /** États de course considérés comme terminés (plus de suivi attendu) */
 export const FINISHED_COURSE_STATES: readonly string[] = [
   CourseState.PAID,
   CourseState.CANCELLED,
   CourseState.REJECTED,
-]
+];
 
 // ─── Payment states ────────────────────────────────────────────────────
 // Source de vérité = back/api/src/models/Payment.ts (Payment.state.options)
@@ -67,7 +67,7 @@ export const PaymentState = {
   REFUNDED: "refunded",
   FAILED_REFUND: "failedRefund",
   TRANSFERRED: "transferred",
-} as const
+} as const;
 
 /** Tous les états valides d'un Payment côté back */
 export const PAYMENT_STATES = [
@@ -79,9 +79,9 @@ export const PAYMENT_STATES = [
   PaymentState.REFUNDED,
   PaymentState.FAILED_REFUND,
   PaymentState.TRANSFERRED,
-] as const
+] as const;
 
-export type PaymentStateValue = (typeof PAYMENT_STATES)[number] | (string & {})
+export type PaymentStateValue = (typeof PAYMENT_STATES)[number] | (string & {});
 
 /** États de paiement considérés comme finalisés (Payment n'a pas d'état d'annulation) */
 export const FINISHED_PAYMENT_STATES: readonly string[] = [
@@ -89,7 +89,7 @@ export const FINISHED_PAYMENT_STATES: readonly string[] = [
   PaymentState.REFUNDED,
   PaymentState.FAILED_REFUND,
   PaymentState.REJECTED,
-]
+];
 
 // ─── Trip rules ────────────────────────────────────────────────────────
 
@@ -103,7 +103,7 @@ export const FINISHED_PAYMENT_STATES: readonly string[] = [
  * Avant de modifier, vérifier que le cron `expireAnnouncements` (toutes
  * les 5 min) laisse le temps de prise en charge raisonnable.
  */
-export const INSTANT_TRIP_VALIDITY_MINUTES = 45
+export const INSTANT_TRIP_VALIDITY_MINUTES = 45;
 
 // ─── Document types ────────────────────────────────────────────────────
 
@@ -112,33 +112,33 @@ export const DOCUMENT_LABELS = {
   insurance: "Assurance",
   registrationDocument: "Carte grise",
   certificate: "Certificat",
-} as const
+} as const;
 
-export type DocumentType = keyof typeof DOCUMENT_LABELS
+export type DocumentType = keyof typeof DOCUMENT_LABELS;
 
-export const DOCUMENT_TYPES = Object.keys(DOCUMENT_LABELS) as DocumentType[]
+export const DOCUMENT_TYPES = Object.keys(DOCUMENT_LABELS) as DocumentType[];
 
 // ─── Pricing / cancellation rules ──────────────────────────────────────
 
 /** Seuil en mètres pour basculer en label "moins de 1 km" */
-export const DISTANCE_THRESHOLD_METERS = 1000
+export const DISTANCE_THRESHOLD_METERS = 1000;
 
 /**
  * Seuil en heures avant le départ en deçà duquel l'annulation passenger
  * déclenche des frais (capture Stripe partielle de CANCELLATION_FEE_EUR).
  * Doit rester aligné avec back env `FREE_CANCELATION_HOURS` (default 1).
  */
-export const FREE_CANCELLATION_HOURS = 1
+export const FREE_CANCELLATION_HOURS = 1;
 
 /**
  * Montant en € prélevé sur le passenger en cas d'annulation tardive
  * (idem default back env `CANCELATION_FEES=500` cents). Le même montant
  * est versé au driver en indemnité.
  */
-export const CANCELLATION_FEE_EUR = 5
+export const CANCELLATION_FEE_EUR = 5;
 
 /** Marge en minutes après la fin théorique avant de masquer la course de la home */
-export const COURSE_DISPLAY_BUFFER_MINUTES = 60
+export const COURSE_DISPLAY_BUFFER_MINUTES = 60;
 
 // ─── Course action buttons (windows) ───────────────────────────────────
 // Fenêtres de visibilité des CTA durant le cycle de vie d'une course.
@@ -147,16 +147,16 @@ export const COURSE_DISPLAY_BUFFER_MINUTES = 60
 // pour éviter une fenêtre quasi-nulle sur les très courts trajets.
 
 /** Bouton "Contacter" : visible à partir de N min avant le départ */
-export const CONTACT_BEFORE_START_MINUTES = 60
+export const CONTACT_BEFORE_START_MINUTES = 60;
 /** Bouton "Contacter" : encore visible jusqu'à N min après la fin estimée */
-export const CONTACT_AFTER_END_MINUTES = 15
+export const CONTACT_AFTER_END_MINUTES = 15;
 
 /**
  * Bouton "Annuler" : reste visible jusqu'à N minutes après la prise en charge,
  * indépendamment de la durée du trajet (règle métier "top chrono" — passé ce
  * délai le driver est censé être sur la route, plus d'annulation possible).
  */
-export const CANCEL_GRACE_MIN_MINUTES = 5
+export const CANCEL_GRACE_MIN_MINUTES = 5;
 
 /**
  * Fenêtre de rétractation du passager, en secondes après l'acceptation par le
@@ -175,7 +175,7 @@ export const CANCEL_GRACE_MIN_MINUTES = 5
  * porte de sortie côté app : c'est le support qui annule et rembourse, via
  * `adminCancelCourse`. Ne pas raccourcir cette fenêtre sans ce filet.
  */
-export const PASSENGER_CANCEL_WINDOW_SECONDS = 60
+export const PASSENGER_CANCEL_WINDOW_SECONDS = 60;
 
 /**
  * Franchise de frais : en deçà, une annulation passager ne coûte rien.
@@ -186,9 +186,9 @@ export const PASSENGER_CANCEL_WINDOW_SECONDS = 60
  * gratuite. Les séparer (ex. fenêtre 5 min, franchise 60 s) rétablit une zone
  * payante sans toucher au code.
  */
-export const CANCELLATION_GRACE_SECONDS = 60
+export const CANCELLATION_GRACE_SECONDS = 60;
 
 /** Bouton "Course terminée" : devient visible après % de la durée écoulée */
-export const END_COURSE_THRESHOLD_PERCENT = 0.5
+export const END_COURSE_THRESHOLD_PERCENT = 0.5;
 /** Plancher en minutes du même seuil (idem trajets courts) */
-export const END_COURSE_THRESHOLD_MIN_MINUTES = 5
+export const END_COURSE_THRESHOLD_MIN_MINUTES = 5;

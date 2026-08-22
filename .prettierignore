@@ -1,5 +1,11 @@
 node_modules/
 coverage/
+
+# Copies auto-générées depuis BEEP/shared (cf scripts/sync-shared.mjs).
+# Les reformater crée un ping-pong : prettier réécrit ce que le sync vient
+# d'écrire, et chaque synchronisation ressort en faux diff. Le formatage est
+# porté par la source canonique, pas par les copies.
+src/shared/
 .pnpm-store/
 pnpm-lock.yaml
 package-lock.json

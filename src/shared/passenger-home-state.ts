@@ -28,7 +28,7 @@ import {
   isTripActive,
   isTripExpired,
   passengerCancelSecondsLeft,
-} from "./trip-logic"
+} from "./trip-logic";
 
 /**
  * Shape minimale qu'on consomme pour calculer le state. Les types
@@ -38,68 +38,68 @@ import {
  * sur le retour.
  */
 type CourseLike = {
-  id?: string
-  state?: string | null
-  createdAt?: string | null
-}
+  id?: string;
+  state?: string | null;
+  createdAt?: string | null;
+};
 
 type TripLike = {
-  id?: string
-  startDatetimeUtc?: string | null
-  duration?: number | null
-  isInstant?: boolean | null
-  coursesCount?: number | null
-  activeCourse?: CourseLike | null
-  availableDrivers?: unknown[] | null
-  payment?: { state?: string | null } | null
-  endDatetimeUtc?: string | null
-  createdAt?: string | null
-}
+  id?: string;
+  startDatetimeUtc?: string | null;
+  duration?: number | null;
+  isInstant?: boolean | null;
+  coursesCount?: number | null;
+  activeCourse?: CourseLike | null;
+  availableDrivers?: unknown[] | null;
+  payment?: { state?: string | null } | null;
+  endDatetimeUtc?: string | null;
+  createdAt?: string | null;
+};
 
 export type PassengerHomeState<T extends TripLike = TripLike> = {
   /**
    * Le trip à afficher dans la carte de l'accueil. Priorité à la course
    * active ; sinon l'annonce la plus récente.
    */
-  activeTrip: T | null
+  activeTrip: T | null;
   /**
    * Trip qui correspond à une annonce non encore prise (= sans course).
    * Peut coexister avec `nextCourse` si le passenger a programmé une
    * 2e annonce après acceptation de la 1ère (V1 : interdit côté back,
    * mais le front est défensif).
    */
-  announcement: T | null
+  announcement: T | null;
   /**
    * Trip dont la course est `accepted` (= en cours pour les 2 parties).
    */
-  nextCourse: T | null
+  nextCourse: T | null;
   /**
    * Course active dérivée de `nextCourse` (ou null). Type préservé via
    * NonNullable<T['activeCourse']> pour que le caller garde accès aux
    * champs codegen complets (driver, ratings, etc.) sans cast.
    */
-  activeCourse: NonNullable<T["activeCourse"]> | null
+  activeCourse: NonNullable<T["activeCourse"]> | null;
   /** True si on est en mode "annonce" (= pas de course acceptée). */
-  isAnnouncement: boolean
+  isAnnouncement: boolean;
   /**
    * True si on est en mode annonce ET qu'au moins un driver candidat
    * est dispo dans le rayon. Pilote l'affichage du message
    * "des conducteurs ont été notifiés" vs "un chauffeur se libère".
    */
-  hasAvailableDrivers: boolean
+  hasAvailableDrivers: boolean;
   /** Bouton "Contacter le conducteur" visible (cf trip-logic). */
-  canContactBtn: boolean
+  canContactBtn: boolean;
   /** Bouton "Annuler la course" visible (cf trip-logic). */
-  canCancelBtn: boolean
+  canCancelBtn: boolean;
   /**
    * Secondes restantes au passager pour se rétracter. Sert au compte à rebours :
    * le bouton disparaît au bout de 60 s, et sans décompte visible l'utilisateur
    * ne comprend pas pourquoi. Vaut 0 une fois la fenêtre fermée.
    */
-  cancelSecondsLeft: number
+  cancelSecondsLeft: number;
   /** Bouton "Arrivée à destination" visible (cf trip-logic). */
-  canEndBtn: boolean
-}
+  canEndBtn: boolean;
+};
 
 /**
  * Dérive l'état de l'accueil passenger à partir de la liste des trips
@@ -120,12 +120,12 @@ export type PassengerHomeState<T extends TripLike = TripLike> = {
  * indéfiniment côté passenger (bug client mai 2026).
  */
 export function derivePassengerHomeState<T extends TripLike>(
-  trips: readonly T[] | null | undefined
+  trips: readonly T[] | null | undefined,
 ): PassengerHomeState<T> {
-  const items = trips ?? []
+  const items = trips ?? [];
 
   const announcement =
-    items.find((t) => (t.coursesCount || 0) === 0 && !isTripExpired(t)) ?? null
+    items.find((t) => (t.coursesCount || 0) === 0 && !isTripExpired(t)) ?? null;
   const nextCourse =
     items.find(
       (t) =>
@@ -135,19 +135,19 @@ export function derivePassengerHomeState<T extends TripLike>(
           durationMinutes: t.duration,
           isInstant: t.isInstant,
           courseCreatedAt: t.activeCourse?.createdAt,
-        })
-    ) ?? null
+        }),
+    ) ?? null;
   const activeCourse =
-    (nextCourse?.activeCourse as NonNullable<T["activeCourse"]> | null) ?? null
+    (nextCourse?.activeCourse as NonNullable<T["activeCourse"]> | null) ?? null;
 
   const buttonWindow = {
     startDatetimeUtc: nextCourse?.startDatetimeUtc,
     durationMinutes: nextCourse?.duration,
     isInstant: nextCourse?.isInstant,
     courseCreatedAt: activeCourse?.createdAt,
-  }
+  };
 
-  const isAnnouncement = !nextCourse
+  const isAnnouncement = !nextCourse;
 
   return {
     activeTrip: nextCourse ?? announcement,
@@ -161,5 +161,5 @@ export function derivePassengerHomeState<T extends TripLike>(
     canCancelBtn: canShowCancelButton(buttonWindow),
     cancelSecondsLeft: passengerCancelSecondsLeft(buttonWindow),
     canEndBtn: canShowEndCourseButton(buttonWindow),
-  }
+  };
 }

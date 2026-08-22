@@ -24,20 +24,20 @@ import {
   FINISHED_PAYMENT_STATES,
   FREE_CANCELLATION_HOURS,
   INSTANT_TRIP_VALIDITY_MINUTES,
-} from "./constants"
+} from "./constants";
 
 // ─── Types structurels (sans dépendance codegen) ───────────────────────
 
-type CourseLike = { state?: string | null }
-type PaymentLike = { state?: string | null }
+type CourseLike = { state?: string | null };
+type PaymentLike = { state?: string | null };
 type TripLike = {
-  coursesCount?: number | null
-  activeCourse?: CourseLike | null
-  payment?: PaymentLike | null
-  endDatetimeUtc?: string | null
-  isInstant?: boolean | null
-  createdAt?: string | null
-}
+  coursesCount?: number | null;
+  activeCourse?: CourseLike | null;
+  payment?: PaymentLike | null;
+  endDatetimeUtc?: string | null;
+  isInstant?: boolean | null;
+  createdAt?: string | null;
+};
 
 // ─── Helpers de course ─────────────────────────────────────────────────
 
@@ -53,13 +53,13 @@ type TripLike = {
  * l'arrivée. C'est ici qu'on filtre côté client.
  */
 export const isTripActive = (trip?: TripLike | null): boolean => {
-  if (!trip) return false
-  if ((trip.coursesCount || 0) === 0) return false
-  const paymentState = trip.payment?.state || ""
-  if (FINISHED_PAYMENT_STATES.includes(paymentState)) return false
-  if (!trip.activeCourse) return false
-  return trip.activeCourse.state === CourseState.ACCEPTED
-}
+  if (!trip) return false;
+  if ((trip.coursesCount || 0) === 0) return false;
+  const paymentState = trip.payment?.state || "";
+  if (FINISHED_PAYMENT_STATES.includes(paymentState)) return false;
+  if (!trip.activeCourse) return false;
+  return trip.activeCourse.state === CourseState.ACCEPTED;
+};
 
 /**
  * Vrai si le trip est expiré (= annonce non prise en charge) :
@@ -72,22 +72,22 @@ export const isTripActive = (trip?: TripLike | null): boolean => {
  * l'affichage côté client entre deux passages du cron.
  */
 export const isTripExpired = (trip?: TripLike | null): boolean => {
-  if (!trip) return false
-  const hasNoCourses = (trip.coursesCount || 0) === 0
-  if (!hasNoCourses) return false
+  if (!trip) return false;
+  const hasNoCourses = (trip.coursesCount || 0) === 0;
+  if (!hasNoCourses) return false;
 
   if (trip.isInstant && trip.createdAt) {
-    const createdAtMs = new Date(trip.createdAt).getTime()
-    const validityMs = INSTANT_TRIP_VALIDITY_MINUTES * 60 * 1000
-    return Date.now() > createdAtMs + validityMs
+    const createdAtMs = new Date(trip.createdAt).getTime();
+    const validityMs = INSTANT_TRIP_VALIDITY_MINUTES * 60 * 1000;
+    return Date.now() > createdAtMs + validityMs;
   }
 
   if (trip.endDatetimeUtc) {
-    return Date.now() > new Date(trip.endDatetimeUtc).getTime()
+    return Date.now() > new Date(trip.endDatetimeUtc).getTime();
   }
 
-  return false
-}
+  return false;
+};
 
 // ─── Fenêtres de temps ─────────────────────────────────────────────────
 
@@ -97,11 +97,11 @@ export const isTripExpired = (trip?: TripLike | null): boolean => {
 export const isCancellationFree = (
   startDatetimeUtc?: string | null
 ): boolean => {
-  if (!startDatetimeUtc) return true
+  if (!startDatetimeUtc) return true;
   const hoursUntilStart =
-    (new Date(startDatetimeUtc).getTime() - Date.now()) / (1000 * 60 * 60)
-  return hoursUntilStart > FREE_CANCELLATION_HOURS
-}
+    (new Date(startDatetimeUtc).getTime() - Date.now()) / (1000 * 60 * 60);
+  return hoursUntilStart > FREE_CANCELLATION_HOURS;
+};
 
 /**
  * Vrai si le créneau du trajet est dépassé (start + duration < now).
@@ -110,12 +110,12 @@ export const isTripPast = (
   startDatetimeUtc?: string | null,
   durationMinutes?: number | null
 ): boolean => {
-  if (!startDatetimeUtc) return false
-  const duration = durationMinutes || 0
+  if (!startDatetimeUtc) return false;
+  const duration = durationMinutes || 0;
   const estimatedEnd =
-    new Date(startDatetimeUtc).getTime() + duration * 60 * 1000
-  return Date.now() > estimatedEnd
-}
+    new Date(startDatetimeUtc).getTime() + duration * 60 * 1000;
+  return Date.now() > estimatedEnd;
+};
 
 /**
  * Vrai si la course doit être retirée de l'affichage home
@@ -127,23 +127,25 @@ export const isTripPast = (
  * prématurément de la home alors que la course est encore en cours.
  */
 export const isCoursePastDisplayWindow = (params: {
-  startDatetimeUtc?: string | null
-  durationMinutes?: number | null
-  isInstant?: boolean | null
-  courseCreatedAt?: string | null
+  startDatetimeUtc?: string | null;
+  durationMinutes?: number | null;
+  isInstant?: boolean | null;
+  courseCreatedAt?: string | null;
 }): boolean => {
-  const w = getCourseTimeWindow(params)
-  if (!w) return false
-  return Date.now() > w.endMs + COURSE_DISPLAY_BUFFER_MINUTES * 60 * 1000
-}
+  const w = getCourseTimeWindow(params);
+  if (!w) return false;
+  return Date.now() > w.endMs + COURSE_DISPLAY_BUFFER_MINUTES * 60 * 1000;
+};
 
 /**
  * Vrai si la course a commencé (startDatetimeUtc dans le passé).
  */
-export const hasCourseStarted = (startDatetimeUtc?: string | null): boolean => {
-  if (!startDatetimeUtc) return false
-  return Date.now() > new Date(startDatetimeUtc).getTime()
-}
+export const hasCourseStarted = (
+  startDatetimeUtc?: string | null
+): boolean => {
+  if (!startDatetimeUtc) return false;
+  return Date.now() > new Date(startDatetimeUtc).getTime();
+};
 
 // ─── Fenêtres des CTA pendant la course ────────────────────────────────
 
@@ -162,29 +164,28 @@ export const hasCourseStarted = (startDatetimeUtc?: string | null): boolean => {
  */
 export type CourseTimeWindow = {
   /** Timestamp ms du début effectif de la course */
-  startMs: number
+  startMs: number;
   /** Timestamp ms de la fin estimée (start + duration) */
-  endMs: number
+  endMs: number;
   /** Durée en ms (= durationMinutes × 60s) */
-  durationMs: number
-}
+  durationMs: number;
+};
 
 export const getCourseTimeWindow = (params: {
-  startDatetimeUtc?: string | null
-  durationMinutes?: number | null
-  isInstant?: boolean | null
-  courseCreatedAt?: string | null
+  startDatetimeUtc?: string | null;
+  durationMinutes?: number | null;
+  isInstant?: boolean | null;
+  courseCreatedAt?: string | null;
 }): CourseTimeWindow | null => {
-  const startSrc =
-    params.isInstant && params.courseCreatedAt
-      ? params.courseCreatedAt
-      : params.startDatetimeUtc
-  if (!startSrc) return null
-  const startMs = new Date(startSrc).getTime()
-  if (Number.isNaN(startMs)) return null
-  const durationMs = Math.max(0, (params.durationMinutes || 0) * 60 * 1000)
-  return { startMs, durationMs, endMs: startMs + durationMs }
-}
+  const startSrc = params.isInstant && params.courseCreatedAt
+    ? params.courseCreatedAt
+    : params.startDatetimeUtc;
+  if (!startSrc) return null;
+  const startMs = new Date(startSrc).getTime();
+  if (Number.isNaN(startMs)) return null;
+  const durationMs = Math.max(0, (params.durationMinutes || 0) * 60 * 1000);
+  return { startMs, durationMs, endMs: startMs + durationMs };
+};
 
 /**
  * Bouton "Contacter le driver/passenger" :
@@ -192,18 +193,18 @@ export const getCourseTimeWindow = (params: {
  * masqué après CONTACT_AFTER_END_MINUTES après la fin estimée.
  */
 export const canShowContactButton = (params: {
-  startDatetimeUtc?: string | null
-  durationMinutes?: number | null
-  isInstant?: boolean | null
-  courseCreatedAt?: string | null
+  startDatetimeUtc?: string | null;
+  durationMinutes?: number | null;
+  isInstant?: boolean | null;
+  courseCreatedAt?: string | null;
 }): boolean => {
-  const w = getCourseTimeWindow(params)
-  if (!w) return false
-  const now = Date.now()
-  const lower = w.startMs - CONTACT_BEFORE_START_MINUTES * 60 * 1000
-  const upper = w.endMs + CONTACT_AFTER_END_MINUTES * 60 * 1000
-  return now >= lower && now <= upper
-}
+  const w = getCourseTimeWindow(params);
+  if (!w) return false;
+  const now = Date.now();
+  const lower = w.startMs - CONTACT_BEFORE_START_MINUTES * 60 * 1000;
+  const upper = w.endMs + CONTACT_AFTER_END_MINUTES * 60 * 1000;
+  return now >= lower && now <= upper;
+};
 
 /**
  * Bouton "Annuler la course". Les deux rôles n'ont PAS les mêmes droits
@@ -223,21 +224,21 @@ export const canShowContactButton = (params: {
  */
 export const canShowCancelButton = (
   params: {
-    startDatetimeUtc?: string | null
-    durationMinutes?: number | null
-    isInstant?: boolean | null
-    courseCreatedAt?: string | null
+    startDatetimeUtc?: string | null;
+    durationMinutes?: number | null;
+    isInstant?: boolean | null;
+    courseCreatedAt?: string | null;
   },
   role: "passenger" | "driver" = "passenger"
 ): boolean => {
-  if (role === "driver") return true
+  if (role === "driver") return true;
 
-  const w = getCourseTimeWindow(params)
+  const w = getCourseTimeWindow(params);
   // Pas de fenêtre = pas encore de start exploitable → on autorise
   // (ex : passenger qui veut supprimer son annonce instant non acceptée).
-  if (!w) return true
-  return Date.now() <= w.startMs + PASSENGER_CANCEL_WINDOW_SECONDS * 1000
-}
+  if (!w) return true;
+  return Date.now() <= w.startMs + PASSENGER_CANCEL_WINDOW_SECONDS * 1000;
+};
 
 /**
  * Secondes restantes au passager pour se rétracter, 0 si la fenêtre est
@@ -245,16 +246,16 @@ export const canShowCancelButton = (
  * bouton disparaître sans comprendre pourquoi.
  */
 export const passengerCancelSecondsLeft = (params: {
-  startDatetimeUtc?: string | null
-  durationMinutes?: number | null
-  isInstant?: boolean | null
-  courseCreatedAt?: string | null
+  startDatetimeUtc?: string | null;
+  durationMinutes?: number | null;
+  isInstant?: boolean | null;
+  courseCreatedAt?: string | null;
 }): number => {
-  const w = getCourseTimeWindow(params)
-  if (!w) return PASSENGER_CANCEL_WINDOW_SECONDS
-  const deadline = w.startMs + PASSENGER_CANCEL_WINDOW_SECONDS * 1000
-  return Math.max(0, Math.ceil((deadline - Date.now()) / 1000))
-}
+  const w = getCourseTimeWindow(params);
+  if (!w) return PASSENGER_CANCEL_WINDOW_SECONDS;
+  const deadline = w.startMs + PASSENGER_CANCEL_WINDOW_SECONDS * 1000;
+  return Math.max(0, Math.ceil((deadline - Date.now()) / 1000));
+};
 
 /**
  * Bouton "Course terminée" / "Arrivée à destination" :
@@ -263,19 +264,19 @@ export const passengerCancelSecondsLeft = (params: {
  * arrive souvent en avance — on l'autorise à clore dès la moitié écoulée.
  */
 export const canShowEndCourseButton = (params: {
-  startDatetimeUtc?: string | null
-  durationMinutes?: number | null
-  isInstant?: boolean | null
-  courseCreatedAt?: string | null
+  startDatetimeUtc?: string | null;
+  durationMinutes?: number | null;
+  isInstant?: boolean | null;
+  courseCreatedAt?: string | null;
 }): boolean => {
-  const w = getCourseTimeWindow(params)
-  if (!w) return false
+  const w = getCourseTimeWindow(params);
+  if (!w) return false;
   const threshold = Math.max(
     w.durationMs * END_COURSE_THRESHOLD_PERCENT,
     END_COURSE_THRESHOLD_MIN_MINUTES * 60 * 1000
-  )
-  return Date.now() >= w.startMs + threshold
-}
+  );
+  return Date.now() >= w.startMs + threshold;
+};
 
 // ─── Format & display ──────────────────────────────────────────────────
 
@@ -290,18 +291,18 @@ export const getDistanceLabel = (distance?: number | null): string => {
   // ne masquer que null/undefined/négatif. Avant, `!distance` masquait le cas 0
   // → labels incohérents quand 2 pickups au même endroit donnaient 0 vs 1+ via
   // Math.floor côté back.
-  if (distance == null || distance < 0) return ""
+  if (distance == null || distance < 0) return "";
   return distance > DISTANCE_THRESHOLD_METERS
     ? `Départ à ${(distance / 1000).toFixed(0)} km`
-    : "Départ à moins de 1 km"
-}
+    : "Départ à moins de 1 km";
+};
 
 /**
  * Récupère l'URL d'un avatar quel que soit le format d'origine (uri ancien ou url récent).
  * Utile pour la transition pendant que les anciens caches/clients utilisent encore `uri`.
  */
 export const getAvatarUrl = (avatar: unknown): string => {
-  if (!avatar || typeof avatar !== "object") return ""
-  const a = avatar as { uri?: string; url?: string }
-  return a.url || a.uri || ""
-}
+  if (!avatar || typeof avatar !== "object") return "";
+  const a = avatar as { uri?: string; url?: string };
+  return a.url || a.uri || "";
+};

@@ -51,13 +51,12 @@ export const ErrorCode = {
   COURSE_REVIEW_ACCOUNT_ISOLATED: "course_review_account_isolated",
 
   // ─── Driver onboarding ───────────────────────────────────────────────
-  DRIVER_ONLY_DRIVERS_CAN_CREATE_COURSE:
-    "driver_only_drivers_can_create_course",
+  DRIVER_ONLY_DRIVERS_CAN_CREATE_COURSE: "driver_only_drivers_can_create_course",
   DRIVER_CANNOT_CREATE_COURSE_ON_OWN_TRIP:
     "driver_cannot_create_course_on_own_trip",
-} as const
+} as const;
 
-export type ErrorCodeValue = (typeof ErrorCode)[keyof typeof ErrorCode]
+export type ErrorCodeValue = (typeof ErrorCode)[keyof typeof ErrorCode];
 
 /**
  * Messages user-facing par code. Les clients (mobile/admin) en consomment
@@ -124,7 +123,7 @@ export const ErrorCodeMessages: Record<ErrorCodeValue, string> = {
     "Seuls les conducteurs peuvent accepter une course",
   [ErrorCode.DRIVER_CANNOT_CREATE_COURSE_ON_OWN_TRIP]:
     "Vous ne pouvez pas accepter votre propre annonce",
-}
+};
 
 /**
  * Helper pour le mobile/admin : extrait le code d'erreur d'un message
@@ -133,13 +132,13 @@ export const ErrorCodeMessages: Record<ErrorCodeValue, string> = {
  * si non reconnu (le caller affichera un fallback générique).
  */
 export function resolveErrorMessage(
-  rawMessage: string | undefined | null
+  rawMessage: string | undefined | null,
 ): string | null {
-  if (!rawMessage) return null
+  if (!rawMessage) return null;
   for (const code of Object.values(ErrorCode)) {
     if (rawMessage.includes(code)) {
-      return ErrorCodeMessages[code]
+      return ErrorCodeMessages[code];
     }
   }
-  return null
+  return null;
 }
