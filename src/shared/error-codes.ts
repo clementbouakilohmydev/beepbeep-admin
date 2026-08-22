@@ -48,6 +48,7 @@ export const ErrorCode = {
   COURSE_ONLY_PASSENGER_CAN_TERMINATE: "course_only_passenger_can_terminate",
   COURSE_ALREADY_PAID_CANNOT_CANCEL: "course_already_paid_cannot_cancel",
   COURSE_CANCEL_WINDOW_PASSED: "course_cancel_window_passed",
+  COURSE_REVIEW_ACCOUNT_ISOLATED: "course_review_account_isolated",
 
   // ─── Driver onboarding ───────────────────────────────────────────────
   DRIVER_ONLY_DRIVERS_CAN_CREATE_COURSE:
@@ -101,6 +102,8 @@ export const ErrorCodeMessages: Record<ErrorCodeValue, string> = {
     "Votre permis n'est plus valide. Vérifiez votre profil.",
   [ErrorCode.DRIVER_PAYMENT_NOT_CONFIGURED]:
     "Vous devez terminer la configuration de vos paiements pour pouvoir prendre des courses.",
+  [ErrorCode.COURSE_REVIEW_ACCOUNT_ISOLATED]:
+    "Cette annonce n'est pas disponible.",
   [ErrorCode.COURSE_CANNOT_TERMINATE_IN_FUTURE]:
     "La course ne peut pas être terminée avant son heure de départ",
   [ErrorCode.COURSE_NOT_ACCEPTED]:
